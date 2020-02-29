@@ -1561,11 +1561,11 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
                 }
 
                 //try path because it's a file
-                if (res_text.empty() && PathUtils::is_resource_file(res->get_path())) {
+                if (res_text.empty()) {
 
                     //external resource
-                    String path = res->get_path();
-                    res_text = "Resource( \"" + path + "\")";
+                    const ResourcePath &path = res->get_path();
+                    res_text = "Resource( \"" + path.to_string() + "\")";
                 }
 
                 //could come up with some sort of text

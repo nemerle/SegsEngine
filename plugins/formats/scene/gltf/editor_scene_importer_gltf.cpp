@@ -1617,7 +1617,7 @@ namespace {
                 else {
 
                     uri = StringUtils::replace(PathUtils::plus_file(p_base_path, uri), "\\", "/"); //fix for windows
-                    Ref<Texture> texture(dynamic_ref_cast<Texture>(ResourceLoader::load(uri)));
+                    Ref<Texture> texture(ResourceLoader::load<Texture>(uri));
                     state.images.push_back(texture);
                     continue;
                 }

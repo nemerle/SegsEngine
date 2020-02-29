@@ -1316,7 +1316,7 @@ void VisualShaderEditor::_add_custom_node(StringView p_path) {
 
 void VisualShaderEditor::_add_texture_node(StringView p_path) {
     VisualShaderNodeTexture *texture = (VisualShaderNodeTexture *)_add_node(texture_node_option_idx, -1);
-    texture->set_texture(dynamic_ref_cast<Texture>(ResourceLoader::load(p_path)));
+    texture->set_texture(ResourceLoader::load<Texture>(p_path));
 }
 VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
@@ -2172,7 +2172,7 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
                     const String type = ResourceLoader::get_resource_type(arr[i]);
                     if (type == "GDScript") {
-                        Ref<Script> script(dynamic_ref_cast<Script>(ResourceLoader::load(arr[i])));
+                        Ref<Script> script(ResourceLoader::load<Script>(arr[i]));
                         if (script->get_instance_base_type() == "VisualShaderNodeCustom") {
                             saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
                             saved_node_pos_dirty = true;

@@ -122,22 +122,14 @@ void AudioEffectRecordInstance::init() {
     recording_data.resize(0); //Clear data completely and reset length
     is_recording = true;
 
-#ifdef NO_THREADS
-    AudioServer::get_singleton()->add_update_callback(&AudioEffectRecordInstance::_update, this);
-#else
     io_thread = Thread::create(_thread_callback, this);
-#endif
 }
 
 void AudioEffectRecordInstance::finish() {
 
-#ifdef NO_THREADS
-    AudioServer::get_singleton()->remove_update_callback(&AudioEffectRecordInstance::_update, this);
-#else
     if (thread_active) {
         Thread::wait_to_finish(io_thread);
     }
-#endif
 }
 
 AudioEffectRecordInstance::~AudioEffectRecordInstance() {
@@ -152,7 +144,7 @@ Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 
     //Re-using the buffer size calculations from audio_effect_delay.cpp
     float ring_buffer_max_size = IO_BUFFER_SIZE_MS;
-    ring_buffer_max_size /= 1000.0; //convert to seconds
+    ring_buffer_max_size /= 1000.0f; //convert to seconds
     ring_buffer_max_size *= AudioServer::get_singleton()->get_mix_rate();
 
     int ringbuff_size = ring_buffer_max_size;

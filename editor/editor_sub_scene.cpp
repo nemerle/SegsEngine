@@ -55,7 +55,7 @@ void EditorSubScene::_path_changed(StringView p_path) {
     if (p_path.empty())
         return;
 
-    Ref<PackedScene> ps = dynamic_ref_cast<PackedScene>(ResourceLoader::load(p_path, "PackedScene"));
+    Ref<PackedScene> ps = ResourceLoader::load<PackedScene>(p_path, "PackedScene");
 
     if (not ps)
         return;

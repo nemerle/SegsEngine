@@ -1472,14 +1472,15 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
             if (not r)
                 return;
 
-            if (!StringUtils::begins_with(r->get_path(),"res://") || !StringUtils::contains(r->get_path(),"::"))
-                return; //not an internal resource
+            assert(false);
+//            if (r->get_path().mountpoint()!="res:" || !StringUtils::contains(r->get_path(),"::"))
+//                return; //not an internal resource
 
             Object *object = p_var;
             if (!object)
                 return;
-
-            r->set_path("");
+            assert(false);
+            //r->set_path(ResourcePath());
             r->clear_internal_resource_paths();
         } break;
         case VariantType::ARRAY: {

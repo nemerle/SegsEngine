@@ -1489,7 +1489,7 @@ void EditorNode::_dialog_action(StringView p_file) {
 
             Ref<MeshLibrary> ml;
             if (file_export_lib_merge->is_pressed() && FileAccess::exists(p_file)) {
-                ml = dynamic_ref_cast<MeshLibrary>(ResourceLoader::load(p_file, "MeshLibrary"));
+                ml = ResourceLoader::load<MeshLibrary>(p_file, "MeshLibrary");
 
                 if (not ml) {
                     show_accept(TTR("Can't load MeshLibrary for merging!"), TTR("OK"));
@@ -1514,7 +1514,7 @@ void EditorNode::_dialog_action(StringView p_file) {
 
             Ref<TileSet> tileset;
             if (FileAccess::exists(p_file) && file_export_lib_merge->is_pressed()) {
-                tileset = dynamic_ref_cast<TileSet>(ResourceLoader::load(p_file, "TileSet"));
+                tileset = ResourceLoader::load<TileSet>(p_file, "TileSet");
 
                 if (not tileset) {
                     show_accept(TTR("Can't load TileSet for merging!"), TTR("OK"));
@@ -3096,7 +3096,7 @@ void EditorNode::set_addon_plugin_enabled(const StringName &p_addon, bool p_enab
     // Only try to load the script if it has a name. Else, the plugin has no init script.
     if (script_path.length() > 0) {
         script_path = PathUtils::plus_file(PathUtils::plus_file("res://addons", p_addon), script_path);
-        script = dynamic_ref_cast<Script>(ResourceLoader::load(script_path));
+        script = ResourceLoader::load<Script>(script_path);
 
         if (not script) {
             show_warning(FormatSN(TTR("Unable to load addon script from path: '%s'.").asCString(), script_path.c_str()));
@@ -3398,7 +3398,7 @@ Error EditorNode::load_scene(StringView p_scene, bool p_ignore_broken_deps, bool
     dependency_errors.clear();
 
     Error err;
-    Ref<PackedScene> sdata = dynamic_ref_cast<PackedScene>(ResourceLoader::load(lpath, "", true, &err));
+    Ref<PackedScene> sdata = ResourceLoader::load<PackedScene>(lpath, "", true, &err);
     if (not sdata) {
 
         _dialog_display_load_error(lpath, err);
@@ -4108,8 +4108,7 @@ Ref<Texture> EditorNode::get_class_icon(const StringName &p_class, const StringN
             return icon;
         }
 
-        Ref<Script> script =
-                dynamic_ref_cast<Script>(ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script"));
+        Ref<Script> script = ResourceLoader::load<Script>(ScriptServer::get_global_class_path(p_class), "Script");
 
         while (script) {
             String current_icon_path;

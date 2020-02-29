@@ -212,7 +212,7 @@ public:
     int get_height() const override;
     RID get_rid() const override;
 
-    void set_path(StringView p_path, bool p_take_over) override;
+    void set_path(const ResourcePath &p_path, bool p_take_over) override;
 
     void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const override;
     void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const override;

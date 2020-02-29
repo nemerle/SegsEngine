@@ -290,7 +290,7 @@ void ScriptCreateDialog::_create_new() {
 
     Ref<Script> scr;
     if (!script_template.empty()) {
-        scr = dynamic_ref_cast<Script>(ResourceLoader::load(script_template));
+        scr = ResourceLoader::load<Script>(script_template);
         if (not scr) {
             alert->set_text(FormatSN(TTR("Error loading template '%s'").asCString(), script_template.c_str()));
             alert->popup_centered();

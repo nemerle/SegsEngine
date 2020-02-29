@@ -170,6 +170,10 @@ set(core_sources
     reference.h
     register_core_types.cpp
     register_core_types.h
+    resource_path.cpp
+    resource_path.h
+    resource_manifest.cpp
+    resource_manifest.h
     resource.cpp
     resource.h
     rid.cpp
@@ -326,6 +330,8 @@ set(generic_core_sources
     set.h
     ustring.cpp
     ustring.h
+    uuid.cpp
+    uuid.h
     string_utils.h
     string_utils.inl
     vector.cpp
@@ -389,16 +395,15 @@ foreach(tgt ${global_targets})
         ${core_sources} ${tool_core_sources}
         service_interfaces/CoreInterface.h
     )
-if(USE_PRECOMPILED_HEADERS)
-    foreach(tgt ${global_targets})
-        target_precompile_headers(${tgt}_core REUSE_FROM se_core)
-    endforeach()
-endif()
+    if(USE_PRECOMPILED_HEADERS)
+        foreach(tgt ${global_targets})
+            target_precompile_headers(${tgt}_core REUSE_FROM se_core)
+        endforeach()
+    endif()
 
     target_link_libraries(${tgt}_core PRIVATE core_plugin_interfaces )
     target_link_libraries(${tgt}_core PUBLIC se_core)
     target_link_libraries(${tgt}_core PUBLIC EASTL_Import zlib_interface concurrent_queue)
-
 
 
     target_link_libraries(${tgt}_engine PRIVATE EASTL )

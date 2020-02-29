@@ -592,7 +592,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
                 }
 
                 ResourceLoader::import(image_path);
-                texture = dynamic_ref_cast<Texture>(ResourceLoader::load(image_path)); // if already loaded, it will be updated on refocus?
+                texture = ResourceLoader::load<Texture>(image_path); // if already loaded, it will be updated on refocus?
             } else {
 
                 image_path += ".text";

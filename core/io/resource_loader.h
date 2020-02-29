@@ -36,7 +36,8 @@
 #include "core/hash_map.h"
 #include "core/hash_set.h"
 #include "core/string.h"
-
+#include "core/string_utils.h"
+#include "core/resource_path.h"
 namespace std {
 class recursive_mutex;
 }
@@ -47,7 +48,7 @@ class ResourceLoaderInterface;
 
 //used to track paths being loaded in a thread, avoids cyclic recursion
 struct LoadingMapKey {
-    String path;
+    ResourcePath path;
     Thread::ID thread;
     bool operator==(const LoadingMapKey &p_key) const {
         return (thread == p_key.thread && path == p_key.path);
@@ -55,15 +56,15 @@ struct LoadingMapKey {
 };
 template<>
 struct Hasher<LoadingMapKey> {
-    uint32_t operator()(const LoadingMapKey &p_key) const { return StringUtils::hash(p_key.path) + Hasher<Thread::ID>()(p_key.thread); }
+    uint32_t operator()(const LoadingMapKey &p_key) const {
+        return eastl::hash<ResourcePath>()(p_key.path) + Hasher<Thread::ID>()(p_key.thread);
+    }
 };
-
-
 
 using ResourceLoadErrorNotify = void (*)(void *, StringView);
 using DependencyErrorNotify = void (*)(void *, StringView, StringView, StringView);
 using ResourceLoaderImport = Error (*)(StringView);
-using ResourceLoadedCallback = void (*)(RES, StringView );
+using ResourceLoadedCallback = void (*)(RES, se::UUID );
 
 class GODOT_EXPORT ResourceLoader {
 
@@ -80,10 +81,10 @@ class GODOT_EXPORT ResourceLoader {
     static void *dep_err_notify_ud;
     static DependencyErrorNotify dep_err_notify;
     static bool abort_on_missing_resource;
-    static HashMap<String, Vector<String> > translation_remaps;
-    static HashMap<String, String> path_remaps;
+    static HashMap<ResourcePath, Vector<eastl::pair<TmpString<8>,ResourcePath>> > translation_remaps;
+    static HashMap<ResourcePath, ResourcePath> path_remaps;
 
-    static String _path_remap(StringView p_path, bool *r_translation_remapped = nullptr);
+    static ResourcePath _path_remap(const ResourcePath &p_path, bool *r_translation_remapped = nullptr);
     friend class Resource;
 
     static HashSet<Resource *> remapped_list;
@@ -100,13 +101,18 @@ class GODOT_EXPORT ResourceLoader {
 
     static HashMap<LoadingMapKey, int, Hasher<LoadingMapKey>> loading_map;
 
-    static bool _add_to_loading_map(StringView p_path);
-    static void _remove_from_loading_map(StringView p_path);
-    static void _remove_from_loading_map_and_thread(StringView p_path, Thread::ID p_thread);
+    static bool _add_to_loading_map(ResourcePath p_path);
+    static void _remove_from_loading_map(ResourcePath p_path);
+    static void _remove_from_loading_map_and_thread(ResourcePath p_path, Thread::ID p_thread);
 
 public:
     static Ref<ResourceInteractiveLoader> load_interactive(StringView p_path, StringView p_type_hint = StringView(), bool p_no_cache = false, Error *r_error = nullptr);
-    static RES load(StringView p_path, StringView p_type_hint = StringView(), bool p_no_cache = false, Error *r_error = nullptr);
+    static RES load(const ResourcePath &p_path, StringView p_type_hint = StringView(), bool p_no_cache = false, Error *r_error = nullptr);
+    template<typename T>
+    static Ref<T> load(StringView p_path, StringView p_type_hint = StringView(), bool p_no_cache = false, Error *r_error = nullptr) {
+        return dynamic_ref_cast<T>(load(ResourcePath(p_path),p_type_hint,p_no_cache,r_error));
+    }
+
     static bool exists(StringView p_path, StringView p_type_hint = StringView());
 
     static void get_recognized_extensions_for_type(StringView p_type, Vector<String> &p_extensions);

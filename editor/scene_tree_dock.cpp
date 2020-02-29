@@ -196,12 +196,12 @@ void SceneTreeDock::_perform_instance_scenes(Span<const String> p_files, Node *p
 
     bool error = false;
 
-    for (int i = 0; i < p_files.size(); i++) {
+    for (const String & f : p_files) {
 
-        Ref<PackedScene> sdata = dynamic_ref_cast<PackedScene>(ResourceLoader::load(p_files[i]));
+        Ref<PackedScene> sdata = ResourceLoader::load<PackedScene>(f);
         if (not sdata) {
             current_option = -1;
-            accept->set_text(FormatSN(TTR("Error loading scene from %s").asCString(), p_files[i].c_str()));
+            accept->set_text(FormatSN(TTR("Error loading scene from %s").asCString(), f.c_str()));
             accept->popup_centered_minsize();
             error = true;
             break;
@@ -210,7 +210,7 @@ void SceneTreeDock::_perform_instance_scenes(Span<const String> p_files, Node *p
         Node *instanced_scene = sdata->instance(GEN_EDIT_STATE_INSTANCE);
         if (!instanced_scene) {
             current_option = -1;
-            accept->set_text(FormatSN(TTR("Error instancing scene from %s").asCString(), p_files[i].c_str()));
+            accept->set_text(FormatSN(TTR("Error instancing scene from %s").asCString(), f.c_str()));
             accept->popup_centered_minsize();
             error = true;
             break;
@@ -220,14 +220,16 @@ void SceneTreeDock::_perform_instance_scenes(Span<const String> p_files, Node *p
 
             if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
 
-                accept->set_text(FormatSN(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes.").asCString(), p_files[i].c_str()));
+                accept->set_text(FormatSN(
+                        TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes.").asCString(),
+                        f.c_str()));
                 accept->popup_centered_minsize();
                 error = true;
                 break;
             }
         }
 
-        instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(p_files[i]));
+        instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(f));
 
         instances.push_back(instanced_scene);
     }
@@ -265,7 +267,7 @@ void SceneTreeDock::_perform_instance_scenes(Span<const String> p_files, Node *p
 }
 
 void SceneTreeDock::_replace_with_branch_scene(StringView p_file, Node *base) {
-    Ref<PackedScene> sdata = dynamic_ref_cast<PackedScene>(ResourceLoader::load(p_file));
+    Ref<PackedScene> sdata = ResourceLoader::load<PackedScene>(p_file);
     if (not sdata) {
         accept->set_text(FormatSN(TTR("Error loading scene from %.*s").asCString(), p_file.length(),p_file.data()));
         accept->popup_centered_minsize();
@@ -341,7 +343,7 @@ bool SceneTreeDock::_track_inherit(StringView p_target_scene_path, Node *p_desir
         Ref<SceneState> ss = p->get_scene_inherited_state();
         if (ss) {
             String path = ss->get_path();
-            Ref<PackedScene> data = dynamic_ref_cast<PackedScene>(ResourceLoader::load(path));
+            Ref<PackedScene> data = ResourceLoader::load<PackedScene>(path);
             if (data) {
                 p = data->instance(GEN_EDIT_STATE_INSTANCE);
                 if (!p)
@@ -986,7 +988,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
                 StringName name(StringUtils::get_slice(selected_favorite_root,' ', 0));
                 if (ScriptServer::is_global_class(name)) {
                     new_node = object_cast<Node>(ClassDB::instance(ScriptServer::get_global_class_native_base(name)));
-                    Ref<Script> script = dynamic_ref_cast<Script>(ResourceLoader::load(ScriptServer::get_global_class_path(name), "Script"));
+                    Ref<Script> script = ResourceLoader::load<Script>(ScriptServer::get_global_class_path(name), "Script");
                     if (new_node && script) {
                         new_node->set_script(script.get_ref_ptr());
                         new_node->set_name(name);
@@ -2316,7 +2318,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, const NodePath
 }
 
 void SceneTreeDock::_script_dropped(StringView p_file, const NodePath& p_to) {
-    Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(p_file));
+    Ref<Script> scr = ResourceLoader::load<Script>(p_file);
     ERR_FAIL_COND(not scr);
     Node *n = get_node(p_to);
     if (n) {

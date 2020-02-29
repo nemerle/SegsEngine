@@ -211,7 +211,7 @@ void SpriteFramesEditor::_sheet_spin_changed(double) {
 
 void SpriteFramesEditor::_prepare_sprite_sheet(StringView p_file) {
 
-    Ref<Texture> texture = dynamic_ref_cast<Texture>(ResourceLoader::load(p_file));
+    Ref<Texture> texture = ResourceLoader::load<Texture>(p_file);
     if (not texture) {
         EditorNode::get_singleton()->show_warning("Unable to load images");
         ERR_FAIL_COND(not texture);
@@ -263,7 +263,7 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 
     for (int i = 0; i < p_path.size(); i++) {
 
-        Ref<Texture> resource = dynamic_ref_cast<Texture>(ResourceLoader::load(p_path[i]));
+        Ref<Texture> resource = ResourceLoader::load<Texture>(p_path[i]);
 
         if (not resource) {
             dialog->set_text(TTR("ERROR: Couldn't load frame resource!"));

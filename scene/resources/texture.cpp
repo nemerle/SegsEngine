@@ -522,7 +522,7 @@ struct StreamTexture::StreamTextureData {
     mutable eastl::unique_ptr<BitMap> alpha_cache;
 };
 
-void StreamTexture::set_path(StringView p_path, bool p_take_over) {
+void StreamTexture::set_path(const ResourcePath &p_path, bool p_take_over) {
 
     if (m_impl_data->texture.is_valid()) {
         VisualServer::get_singleton()->texture_set_path(m_impl_data->texture, p_path);
@@ -2246,11 +2246,7 @@ AnimatedTexture::AnimatedTexture() {
     current_frame = 0;
     VisualServer::get_singleton()->connect("frame_pre_draw", this, "_update_proxy");
 
-#ifndef NO_THREADS
     rw_lock = RWLock::create();
-#else
-    rw_lock = nullptr;
-#endif
 }
 
 AnimatedTexture::~AnimatedTexture() {

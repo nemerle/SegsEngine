@@ -2484,7 +2484,7 @@ Error RichTextLabel::append_bbcode(StringView p_bbcode) {
                 end = p_bbcode.length();
             StringView image = StringUtils::substr(p_bbcode,brk_end + 1, end - brk_end - 1);
 
-            Ref<Texture> texture = dynamic_ref_cast<Texture>(ResourceLoader::load(image, ("Texture")));
+            Ref<Texture> texture = ResourceLoader::load<Texture>(image, ("Texture"));
             if (texture)
                 add_image(texture);
 
@@ -2510,7 +2510,7 @@ Error RichTextLabel::append_bbcode(StringView p_bbcode) {
 
             StringView image = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-            Ref<Texture> texture(dynamic_ref_cast<Texture>(ResourceLoader::load(image, "Texture")));
+            Ref<Texture> texture(ResourceLoader::load<Texture>(image, "Texture"));
             if (texture)
                 add_image(texture, width, height);
 
@@ -2566,7 +2566,7 @@ Error RichTextLabel::append_bbcode(StringView p_bbcode) {
 
             StringView fnt = StringUtils::substr(tag,5, tag.length());
 
-            Ref<Font> font = dynamic_ref_cast<Font>(ResourceLoader::load(fnt, ("Font")));
+            Ref<Font> font = ResourceLoader::load<Font>(fnt, "Font");
             if (font)
                 push_font(font);
             else

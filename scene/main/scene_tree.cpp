@@ -206,7 +206,7 @@ struct SceneTreeDebugAccessor final : public ISceneTreeDebugAccessor{
     }
     void _live_edit_instance_node_func(const NodePath &p_parent, StringView p_path, const String &p_name) {
 
-        Ref<PackedScene> ps = dynamic_ref_cast<PackedScene>(ResourceLoader::load(p_path));
+        Ref<PackedScene> ps = ResourceLoader::load<PackedScene>(p_path);
 
         if (not ps) return;
 
@@ -953,7 +953,7 @@ bool SceneTree::idle(float p_time) {
         if (StringView(env_path) != cpath) {
 
             if (!env_path.empty()) {
-                fallback = dynamic_ref_cast<Environment>(ResourceLoader::load(env_path));
+                fallback = ResourceLoader::load<Environment>(env_path);
                 if (not fallback) {
                     //could not load fallback, set as empty
                     ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
@@ -1654,7 +1654,7 @@ void SceneTree::_change_scene(Node *p_to) {
 
 Error SceneTree::change_scene(StringView p_path) {
 
-    Ref<PackedScene> new_scene = dynamic_ref_cast<PackedScene>(ResourceLoader::load(p_path));
+    Ref<PackedScene> new_scene = ResourceLoader::load<PackedScene>(p_path);
     if (not new_scene)
         return ERR_CANT_OPEN;
 
@@ -2087,7 +2087,7 @@ SceneTree::SceneTree() {
                 PropertyInfo(VariantType::STRING, "rendering/viewport/default_environment", PropertyHint::File, ext_hint));
         env_path =StringUtils::strip_edges( env_path);
         if (!env_path.empty()) {
-            Ref<Environment> env = dynamic_ref_cast<Environment>(ResourceLoader::load(env_path));
+            Ref<Environment> env = ResourceLoader::load<Environment>(env_path);
             if (env) {
                 root->get_world()->set_fallback_environment(env);
             } else {

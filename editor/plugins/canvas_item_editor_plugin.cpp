@@ -5970,7 +5970,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, StringVi
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, StringView path, const Point2 &p_point) {
-    Ref<PackedScene> sdata = dynamic_ref_cast<PackedScene>(ResourceLoader::load(path));
+    Ref<PackedScene> sdata = ResourceLoader::load<PackedScene>(path);
     if (not sdata) { // invalid scene
         return false;
     }

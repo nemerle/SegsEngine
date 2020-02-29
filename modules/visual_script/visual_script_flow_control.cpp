@@ -823,7 +823,7 @@ VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGues
     TypeGuess tg;
     tg.type = VariantType::OBJECT;
     if (!script.empty()) {
-        tg.script = dynamic_ref_cast<Script>(ResourceLoader::load(script));
+        tg.script = ResourceLoader::load<Script>(script);
     }
     //if (not tg.script) {
     //	tg.gdclass = base_type;

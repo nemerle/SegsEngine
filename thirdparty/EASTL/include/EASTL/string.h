@@ -939,25 +939,25 @@ namespace eastl
             return result;
         }
 
-        static eastl::vector<this_type,allocator_type> split_str(const value_type* str, value_type separator, bool keepEmptyStrings = false)
+        static eastl::vector<this_type,allocator_type> split_str(view_type str, value_type separator, bool keepEmptyStrings = false)
         {
             eastl::vector<this_type,allocator_type> ret;
-            const char* strEnd = str + strlen(str);
+            const char* strEnd = str.end();
 
-            for (const char* splitEnd = str; splitEnd != strEnd; ++splitEnd)
+            for (const char* splitEnd = str.data(); splitEnd != strEnd; ++splitEnd)
             {
                 if (*splitEnd == separator)
                 {
-                    const ptrdiff_t splitLen = splitEnd - str;
+                    const ptrdiff_t splitLen = splitEnd - str.data();
                     if (splitLen > 0 || keepEmptyStrings)
-                        ret.push_back(this_type(str, splitLen));
-                    str = splitEnd + 1;
+                        ret.push_back(this_type(str.data(), splitLen));
+                    str = view_type(splitEnd + 1,strEnd-(splitEnd + 1));
                 }
             }
 
-            const ptrdiff_t splitLen = strEnd - str;
+            const ptrdiff_t splitLen = strEnd - str.data();
             if (splitLen > 0 || keepEmptyStrings)
-                ret.push_back(this_type(str, splitLen));
+                ret.push_back(this_type(str.data(), splitLen));
 
             return ret;
         }
@@ -1965,24 +1965,24 @@ namespace eastl
     }
 
 
-	template <typename T, typename Allocator>
-	basic_string<T, Allocator>& basic_string<T, Allocator>::append(size_type n, value_type c)
-	{
-		if (n > 0)
-		{
-			const size_type nSize = internalLayout().GetSize();
-			const size_type nCapacity = capacity();
+    template <typename T, typename Allocator>
+    basic_string<T, Allocator>& basic_string<T, Allocator>::append(size_type n, value_type c)
+    {
+        if (n > 0)
+        {
+            const size_type nSize = internalLayout().GetSize();
+            const size_type nCapacity = capacity();
 
-			if((nSize + n) > nCapacity)
-				reserve(GetNewCapacity(nCapacity, (nSize + n) - nCapacity));
+            if((nSize + n) > nCapacity)
+                reserve(GetNewCapacity(nCapacity, (nSize + n) - nCapacity));
 
-			pointer pNewEnd = CharStringUninitializedFillN(internalLayout().EndPtr(), n, c);
-			*pNewEnd = 0;
-			internalLayout().SetSize(nSize + n);
-		}
+            pointer pNewEnd = CharStringUninitializedFillN(internalLayout().EndPtr(), n, c);
+            *pNewEnd = 0;
+            internalLayout().SetSize(nSize + n);
+        }
 
-		return *this;
-	}
+        return *this;
+    }
 
 
     template <typename T, typename Allocator>
@@ -3359,7 +3359,7 @@ namespace eastl
         ltrim();
         rtrim();
     }
-    	
+
     template <typename T, typename Allocator>
     inline void basic_string<T, Allocator>::ltrim(const value_type* p)
     {
@@ -3586,7 +3586,7 @@ namespace eastl
 
         return nNewCapacity;
     }
-    	
+
 
     template <typename T, typename Allocator>
     inline void basic_string<T, Allocator>::AllocateSelf() EA_NOEXCEPT
@@ -4378,19 +4378,19 @@ namespace eastl
     ///
     /// https://en.cppreference.com/w/cpp/string/basic_string/erase2
     template <class CharT, class Allocator, class U>
-	void erase(basic_string<CharT, Allocator>& c, const U& value)
-	{
-	    // Erases all elements that compare equal to value from the container.
-	    c.erase(eastl::remove(c.begin(), c.end(), value), c.end());
-	}
+    void erase(basic_string<CharT, Allocator>& c, const U& value)
+    {
+        // Erases all elements that compare equal to value from the container.
+        c.erase(eastl::remove(c.begin(), c.end(), value), c.end());
+    }
 
-	template <class CharT, class Allocator, class Predicate>
-	void erase_if(basic_string<CharT, Allocator>& c, Predicate predicate)
-	{
-	    // Erases all elements that satisfy the predicate pred from the container.
-	    c.erase(eastl::remove_if(c.begin(), c.end(), predicate), c.end());
-	}
-    	
+    template <class CharT, class Allocator, class Predicate>
+    void erase_if(basic_string<CharT, Allocator>& c, Predicate predicate)
+    {
+        // Erases all elements that satisfy the predicate pred from the container.
+        c.erase(eastl::remove_if(c.begin(), c.end(), predicate), c.end());
+    }
+
 } // namespace eastl
 
 

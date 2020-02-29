@@ -983,7 +983,7 @@ bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Var
 
             if (files.size() == 1) {
                 const String &file = files[0];
-                Ref<AudioStream> res = dynamic_ref_cast<AudioStream>(ResourceLoader::load(file));
+                Ref<AudioStream> res = ResourceLoader::load<AudioStream>(file);
                 if (res) {
                     return true;
                 }
@@ -1007,7 +1007,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 
             if (files.size() == 1) {
                 const String &file = files[0];
-                stream = dynamic_ref_cast<AudioStream>(ResourceLoader::load(file));
+                stream = ResourceLoader::load<AudioStream>(file);
             }
         }
 

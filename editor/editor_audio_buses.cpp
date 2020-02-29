@@ -1262,7 +1262,7 @@ void EditorAudioBuses::_load_default_layout() {
 
     String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
 
-    Ref<AudioBusLayout> state = dynamic_ref_cast<AudioBusLayout>(ResourceLoader::load(layout_path,"",true));
+    Ref<AudioBusLayout> state = ResourceLoader::load<AudioBusLayout>(layout_path,"",true);
     if (not state) {
         EditorNode::get_singleton()->show_warning(FormatSN(TTR("There is no '%s' file.").asCString(), layout_path.c_str()));
         return;
@@ -1279,7 +1279,7 @@ void EditorAudioBuses::_load_default_layout() {
 void EditorAudioBuses::_file_dialog_callback(StringView p_string) {
 
     if (file_dialog->get_mode() == EditorFileDialog::MODE_OPEN_FILE) {
-        Ref<AudioBusLayout> state = dynamic_ref_cast<AudioBusLayout>(ResourceLoader::load(p_string,"",true));
+        Ref<AudioBusLayout> state = ResourceLoader::load<AudioBusLayout>(p_string,"",true);
         if (not state) {
             EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
             return;
@@ -1416,7 +1416,7 @@ void EditorAudioBuses::open_layout(StringView p_path) {
 
     EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 
-    Ref<AudioBusLayout> state = dynamic_ref_cast<AudioBusLayout>(ResourceLoader::load(p_path,"",true));
+    Ref<AudioBusLayout> state = ResourceLoader::load<AudioBusLayout>(p_path,"",true);
     if (not state) {
         EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
         return;

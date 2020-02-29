@@ -3475,14 +3475,14 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 
                 StringView type(res->get_class());
                 if (type == StringView("PackedScene")) {
-                    Ref<PackedScene> sdata = dynamic_ref_cast<PackedScene>(ResourceLoader::load(files[i]));
+                    Ref<PackedScene> sdata = ResourceLoader::load<PackedScene>(files[i]);
                     Node *instanced_scene = sdata->instance(GEN_EDIT_STATE_INSTANCE);
                     if (!instanced_scene) {
                         continue;
                     }
                     memdelete(instanced_scene);
                 } else if (type == StringView("Mesh") || type == StringView("ArrayMesh") || type == StringView("PrimitiveMesh")) {
-                    Ref<Mesh> mesh = dynamic_ref_cast<Mesh>(ResourceLoader::load(files[i]));
+                    Ref<Mesh> mesh = ResourceLoader::load<Mesh>(files[i]);
                     if (not mesh) {
                         continue;
                     }

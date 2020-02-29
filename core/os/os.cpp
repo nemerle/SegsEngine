@@ -224,7 +224,8 @@ static void _OS_printres(Object *p_obj) {
     if (!res)
         return;
 
-    String str = FormatVE("%uz%s:%s - %s",res->get_instance_id(),res->get_class(),res->get_name().c_str(),res->get_path().c_str());
+    String str = FormatVE("%uz%s:%s - %s", res->get_instance_id(), res->get_class(), res->get_name().c_str(),
+            res->get_path().to_string().c_str());
     if (_OSPRF)
         _OSPRF->store_line(str);
     else

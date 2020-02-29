@@ -1161,7 +1161,7 @@ bool TranslationServer::_load_translations(const StringName &p_from) {
 
             for (int i = 0; i < tcount; i++) {
 
-                Ref<Translation> tr(dynamic_ref_cast<Translation>(ResourceLoader::load(r[i])));
+                Ref<Translation> tr(ResourceLoader::load<Translation>(r[i]));
                 if (tr)
                     add_translation(tr);
             }

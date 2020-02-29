@@ -48,7 +48,7 @@
 #include <QMetaProperty>
 
 namespace {
-    HashMap<String, Resource *> cached_resources;
+    HashMap<ResourcePath, Resource *> cached_resources;
 
 } // end of anonymous namespace
 
@@ -60,7 +60,7 @@ struct Resource::Data {
 #endif
     HashSet<ObjectID> owners;
     String name;
-    String path_cache;
+    ResourcePath path_cache;
     Node *local_scene = nullptr;
     int subindex=0;
     bool local_to_scene=false;
@@ -81,7 +81,7 @@ void Resource::emit_changed() {
 void Resource::_resource_path_changed() {
 }
 
-void Resource::set_path(StringView p_path, bool p_take_over) {
+void Resource::set_path(const ResourcePath &p_path, bool p_take_over) {
 
     if (impl_data->path_cache == p_path)
         return;
@@ -90,7 +90,7 @@ void Resource::set_path(StringView p_path, bool p_take_over) {
         RWLockWrite write_guard(ResourceCache::lock);
         cached_resources.erase(impl_data->path_cache);
     }
-    HashMap<String, Resource*>::iterator lociter;
+    HashMap<ResourcePath, Resource*>::iterator lociter;
     bool has_path=false;
     impl_data->path_cache.clear();
     {
@@ -111,7 +111,7 @@ void Resource::set_path(StringView p_path, bool p_take_over) {
             RWLockRead read_guard(ResourceCache::lock);
             bool exists = cached_resources.find_as(p_path)!=cached_resources.end();
 
-            ERR_FAIL_COND_MSG(exists, "Another resource is loaded from path '" + String(p_path) + "' (possible cyclic resource inclusion).");
+            ERR_FAIL_COND_MSG(exists, "Another resource is loaded from path '" + p_path.to_string() + "' (possible cyclic resource inclusion).");
         }
     }
     impl_data->path_cache = p_path;
@@ -127,7 +127,7 @@ void Resource::set_path(StringView p_path, bool p_take_over) {
     _resource_path_changed();
 }
 
-const String &Resource::get_path() const {
+const ResourcePath &Resource::get_path() const {
 
     return impl_data->path_cache;
 }
@@ -159,11 +159,11 @@ bool Resource::editor_can_reload_from_file() {
 
 void Resource::reload_from_file() {
 
-    String path = get_path();
-    if (!PathUtils::is_resource_file(path))
-        return;
+    const ResourcePath &path = get_path();
+//    if (!PathUtils::is_resource_file(path))
+//        return;
 
-    Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), true);
+    Ref<Resource> s = ResourceLoader::load(ResourceLoader::_path_remap(path), get_class(), true);
 
     if (not s)
         return;
@@ -544,15 +544,15 @@ bool ResourceCache::has(StringView p_path) {
     return b;
 }
 
-Resource * ResourceCache::get_unguarded(StringView p_path) {
-    return cached_resources.at(String(p_path),nullptr);
+Resource * ResourceCache::get_unguarded(const ResourcePath &p_path) {
+    return cached_resources.at(p_path,nullptr);
 }
 
-Resource *ResourceCache::get(StringView p_path) {
+Resource *ResourceCache::get(const ResourcePath &p_path) {
 
     lock->read_lock();
 
-    Resource *res = cached_resources.at(String(p_path),nullptr);
+    Resource *res = cached_resources.at(p_path,nullptr);
 
     lock->read_unlock();
 
@@ -562,7 +562,7 @@ Resource *ResourceCache::get(StringView p_path) {
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 
     lock->read_lock();
-    for(eastl::pair<const String,Resource *> & e :cached_resources) {
+    for(eastl::pair<const ResourcePath,Resource *> & e :cached_resources) {
         p_resources->push_back(Ref<Resource>(e.second));
     }
     lock->read_unlock();
@@ -589,7 +589,7 @@ void ResourceCache::dump(StringView p_file, bool p_short) {
         ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String(p_file) + "'.");
     }
 
-    for (eastl::pair<const String, Resource *> & e : cached_resources) {
+    for (eastl::pair<const ResourcePath, Resource *> & e : cached_resources) {
 
         Resource *r = e.second;
 
@@ -601,7 +601,7 @@ void ResourceCache::dump(StringView p_file, bool p_short) {
 
         if (!p_short) {
             if (f)
-                f->store_line(String(r->get_class()) + ": " + r->get_path());
+                f->store_line(String(r->get_class()) + ": " + r->get_path().to_string());
         }
     }
 

@@ -61,7 +61,7 @@ struct Dirty {
     constexpr Dirty() : update_aabb(0), update_materials(0) { }
 
     constexpr Dirty(bool aabb,bool material) : update_aabb(aabb),update_materials(material) {
-        
+
     }
 
 };
@@ -874,7 +874,7 @@ void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
     } else {
 
         // Clear custom AABB
-        bounds.use_custom_aabb = false; 
+        bounds.use_custom_aabb = false;
     }
 
     if (instance->scenario)
@@ -3387,17 +3387,12 @@ void VisualServerScene::render_probes() {
 
                     if (_check_gi_probe(instance_probe) || force_lighting) { //send to lighting thread
 
-#ifndef NO_THREADS
                         probe_bake_mutex->lock();
                         probe->dynamic.updating_stage = GI_UPDATE_STAGE_LIGHTING;
                         probe_bake_list.push_back(instance_probe);
                         probe_bake_mutex->unlock();
                         probe_bake_sem->post();
 
-#else
-
-                        _bake_gi_probe(instance_probe);
-#endif
                     }
                 } break;
                 case GI_UPDATE_STAGE_LIGHTING: {
@@ -3673,12 +3668,10 @@ VisualServerScene *VisualServerScene::singleton = nullptr;
 
 VisualServerScene::VisualServerScene() {
 
-#ifndef NO_THREADS
     probe_bake_sem = SemaphoreOld::create();
     probe_bake_mutex = memnew(Mutex);
     probe_bake_thread = Thread::create(_gi_probe_bake_threads, this);
     probe_bake_thread_exit = false;
-#endif
 
     render_pass = 1;
     singleton = this;
@@ -3686,13 +3679,10 @@ VisualServerScene::VisualServerScene() {
 
 VisualServerScene::~VisualServerScene() {
 
-#ifndef NO_THREADS
     probe_bake_thread_exit = true;
     probe_bake_sem->post();
     Thread::wait_to_finish(probe_bake_thread);
     memdelete(probe_bake_thread);
     memdelete(probe_bake_sem);
     memdelete(probe_bake_mutex);
-
-#endif
 }

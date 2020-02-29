@@ -751,7 +751,7 @@ void TileSetEditor::_on_texture_list_selected(int p_index) {
 void TileSetEditor::_on_textures_added(const PoolVector<String> &p_paths) {
     int invalid_count = 0;
     for (int i = 0; i < p_paths.size(); i++) {
-        Ref<Texture> t = dynamic_ref_cast<Texture>(ResourceLoader::load(p_paths[i]));
+        Ref<Texture> t = ResourceLoader::load<Texture>(p_paths[i]);
 
         ERR_CONTINUE_MSG(not t, "'" + p_paths[i] + "' is not a valid texture.");
 

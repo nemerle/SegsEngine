@@ -798,7 +798,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(const Ref<Script
 
         if (last_date != date) {
 
-            Ref<Script> rel_script = dynamic_ref_cast<Script>(ResourceLoader::load(script->get_path(), String(script->get_class()), true));
+            Ref<Script> rel_script = ResourceLoader::load<Script>(script->get_path(), String(script->get_class()), true);
             ERR_CONTINUE(not rel_script);
             script->set_source_code(String(rel_script->get_source_code()));
             script->set_last_modified_time(rel_script->get_last_modified_time());

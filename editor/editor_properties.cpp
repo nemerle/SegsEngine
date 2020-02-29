@@ -2354,7 +2354,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
             if (ScriptServer::is_global_class(intype)) {
                 obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
                 if (obj) {
-                    Ref<Script> script = dynamic_ref_cast<Script>(ResourceLoader::load(ScriptServer::get_global_class_path(intype)));
+                    Ref<Script> script = ResourceLoader::load<Script>(ScriptServer::get_global_class_path(intype));
                     if (script) {
                         obj->set_script(Variant(script));
                     }

@@ -281,7 +281,7 @@ Error PluginScript::reload(bool p_keep_state) {
         if (ClassDB::class_exists(*base_name)) {
             _native_parent = *base_name;
         } else {
-            Ref<Script> res = dynamic_ref_cast<Script>(ResourceLoader::load(*base_name));
+            Ref<Script> res = ResourceLoader::load<Script>(*base_name));
             if (res) {
                 _ref_base_parent = res;
             } else {

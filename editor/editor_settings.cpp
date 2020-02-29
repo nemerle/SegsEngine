@@ -933,7 +933,7 @@ void EditorSettings::create() {
 
         memdelete(dir);
 
-        singleton = dynamic_ref_cast<EditorSettings>(ResourceLoader::load(config_file_path, "EditorSettings"));
+        singleton = ResourceLoader::load<EditorSettings>(config_file_path, "EditorSettings");
 
         if (not singleton) {
             WARN_PRINT("Could not open config file.");

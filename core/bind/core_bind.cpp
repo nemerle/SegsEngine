@@ -101,7 +101,7 @@ Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(StringView p_pa
 RES _ResourceLoader::load(StringView p_path, StringView p_type_hint, bool p_no_cache) {
 
     Error err = OK;
-    RES ret(ResourceLoader::load(p_path, p_type_hint, p_no_cache, &err));
+    RES ret(ResourceLoader::load(ResourcePath(p_path), p_type_hint, p_no_cache, &err));
 
     ERR_FAIL_COND_V_MSG(err != OK, ret, "Error loading resource: '" + String(p_path) + "'.");
     return ret;

@@ -48,9 +48,7 @@ VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
 
 void ParticlesMaterial::init_shaders() {
 
-#ifndef NO_THREADS
     material_mutex = memnew(Mutex);
-#endif
 
     dirty_materials = memnew(SelfList<ParticlesMaterial>::List);
 
@@ -118,10 +116,7 @@ void ParticlesMaterial::init_shaders() {
 
 void ParticlesMaterial::finish_shaders() {
 
-#ifndef NO_THREADS
     memdelete(material_mutex);
-#endif
-
     memdelete(dirty_materials);
     dirty_materials = nullptr;
 

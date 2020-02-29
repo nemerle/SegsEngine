@@ -73,7 +73,7 @@ String ProjectSettings::localize_path(StringView p_path) const {
             (PathUtils::is_abs_path(p_path) && !StringUtils::begins_with(p_path,resource_path)))
         return PathUtils::simplify_path(p_path);
 
-    DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+    DirAccessRef dir(DirAccess::create(DirAccess::ACCESS_FILESYSTEM));
 
     String path = PathUtils::simplify_path(PathUtils::from_native_path(p_path));
 
@@ -81,8 +81,6 @@ String ProjectSettings::localize_path(StringView p_path) const {
 
         String cwd = dir->get_current_dir();
         cwd = PathUtils::from_native_path(cwd);
-
-        memdelete(dir);
 
         // Ensure that we end with a '/'.
         // This is important to ensure that we do not wrongly localize the resource path
@@ -102,8 +100,6 @@ String ProjectSettings::localize_path(StringView p_path) const {
 
         return StringUtils::replace_first(cwd,res_path, "res://");
     } else {
-
-        memdelete(dir);
 
         size_t sep = StringUtils::find_last(path,"/");
         if (sep == String::npos) {

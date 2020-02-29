@@ -91,7 +91,7 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
     if (p_custom_scene)
         ps = p_custom_scene;
     else
-        ps = dynamic_ref_cast<PackedScene>(ResourceLoader::load(path, "PackedScene"));
+        ps = ResourceLoader::load<PackedScene>(path, "PackedScene");
 
     if (!ps)
         return nullptr;

@@ -37,27 +37,24 @@
 #include "macros.h"
 
 class ScopedMutexLock {
-	Mutex *mutex;
+    Mutex *mutex;
 
 public:
-	ScopedMutexLock(Mutex *mutex) {
-		this->mutex = mutex;
-#ifndef NO_THREADS
-#ifdef DEBUG_ENABLED
-		CRASH_COND(!mutex);
-#endif
-		this->mutex->lock();
-#endif
-	}
+    ScopedMutexLock(Mutex *mutex) {
+        this->mutex = mutex;
 
-	~ScopedMutexLock() {
-#ifndef NO_THREADS
 #ifdef DEBUG_ENABLED
-		CRASH_COND(!mutex);
+        CRASH_COND(!mutex);
 #endif
-		mutex->unlock();
+        this->mutex->lock();
+    }
+
+    ~ScopedMutexLock() {
+#ifdef DEBUG_ENABLED
+        CRASH_COND(!mutex);
 #endif
-	}
+        mutex->unlock();
+    }
 };
 
 #define SCOPED_MUTEX_LOCK(m_mutex) ScopedMutexLock GD_UNIQUE_NAME(__scoped_mutex_lock__)(m_mutex);

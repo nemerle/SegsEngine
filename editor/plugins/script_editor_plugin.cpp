@@ -541,7 +541,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
         ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
 
         if (extensions.contains(String(PathUtils::get_extension(path)))) {
-            Ref<Script> script = dynamic_ref_cast<Script>(ResourceLoader::load(path));
+            Ref<Script> script = ResourceLoader::load<Script>(path);
             if (script) {
                 edit(script, true);
                 return;
@@ -565,7 +565,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
         } else {
             EditorNode::get_singleton()->load_resource(res_path);
         }
-        Ref<Script> script = dynamic_ref_cast<Script>(ResourceLoader::load(path));
+        Ref<Script> script = ResourceLoader::load<Script>(path);
         if (script) {
             edit(script, true);
             return;
@@ -804,7 +804,7 @@ void ScriptEditor::_reload_scripts() {
 
         Ref<Script> script = dynamic_ref_cast<Script>(edited_res);
         if (script != nullptr) {
-            Ref<Script> rel_script = dynamic_ref_cast<Script>(ResourceLoader::load(script->get_path(), script->get_class(), true));
+            Ref<Script> rel_script = ResourceLoader::load<Script>(script->get_path(), script->get_class(), true);
             ERR_CONTINUE(not rel_script);
             script->set_source_code(String(rel_script->get_source_code()));
             script->set_last_modified_time(rel_script->get_last_modified_time());
@@ -931,7 +931,7 @@ void ScriptEditor::_file_dialog_action(StringView p_file) {
             Vector<String> extensions;
             ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
             if (ContainerUtils::contains(extensions,PathUtils::get_extension(p_file))) {
-                Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(p_file));
+                Ref<Script> scr = ResourceLoader::load<Script>(p_file);
                 if (not scr) {
                     editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
                     file_dialog_option = -1;
@@ -1075,7 +1075,7 @@ void ScriptEditor::_menu_option(int p_option) {
                     }
                 }
 
-                Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(path));
+                Ref<Script> scr = ResourceLoader::load<Script>(path);
                 if (not scr) {
                     editor->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
                     file_dialog_option = -1;
@@ -2512,7 +2512,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
             const String &file(files[i]);
             if (file.empty() || !FileAccess::exists(file))
                 continue;
-            Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(file));
+            Ref<Script> scr = ResourceLoader::load<Script>(file);
             if (scr) {
                 return true;
             }
@@ -2582,7 +2582,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
             const String &file(files[i]);
             if (file.empty() || !FileAccess::exists(file))
                 continue;
-            Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(file));
+            Ref<Script> scr = ResourceLoader::load<Script>(file);
             if (scr) {
                 edit(scr);
                 if (tab_container->get_child_count() > num_tabs_before) {
@@ -2721,7 +2721,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
             continue;
 
         if (ContainerUtils::contains(extensions,PathUtils::get_extension(path))) {
-            Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(path));
+            Ref<Script> scr = ResourceLoader::load<Script>(path);
             if (not scr) {
                 continue;
             }
@@ -3006,7 +3006,7 @@ void ScriptEditor::_help_search(StringView p_text) {
 
 void ScriptEditor::_open_script_request(StringView p_path) {
 
-    Ref<Script> script = dynamic_ref_cast<Script>(ResourceLoader::load(p_path));
+    Ref<Script> script = ResourceLoader::load<Script>(p_path);
     if (script) {
         script_editor->edit(script, false);
         return;

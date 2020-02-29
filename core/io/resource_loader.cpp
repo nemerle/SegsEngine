@@ -48,7 +48,7 @@
 #include "core/plugin_interfaces/ResourceLoaderInterface.h"
 
 #include <utility>
-
+#if 0
 namespace {
 /**
  * @brief The ResourceFormatLoaderWrap class is meant as a wrapper for a plugin-based resource format loaders.
@@ -318,12 +318,10 @@ RES ResourceLoader::_load(StringView p_path, StringView p_original_path, StringV
     ERR_FAIL_V_MSG(RES(), "No loader found for resource: " + String(p_path) + ".");
 }
 
-bool ResourceLoader::_add_to_loading_map(StringView p_path) {
+bool ResourceLoader::_add_to_loading_map(ResourcePath p_path) {
 
     bool success;
-    if (loading_map_mutex) {
-        loading_map_mutex->lock();
-    }
+    MutexLock guard(*loading_map_mutex);
 
     LoadingMapKey key;
     key.path = p_path;
@@ -336,17 +334,11 @@ bool ResourceLoader::_add_to_loading_map(StringView p_path) {
         success = true;
     }
 
-    if (loading_map_mutex) {
-        loading_map_mutex->unlock();
-    }
-
     return success;
 }
 
-void ResourceLoader::_remove_from_loading_map(StringView p_path) {
-    if (loading_map_mutex) {
-        loading_map_mutex->lock();
-    }
+void ResourceLoader::_remove_from_loading_map(ResourcePath p_path) {
+    MutexLock guard(*loading_map_mutex);
 
     LoadingMapKey key;
     key.path = p_path;
@@ -354,35 +346,28 @@ void ResourceLoader::_remove_from_loading_map(StringView p_path) {
 
     loading_map.erase(key);
 
-    if (loading_map_mutex) {
-        loading_map_mutex->unlock();
-    }
 }
 
-void ResourceLoader::_remove_from_loading_map_and_thread(StringView p_path, Thread::ID p_thread) {
-    if (loading_map_mutex) {
-        loading_map_mutex->lock();
-    }
+void ResourceLoader::_remove_from_loading_map_and_thread(ResourcePath p_path, Thread::ID p_thread) {
+    MutexLock guard(*loading_map_mutex);
 
     LoadingMapKey key;
     key.path = p_path;
     key.thread = p_thread;
 
     loading_map.erase(key);
-
-    if (loading_map_mutex) {
-        loading_map_mutex->unlock();
-    }
 }
 
-RES ResourceLoader::load(StringView p_path, StringView p_type_hint, bool p_no_cache, Error *r_error) {
+RES ResourceLoader::load(const ResourcePath &p_path, StringView p_type_hint, bool p_no_cache, Error *r_error) {
 
     if (r_error)
         *r_error = ERR_CANT_OPEN;
 
-    String local_path;
-    if (PathUtils::is_rel_path(p_path))
-        local_path = String("res://") + p_path;
+    ResourcePath local_path;
+    if (p_path.is_relative()) {
+
+        local_path.set_mountpoint("res:");
+    }
     else
         local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
@@ -390,47 +375,41 @@ RES ResourceLoader::load(StringView p_path, StringView p_type_hint, bool p_no_ca
 
         {
             bool success = _add_to_loading_map(local_path);
-            ERR_FAIL_COND_V_MSG(!success, RES(), "Resource: '" + local_path + "' is already being loaded. Cyclic reference?");
+            ERR_FAIL_COND_V_MSG(!success, RES(), "Resource: '" + local_path.to_string() + "' is already being loaded. Cyclic reference?");
         }
 
         //lock first if possible
-        if (ResourceCache::lock) {
-            ResourceCache::lock->read_lock();
-        }
+        {
+            RWLockRead guard(ResourceCache::lock);
 
-        //get ptr
-        Resource *rptr = ResourceCache::get_unguarded(local_path);
+            //get ptr
+            Resource *rptr = ResourceCache::get_unguarded(local_path);
 
-        if (rptr) {
-            RES res(rptr);
-            //it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
-            if (res) {
-                //referencing is fine
-                if (r_error)
-                    *r_error = OK;
-                if (ResourceCache::lock) {
-                    ResourceCache::lock->read_unlock();
+            if (rptr) {
+                RES res(rptr);
+                //it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
+                if (res) {
+                    //referencing is fine
+                    if (r_error)
+                        *r_error = OK;
+                    _remove_from_loading_map(local_path);
+                    return res;
                 }
-                _remove_from_loading_map(local_path);
-                return res;
             }
-        }
-        if (ResourceCache::lock) {
-            ResourceCache::lock->read_unlock();
         }
     }
 
     bool xl_remapped = false;
-    String path = _path_remap(local_path, &xl_remapped);
+    ResourcePath path = _path_remap(local_path, &xl_remapped);
 
     if (path.empty()) {
         if (!p_no_cache) {
             _remove_from_loading_map(local_path);
         }
-        ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path + "' failed.");
+        ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path.to_string() + "' failed.");
     }
 
-    print_verbose("Loading resource: " + path);
+    print_verbose("Loading resource: " + path.to_string());
     RES res(_load(path, local_path, p_type_hint, p_no_cache, r_error));
 
     if (not res) {
@@ -809,9 +788,9 @@ String ResourceLoader::get_resource_type(StringView p_path) {
     return String();
 }
 
-String ResourceLoader::_path_remap(StringView p_path, bool *r_translation_remapped) {
+ResourcePath ResourceLoader::_path_remap(const ResourcePath &p_path, bool *r_translation_remapped) {
     using namespace StringUtils;
-    String new_path(p_path);
+    ResourcePath new_path(p_path);
 
     if (translation_remaps.contains(new_path)) {
         // translation_remaps has the following format:
@@ -823,21 +802,20 @@ String ResourceLoader::_path_remap(StringView p_path, bool *r_translation_remapp
         // (e.g. 'ru_RU' -> 'ru' if the former has no specific mapping).
 
         String locale = TranslationServer::get_singleton()->get_locale();
-        ERR_FAIL_COND_V_MSG(locale.length() < 2, new_path, "Could not remap path '" + p_path + "' for translation as configured locale '" + locale + "' is invalid.");
+        ERR_FAIL_COND_V_MSG(locale.length() < 2, new_path, "Could not remap path '" + p_path.to_string() + "' for translation as configured locale '" + locale + "' is invalid.");
         String lang(TranslationServer::get_language_code(locale));
 
-        Vector<String> &res_remaps = translation_remaps[new_path];
+        auto &res_remaps = translation_remaps[new_path];
         bool near_match = false;
 
         for (size_t i = 0; i < res_remaps.size(); i++) {
-            auto split = res_remaps[i].rfind(':');
-            if (split == String::npos) {
+            if (res_remaps[i].first.empty()) {
                 continue;
             }
 
-            StringView l = strip_edges(right(res_remaps[i],split + 1));
+            StringView l = strip_edges(res_remaps[i].first);
             if (locale == l) { // Exact match.
-                new_path = res_remaps[i].left(split);
+                new_path = res_remaps[i].second;
                 break;
             } else if (near_match) {
                 continue; // Already found near match, keep going for potential exact match.
@@ -849,7 +827,7 @@ String ResourceLoader::_path_remap(StringView p_path, bool *r_translation_remapp
             if (lang == TranslationServer::get_language_code(l)) {
                 // Language code matches, that's a near match. Keep looking for exact match.
                 near_match = true;
-                new_path = res_remaps[i].left(split);
+                new_path = res_remaps[i].second;
                 continue;
             }
         }
@@ -866,7 +844,7 @@ String ResourceLoader::_path_remap(StringView p_path, bool *r_translation_remapp
     if (new_path == p_path) { // Did not remap.
         // Try file remap.
         Error err;
-        FileAccess *f = FileAccess::open(String(p_path) + ".remap", FileAccess::READ, &err);
+        FileAccess *f = FileAccess::open(p_path.to_string() + ".remap", FileAccess::READ, &err);
 
         if (f) {
 
@@ -888,12 +866,12 @@ String ResourceLoader::_path_remap(StringView p_path, bool *r_translation_remapp
                 if (err == ERR_FILE_EOF) {
                     break;
                 } else if (err != OK) {
-                    ERR_PRINT("Parse error: " + String(p_path) + ".remap:" + ::to_string(lines) + " error: " + error_text + ".");
+                    ERR_PRINT("Parse error: " + p_path.to_string() + ".remap:" + ::to_string(lines) + " error: " + error_text + ".");
                     break;
                 }
 
                 if (assign == "path") {
-                    new_path = value.as<String>();
+                    new_path = eastl::move(ResourcePath(value.as<String>()));
                     break;
                 } else if (next_tag.name != "remap") {
                     break;
@@ -1000,11 +978,9 @@ bool ResourceLoader::add_custom_resource_format_loader(StringView script_path) {
     if (_find_custom_resource_format_loader(script_path))
         return false;
 
-    Ref<Resource> res = ResourceLoader::load(script_path);
-    ERR_FAIL_COND_V(not res, false);
-    ERR_FAIL_COND_V(!res->is_class("Script"), false);
+    Ref<Script> s = ResourceLoader::load<Script>(script_path);
+    ERR_FAIL_COND_V(not s, false);
 
-    Ref<Script> s(dynamic_ref_cast<Script>(res));
     StringName ibt = s->get_instance_base_type();
     bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatLoader");
     ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceLoader: " + String(script_path) + ".");
@@ -1065,14 +1041,10 @@ Mutex *ResourceLoader::loading_map_mutex = nullptr;
 HashMap<LoadingMapKey, int,Hasher<LoadingMapKey> > ResourceLoader::loading_map;
 
 void ResourceLoader::initialize() {
-
-#ifndef NO_THREADS
     loading_map_mutex = memnew(Mutex);
-#endif
 }
 
 void ResourceLoader::finalize() {
-#ifndef NO_THREADS
     for(const auto &e : loading_map) {
         ERR_PRINT("Exited while resource is being loaded: " + e.first.path);
     }
@@ -1081,7 +1053,6 @@ void ResourceLoader::finalize() {
     loading_map_mutex = nullptr;
     for(auto &ldr : loader)
         ldr.reset();
-#endif
 }
 
 ResourceLoadErrorNotify ResourceLoader::err_notify = nullptr;
@@ -1094,10 +1065,11 @@ bool ResourceLoader::abort_on_missing_resource = true;
 bool ResourceLoader::timestamp_on_load = false;
 
 HashSet<Resource *> ResourceLoader::remapped_list;
-HashMap<String, Vector<String> > ResourceLoader::translation_remaps;
-HashMap<String, String> ResourceLoader::path_remaps;
+HashMap<ResourcePath, Vector<eastl::pair<TmpString<8>,ResourcePath>> > ResourceLoader::translation_remaps;
+HashMap<ResourcePath, ResourcePath> ResourceLoader::path_remaps;
 
 ResourceLoaderImport ResourceLoader::import = nullptr;
 
 
 
+#endif

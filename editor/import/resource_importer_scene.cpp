@@ -998,8 +998,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
                     }
                     if (FileAccess::exists(ext_name) && p_keep_animations) {
                         // try to keep custom animation tracks
-                        Ref<Animation> old_anim = dynamic_ref_cast<Animation>(
-                                ResourceLoader::load(ext_name, String("Animation"), true));
+                        Ref<Animation> old_anim = ResourceLoader::load<Animation>(ext_name, String("Animation"), true);
                         if (old_anim) {
                             // meergeee
                             for (int i = 0; i < old_anim->get_track_count(); i++) {
@@ -1040,12 +1039,12 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
 
                     if (p_keep_materials && FileAccess::exists(ext_name)) {
                         // if exists, use it
-                        p_materials[mat] = dynamic_ref_cast<Material>(ResourceLoader::load(ext_name));
+                        p_materials[mat] = ResourceLoader::load<Material>(ext_name);
                     } else {
 
                         ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-                        p_materials[mat] = dynamic_ref_cast<Material>(
-                                ResourceLoader::load(ext_name, "", true)); // disable loading from the cache.
+                        // disabled loading from the cache.
+                        p_materials[mat] = ResourceLoader::load<Material>(ext_name, "", true);
                     }
                 }
 
@@ -1075,7 +1074,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
                             }
 
                             ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
-                            p_meshes[mesh] = dynamic_ref_cast<ArrayMesh>(ResourceLoader::load(ext_name));
+                            p_meshes[mesh] = ResourceLoader::load<ArrayMesh>(ext_name);
                             p_node->set(E.name, p_meshes[mesh]);
                             mesh_just_added = true;
                         }
@@ -1103,12 +1102,12 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
 
                                     if (p_keep_materials && FileAccess::exists(ext_name)) {
                                         // if exists, use it
-                                        p_materials[mat] = dynamic_ref_cast<Material>(ResourceLoader::load(ext_name));
+                                        p_materials[mat] = ResourceLoader::load<Material>(ext_name);
                                     } else {
 
                                         ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-                                        p_materials[mat] = dynamic_ref_cast<Material>(ResourceLoader::load(
-                                                ext_name, "", true)); // disable loading from the cache.
+                                        // disable loading from the cache.
+                                        p_materials[mat] = ResourceLoader::load<Material>(ext_name, "", true);
                                     }
                                 }
 
@@ -1128,7 +1127,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
                                                     p_base_path, _make_extname(mesh->get_name()) + ".mesh");
                                         }
                                         ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
-                                        p_meshes[mesh] = dynamic_ref_cast<ArrayMesh>(ResourceLoader::load(ext_name));
+                                        p_meshes[mesh] = ResourceLoader::load<ArrayMesh>(ext_name);
                                     }
                                 }
                             }
@@ -1377,7 +1376,7 @@ Error ResourceImporterScene::import(StringView p_source_file, StringView p_save_
 
     Ref<Script> root_script;
     if (ScriptServer::is_global_class(root_type)) {
-        root_script = dynamic_ref_cast<Script>(ResourceLoader::load(ScriptServer::get_global_class_path(root_type)));
+        root_script = ResourceLoader::load<Script>(ScriptServer::get_global_class_path(root_type));
         root_type = ScriptServer::get_global_class_base(root_type);
     }
 
@@ -1526,7 +1525,7 @@ Error ResourceImporterScene::import(StringView p_source_file, StringView p_save_
     Ref<EditorScenePostImport> post_import_script;
 
     if (!post_import_script_path.empty()) {
-        Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(post_import_script_path));
+        Ref<Script> scr = ResourceLoader::load<Script>(post_import_script_path);
         if (not scr) {
             EditorNode::add_io_error(
                     TTR("Couldn't load post-import script:") + StringView(" " + post_import_script_path));

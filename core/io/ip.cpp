@@ -324,8 +324,6 @@ IP::IP() {
     resolver->sem = nullptr;
     resolver->mutex = memnew(Mutex);
 
-#ifndef NO_THREADS
-
     resolver->sem = SemaphoreOld::create();
     if (resolver->sem) {
         resolver->thread_abort = false;
@@ -337,15 +335,10 @@ IP::IP() {
     } else {
         resolver->thread = nullptr;
     }
-#else
-    resolver->sem = nullptr;
-    resolver->thread = nullptr;
-#endif
 }
 
 IP::~IP() {
 
-#ifndef NO_THREADS
     if (resolver->thread) {
         resolver->thread_abort = true;
         resolver->sem->post();
@@ -353,8 +346,6 @@ IP::~IP() {
         memdelete(resolver->thread);
         memdelete(resolver->sem);
     }
-
-#endif
 
     memdelete(resolver->mutex);
     memdelete(resolver);

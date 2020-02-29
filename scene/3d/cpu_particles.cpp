@@ -964,10 +964,7 @@ void CPUParticles::_particles_process(float p_delta) {
 }
 
 void CPUParticles::_update_particle_data_buffer() {
-#ifndef NO_THREADS
     update_mutex->lock();
-#endif
-
     {
 
         int pc = particles.size();
@@ -1057,18 +1054,16 @@ void CPUParticles::_update_particle_data_buffer() {
         can_update = true;
     }
 
-#ifndef NO_THREADS
     update_mutex->unlock();
-#endif
 }
 
 void CPUParticles::_set_redraw(bool p_redraw) {
     if (redraw == p_redraw)
         return;
     redraw = p_redraw;
-#ifndef NO_THREADS
-    update_mutex->lock();
-#endif
+
+    MutexLock guard(*update_mutex);
+
     auto VS = VisualServer::get_singleton();
     if (redraw) {
         VS->connect("frame_pre_draw", this, "_update_render_thread");
@@ -1081,24 +1076,15 @@ void CPUParticles::_set_redraw(bool p_redraw) {
         VS->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
         VS->multimesh_set_visible_instances(multimesh, 0);
     }
-#ifndef NO_THREADS
-    update_mutex->unlock();
-#endif
 }
 
 void CPUParticles::_update_render_thread() {
 
-#ifndef NO_THREADS
-    update_mutex->lock();
-#endif
+    MutexLock guard(*update_mutex);
     if (can_update) {
         VisualServer::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
         can_update = false; //wait for next time
     }
-
-#ifndef NO_THREADS
-    update_mutex->unlock();
-#endif
 }
 
 void CPUParticles::_notification(int p_what) {
@@ -1449,9 +1435,7 @@ CPUParticles::CPUParticles() {
     cycle = 0;
     redraw = false;
     emitting = false;
-#ifndef NO_THREADS
     update_mutex = memnew(Mutex);
-#endif
     set_notify_transform(true);
 
     multimesh = VisualServer::get_singleton()->multimesh_create();
@@ -1513,7 +1497,5 @@ CPUParticles::CPUParticles() {
 CPUParticles::~CPUParticles() {
     VisualServer::get_singleton()->free_rid(multimesh);
 
-#ifndef NO_THREADS
     memdelete(update_mutex);
-#endif
 }

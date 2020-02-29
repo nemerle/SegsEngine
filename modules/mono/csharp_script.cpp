@@ -1231,21 +1231,13 @@ CSharpLanguage::CSharpLanguage() {
 
     gdmono = nullptr;
 
-#ifdef NO_THREADS
-    script_instances_mutex = nullptr;
-    script_gchandle_release_mutex = nullptr;
-    language_bind_mutex = nullptr;
-#else
+
     script_instances_mutex = memnew(Mutex);
     script_gchandle_release_mutex = memnew(Mutex);
     language_bind_mutex = memnew(Mutex);
-#endif
+
 #ifdef DEBUG_ENABLED
-#ifdef NO_THREADS
-    unsafe_object_references_lock = nullptr;
-#else
     unsafe_object_references_lock = memnew(Mutex);
-#endif
 #endif
     lang_idx = -1;
 

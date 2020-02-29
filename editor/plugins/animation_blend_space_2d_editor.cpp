@@ -302,7 +302,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 void AnimationNodeBlendSpace2DEditor::_file_opened(StringView p_file) {
 
-    file_loaded = dynamic_ref_cast<AnimationNode>(ResourceLoader::load(p_file));
+    file_loaded = ResourceLoader::load<AnimationNode>(p_file);
     if (file_loaded) {
         _add_menu_type(MENU_LOAD_FILE_CONFIRM);
     }

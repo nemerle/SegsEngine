@@ -299,7 +299,7 @@ Error BitmapFont::create_from_fnt(StringView p_file) {
 
                 StringView base_dir = PathUtils::get_base_dir(p_file);
                 String file = PathUtils::plus_file(base_dir,(keys["file"]));
-                Ref<Texture> tex = dynamic_ref_cast<Texture>(ResourceLoader::load(file));
+                Ref<Texture> tex = ResourceLoader::load<Texture>(file);
                 if (not tex) {
                     ERR_PRINT("Can't load font texture!");
                 } else {
@@ -567,7 +567,7 @@ Size2 Font::get_wordwrap_string_size(StringView p_string, float p_width) const {
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
     for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != nullptr; fallback_child = fallback_child->get_fallback()) {
-        ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop."); 
+        ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
     }
 
     fallback = p_fallback;

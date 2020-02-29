@@ -168,16 +168,16 @@ Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParserStream *p_
 
     int index = token.value;
 
-    String path = local_path + "::" + itos(index);
 
     if (!ignore_resource_parsing) {
 
+        ResourcePath path(ResourcePath(local_path).cd("::").cd(itos(index)));
         if (!ResourceCache::has(path)) {
             r_err_str = "Can't load cached sub-resource: " + path;
             return ERR_PARSE_ERROR;
         }
 
-        r_res = RES(ResourceCache::get(path));
+        r_res = RES(ResourceCache::get(ResourcePath(path)));
     } else {
         r_res = RES();
     }
@@ -947,7 +947,7 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f, bool p_skip_first_tag)
 
     rp.ext_func = _parse_ext_resources;
     rp.sub_func = _parse_sub_resources;
-    rp.func = nullptr;
+    //rp.func = nullptr;
     rp.userdata = this;
 }
 

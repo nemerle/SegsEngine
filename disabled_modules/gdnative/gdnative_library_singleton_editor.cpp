@@ -54,7 +54,7 @@ Set<String> GDNativeLibrarySingletonEditor::_find_singletons_recursive(EditorFil
             continue;
         }
 
-        Ref<GDNativeLibrary> lib = dynamic_ref_cast<GDNativeLibrary>(ResourceLoader::load(p_dir->get_file_path(i)));
+        Ref<GDNativeLibrary> lib = ResourceLoader::load<GDNativeLibrary>(p_dir->get_file_path(i)));
         if (lib && lib->is_singleton()) {
             file_paths.insert(p_dir->get_file_path(i));
         }

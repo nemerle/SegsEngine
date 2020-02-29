@@ -883,7 +883,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
                                                                 if (ScriptCodeCompletionCache::get_singleton()) {
                                                                     scr = dynamic_ref_cast<Script>(ScriptCodeCompletionCache::get_singleton()->get_cached_resource(script));
                                                                 } else {
-                                                                    scr = dynamic_ref_cast<Script>(ResourceLoader::load(script));
+                                                                    scr = ResourceLoader::load<Script>(script);
                                                                 }
                                                                 if (scr) {
                                                                     r_type.type.has_type = true;
@@ -1356,7 +1356,7 @@ static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const S
 
     // Check named scripts
     if (ScriptServer::is_global_class(p_identifier)) {
-        Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(ScriptServer::get_global_class_path(p_identifier)));
+        Ref<Script> scr = ResourceLoader::load<Script>(ScriptServer::get_global_class_path(p_identifier));
         if (scr) {
             r_type = _type_from_variant(scr);
             r_type.type.is_meta_type = true;
@@ -3406,7 +3406,7 @@ Error GDScriptLanguage::lookup_code(StringView p_code, StringView p_symbol, Stri
 
                                 r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
                                 r_result.location = 0;
-                                r_result.script = dynamic_ref_cast<Script>(ResourceLoader::load(script));
+                                r_result.script = ResourceLoader::load<Script>(script);
                                 return OK;
                             }
                         }

@@ -31,6 +31,8 @@
 #pragma once
 
 #include "core/reference.h"
+#include "core/resource_path.h"
+#include "core/uuid.h"
 
 namespace eastl {
 template <typename Key, typename T, typename Compare, typename Allocator>
@@ -119,8 +121,8 @@ public:
     void set_name(StringView p_name);
     const String &get_name() const;
 
-    virtual void set_path(StringView p_path, bool p_take_over = false);
-    const String &get_path() const;
+    virtual void set_path(const ResourcePath &p_path, bool p_take_over = false);
+    const ResourcePath &get_path() const;
 
     void set_subindex(int p_sub_index);
     int get_subindex() const;
@@ -172,17 +174,22 @@ using RES = Ref<Resource>;
 class GODOT_EXPORT ResourceCache {
     friend class Resource;
     friend class ResourceLoader; //need the lock
-    static RWLock *lock;
     friend void unregister_core_types();
-    static void clear();
     friend void register_core_types();
+
+    static RWLock *lock;
+    static void clear();
     static void setup();
-    static Resource *get_unguarded(StringView p_path);
+    static Resource *get_unguarded(const ResourcePath &p_path);
 public:
     static void reload_externals();
     static bool has(StringView p_path);
-    static Resource *get(StringView p_path);
+    static Resource *get(const ResourcePath &p_path);
     static void dump(StringView p_file = nullptr, bool p_short = false);
     static void get_cached_resources(List<Ref<Resource>> *p_resources);
     static int get_cached_resource_count();
+};
+class GODOT_EXPORT ResourceManager {
+public:
+    static se::UUID get_uuid_for_resource(const RES &);
 };

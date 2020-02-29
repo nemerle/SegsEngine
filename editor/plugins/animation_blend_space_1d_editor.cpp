@@ -368,7 +368,7 @@ void AnimationNodeBlendSpace1DEditor::_snap_toggled() {
 
 void AnimationNodeBlendSpace1DEditor::_file_opened(StringView p_file) {
 
-    file_loaded = dynamic_ref_cast<AnimationNode>(ResourceLoader::load(p_file));
+    file_loaded = ResourceLoader::load<AnimationNode>(p_file);
     if (file_loaded) {
         _add_menu_type(MENU_LOAD_FILE_CONFIRM);
     }

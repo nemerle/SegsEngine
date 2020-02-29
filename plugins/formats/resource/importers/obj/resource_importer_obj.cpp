@@ -141,7 +141,7 @@ static Error _parse_material_library(StringView p_path, Map<String, Ref<SpatialM
                 path = PathUtils::plus_file(base_path,p);
             }
 
-            Ref<Texture> texture(dynamic_ref_cast<Texture>(ResourceLoader::load(path)));
+            Ref<Texture> texture(ResourceLoader::load<Texture>(path));
 
             if (texture) {
                 current->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
@@ -161,7 +161,7 @@ static Error _parse_material_library(StringView p_path, Map<String, Ref<SpatialM
                 path = PathUtils::plus_file(base_path,p);
             }
 
-            Ref<Texture> texture = dynamic_ref_cast<Texture>(ResourceLoader::load(path));
+            Ref<Texture> texture = ResourceLoader::load<Texture>(path);
 
             if (texture) {
                 current->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
@@ -181,7 +181,7 @@ static Error _parse_material_library(StringView p_path, Map<String, Ref<SpatialM
                 path = PathUtils::plus_file(base_path,p);
             }
 
-            Ref<Texture> texture(dynamic_ref_cast<Texture>(ResourceLoader::load(path)));
+            Ref<Texture> texture(ResourceLoader::load<Texture>(path));
 
             if (texture) {
                 current->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
@@ -195,7 +195,7 @@ static Error _parse_material_library(StringView p_path, Map<String, Ref<SpatialM
             String p(StringUtils::strip_edges(StringUtils::replace(StringUtils::replace(l,"map_bump", ""),"\\", "/")));
             String path = PathUtils::plus_file(base_path,p);
 
-            Ref<Texture> texture(dynamic_ref_cast<Texture>(ResourceLoader::load(path)));
+            Ref<Texture> texture(ResourceLoader::load<Texture>(path));
 
             if (texture) {
                 current->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);

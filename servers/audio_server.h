@@ -320,9 +320,6 @@ public:
     void add_callback(AudioCallback p_callback, void *p_userdata);
     void remove_callback(AudioCallback p_callback, void *p_userdata);
 
-    void add_update_callback(AudioCallback p_callback, void *p_userdata);
-    void remove_update_callback(AudioCallback p_callback, void *p_userdata);
-
     void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
     Ref<AudioBusLayout> generate_bus_layout() const;
 

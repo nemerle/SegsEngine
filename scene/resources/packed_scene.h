@@ -226,7 +226,7 @@ public:
     void recreate_state();
     void replace_state(Ref<SceneState> p_by);
 
-    void set_path(StringView p_path, bool p_take_over = false) override;
+    void set_path(const ResourcePath &p_path, bool p_take_over = false) override;
 #ifdef TOOLS_ENABLED
     void set_last_modified_time(uint64_t p_time) override { state->set_last_modified_time(p_time); }
 

@@ -57,7 +57,7 @@ public:
     struct ResourceParser {
 
         void *userdata;
-        ParseResourceFunc func;
+        //ParseResourceFunc func;
         ParseResourceFunc ext_func;
         ParseResourceFunc sub_func;
     };

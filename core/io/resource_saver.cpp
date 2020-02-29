@@ -214,11 +214,9 @@ bool ResourceSaver::add_custom_resource_format_saver(StringView script_path) {
     if (_find_custom_resource_format_saver(script_path))
         return false;
 
-    Ref<Resource> res = ResourceLoader::load(script_path);
-    ERR_FAIL_COND_V(not res, false);
-    ERR_FAIL_COND_V(!res->is_class("Script"), false);
+    Ref<Script> s = ResourceLoader::load<Script>(script_path);
+    ERR_FAIL_COND_V(not s, false);
 
-    Ref<Script> s = dynamic_ref_cast<Script>(res);
     StringName ibt = s->get_instance_base_type();
     bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatSaver");
     ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceSaver: " + String(script_path) + ".");

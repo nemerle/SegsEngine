@@ -613,7 +613,7 @@ void register_scene_types() {
     ResourceSaver::add_resource_format_saver(resource_saver_text, true);
 
     resource_loader_text = make_ref_counted<ResourceFormatLoaderText>();
-    ResourceLoader::add_resource_format_loader(resource_loader_text, true);
+    ResourceLoader:: add_resource_format_loader(resource_loader_text, true);
 
     resource_saver_shader = make_ref_counted<ResourceFormatSaverShader>();
     ResourceSaver::add_resource_format_saver(resource_saver_shader, true);
@@ -1123,7 +1123,7 @@ void register_scene_types() {
 
     Ref<Font> font;
     if (!font_path.empty()) {
-        font = dynamic_ref_cast<Font>(ResourceLoader::load(font_path));
+        font = ResourceLoader::load<Font>(font_path);
         if (not font) {
             ERR_PRINT("Error loading custom font '" + font_path + "'");
         }
@@ -1133,7 +1133,7 @@ void register_scene_types() {
     make_default_theme(default_theme_hidpi, font);
 
     if (!theme_path.empty()) {
-        Ref<Theme> theme = dynamic_ref_cast<Theme>(ResourceLoader::load(theme_path));
+        Ref<Theme> theme = ResourceLoader::load<Theme>(theme_path);
         if (theme) {
             Theme::set_project_default(theme);
             if (font) {

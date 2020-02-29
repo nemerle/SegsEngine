@@ -1121,7 +1121,7 @@ void AudioServer::load_default_bus_layout() {
     String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
 
     if (ResourceLoader::exists(layout_path)) {
-        Ref<AudioBusLayout> default_layout = dynamic_ref_cast<AudioBusLayout>(ResourceLoader::load(layout_path));
+        Ref<AudioBusLayout> default_layout = ResourceLoader::load<AudioBusLayout>(layout_path);
         if (default_layout) {
             set_bus_layout(default_layout);
         }
@@ -1243,36 +1243,36 @@ void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
     unlock();
 }
 
-void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
-    lock();
-    CallbackItem ci;
-    ci.callback = p_callback;
-    ci.userdata = p_userdata;
-    update_callbacks.insert(ci);
-    unlock();
-}
+//void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
+//    lock();
+//    CallbackItem ci;
+//    ci.callback = p_callback;
+//    ci.userdata = p_userdata;
+//    update_callbacks.insert(ci);
+//    unlock();
+//}
 
-void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
+//void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
 
-    lock();
-    CallbackItem ci;
-    ci.callback = p_callback;
-    ci.userdata = p_userdata;
-    update_callbacks.erase(ci);
-    unlock();
-}
+//    lock();
+//    CallbackItem ci;
+//    ci.callback = p_callback;
+//    ci.userdata = p_userdata;
+//    update_callbacks.erase(ci);
+//    unlock();
+//}
 
 void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
     ERR_FAIL_COND(not p_bus_layout || p_bus_layout->bus_count()==0);
 
     lock();
-    for (int i = 0; i < buses.size(); i++) {
-        memdelete(buses[i]);
+    for (AudioServerBus *bus : buses) {
+        memdelete(bus);
     }
     buses.resize(p_bus_layout->bus_count());
     bus_map.clear();
-    for (int i = 0; i < p_bus_layout->bus_count(); i++) {
+    for (size_t i = 0; i < p_bus_layout->bus_count(); i++) {
         AudioServerBus *bus = memnew(AudioServerBus);
         p_bus_layout->fill_bus_info(i,bus);
 

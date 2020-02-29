@@ -203,7 +203,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene,const Ref<MeshLibrary> &p_li
 
 void MeshLibraryEditor::_import_scene_cbk(StringView p_str) {
 
-    Ref<PackedScene> ps = dynamic_ref_cast<PackedScene>(ResourceLoader::load(p_str, "PackedScene"));
+    Ref<PackedScene> ps = ResourceLoader::load<PackedScene>(p_str, "PackedScene");
     ERR_FAIL_COND(not ps);
     Node *scene = ps->instance();
 

@@ -1659,7 +1659,7 @@ bool Main::start() {
 
     } else if (!script.empty()) {
 
-        Ref<Script> script_res = dynamic_ref_cast<Script>(ResourceLoader::load(script));
+        Ref<Script> script_res = ResourceLoader::load<Script>(script);
         ERR_FAIL_COND_V_MSG(not script_res, false, "Can't load script: " + script);
 
         if (check_only) {
@@ -1955,7 +1955,7 @@ bool Main::start() {
         Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificates", "").as<String>());
             if (!game_path.empty()) {
                 Node *scene = nullptr;
-                Ref<PackedScene> scenedata = dynamic_ref_cast<PackedScene>(ResourceLoader::load(local_game_path));
+                Ref<PackedScene> scenedata = ResourceLoader::load<PackedScene>(local_game_path);
                 if (scenedata)
                     scene = scenedata->instance();
 

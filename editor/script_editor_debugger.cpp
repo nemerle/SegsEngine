@@ -843,11 +843,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
     } else if (p_msg == "error") {
 
         // Should have at least two elements, error array and stack items count.
-        ERR_FAIL_COND_MSG(p_data.size() < 2, "Malformed error message from script debugger."); 
+        ERR_FAIL_COND_MSG(p_data.size() < 2, "Malformed error message from script debugger.");
 
         // Error or warning data.
         Array err = p_data[0];
-        ERR_FAIL_COND_MSG(err.size() < 10, "Malformed error message from script debugger."); 
+        ERR_FAIL_COND_MSG(err.size() < 10, "Malformed error message from script debugger.");
 
         // Format time.
         Array time_vals;
@@ -1464,7 +1464,7 @@ void ScriptEditorDebugger::_clear_execution() {
 
     Dictionary d = ti->get_metadata(0);
 
-    stack_script = dynamic_ref_cast<Script>(ResourceLoader::load(d["file"].as<String>()));
+    stack_script = ResourceLoader::load<Script>(d["file"].as<String>());
     emit_signal("clear_execution", stack_script);
     stack_script.unref();
 }
@@ -1608,7 +1608,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
     Dictionary d = ti->get_metadata(0);
 
-    stack_script = dynamic_ref_cast<Script>(ResourceLoader::load(d["file"].as<String>()));
+    stack_script = ResourceLoader::load<Script>(d["file"].as<String>());
     emit_signal("goto_script_line", stack_script, int(d["line"]) - 1);
     emit_signal("set_execution", stack_script, int(d["line"]) - 1);
     stack_script.unref();
@@ -2024,7 +2024,7 @@ void ScriptEditorDebugger::_error_selected() {
         return;
     }
 
-    Ref<Script> s = dynamic_ref_cast<Script>(ResourceLoader::load(meta[0].as<String>()));
+    Ref<Script> s = ResourceLoader::load<Script>(meta[0].as<String>());
     emit_signal("goto_script_line", s, int(meta[1]) - 1);
 }
 

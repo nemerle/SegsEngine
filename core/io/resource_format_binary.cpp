@@ -44,8 +44,11 @@
 #include "core/rid.h"
 #include "core/version.h"
 #include "core/object_tooling.h"
+#include "core/resource_manifest.h"
 
 #include "EASTL/sort.h"
+#include <cstring>
+
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
 
@@ -324,35 +327,36 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
                 } break;
                 case OBJECT_INTERNAL_RESOURCE: {
                     uint32_t index = f->get_32();
-                    String path = res_path + "::" + ::to_string(index);
+                    ResourcePath path(ResourcePath(res_path).cd("::" + ::to_string(index)));
                     RES res(ResourceLoader::load(path));
                     if (not res) {
-                        WARN_PRINT("Couldn't load resource: " + path);
+                        WARN_PRINT("Couldn't load resource: " + path.to_string());
                     }
                     r_v = res;
 
                 } break;
                 case OBJECT_EXTERNAL_RESOURCE: {
+                    assert(false);
                     //old file format, still around for compatibility
 
-                    String exttype = get_unicode_string();
-                    String path = get_unicode_string();
+//                    String exttype = get_unicode_string();
+//                    String path = get_unicode_string();
 
-                    if (!StringUtils::contains(path,"://") && PathUtils::is_rel_path(path)) {
-                        // path is relative to file being loaded, so convert to a resource path
-                        path = ProjectSettings::get_singleton()->localize_path(PathUtils::plus_file(PathUtils::get_base_dir(res_path),path));
-                    }
+//                    if (!StringUtils::contains(path,"://") && PathUtils::is_rel_path(path)) {
+//                        // path is relative to file being loaded, so convert to a resource path
+//                        path = ProjectSettings::get_singleton()->localize_path(PathUtils::plus_file(PathUtils::get_base_dir(res_path),path));
+//                    }
 
-                    if (remaps.contains(path)) {
-                        path = remaps[path];
-                    }
+//                    if (remaps.contains(path)) {
+//                        path = remaps[path];
+//                    }
 
-                    RES res(ResourceLoader::load(path, exttype));
+//                    RES res(ResourceLoader::load(path, exttype));
 
-                    if (not res) {
-                        WARN_PRINT(("Couldn't load resource: " + path));
-                    }
-                    r_v = res;
+//                    if (not res) {
+//                        WARN_PRINT(("Couldn't load resource: " + path));
+//                    }
+//                    r_v = res;
 
                 } break;
                 case OBJECT_EXTERNAL_RESOURCE_INDEX: {
@@ -366,13 +370,13 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
                         String exttype = external_resources[erindex].type;
                         String path = external_resources[erindex].path;
-
-                        if (!StringUtils::contains(path,"://") && PathUtils::is_rel_path(path)) {
+                        ResourcePath rpath(path);
+                        if (rpath.is_relative()) {
                             // path is relative to file being loaded, so convert to a resource path
                             path = ProjectSettings::get_singleton()->localize_path(PathUtils::plus_file(PathUtils::get_base_dir(res_path),path));
                         }
 
-                        RES res(ResourceLoader::load(path, exttype));
+                        RES res(ResourceLoader::load(rpath, exttype));
 
                         if (not res) {
                             WARN_PRINT(("Couldn't load resource: " + path));
@@ -440,16 +444,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
             array.resize(len);
             PoolVector<int>::Write w = array.write();
             f->get_buffer((uint8_t *)w.ptr(), len * 4);
-#ifdef BIG_ENDIAN_ENABLED
-            {
-                uint32_t *ptr = (uint32_t *)w.ptr();
-                for (int i = 0; i < len; i++) {
-
-                    ptr[i] = BSWAP32(ptr[i]);
-                }
-            }
-
-#endif
             w.release();
             r_v = array;
         } break;
@@ -461,17 +455,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
             array.resize(len);
             PoolVector<real_t>::Write w = array.write();
             f->get_buffer((uint8_t *)w.ptr(), len * sizeof(real_t));
-#ifdef BIG_ENDIAN_ENABLED
-            {
-                uint32_t *ptr = (uint32_t *)w.ptr();
-                for (int i = 0; i < len; i++) {
-
-                    ptr[i] = BSWAP32(ptr[i]);
-                }
-            }
-
-#endif
-
             w.release();
             r_v = array;
         } break;
@@ -496,17 +479,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
             PoolVector<Vector2>::Write w = array.write();
             if (sizeof(Vector2) == 8) {
                 f->get_buffer((uint8_t *)w.ptr(), len * sizeof(real_t) * 2);
-#ifdef BIG_ENDIAN_ENABLED
-                {
-                    uint32_t *ptr = (uint32_t *)w.ptr();
-                    for (int i = 0; i < len * 2; i++) {
-
-                        ptr[i] = BSWAP32(ptr[i]);
-                    }
-                }
-
-#endif
-
             } else {
                 ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector2 size is NOT 8!");
             }
@@ -523,17 +495,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
             PoolVector<Vector3>::Write w = array.write();
             if (sizeof(Vector3) == 12) {
                 f->get_buffer((uint8_t *)w.ptr(), len * sizeof(real_t) * 3);
-#ifdef BIG_ENDIAN_ENABLED
-                {
-                    uint32_t *ptr = (uint32_t *)w.ptr();
-                    for (int i = 0; i < len * 3; i++) {
-
-                        ptr[i] = BSWAP32(ptr[i]);
-                    }
-                }
-
-#endif
-
             } else {
                 ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector3 size is NOT 12!");
             }
@@ -550,17 +511,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
             PoolVector<Color>::Write w = array.write();
             if (sizeof(Color) == 16) {
                 f->get_buffer((uint8_t *)w.ptr(), len * sizeof(real_t) * 4);
-#ifdef BIG_ENDIAN_ENABLED
-                {
-                    uint32_t *ptr = (uint32_t *)w.ptr();
-                    for (int i = 0; i < len * 4; i++) {
-
-                        ptr[i] = BSWAP32(ptr[i]);
-                    }
-                }
-
-#endif
-
             } else {
                 ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Color size is NOT 16!");
             }
@@ -814,11 +764,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
     ver_format = f->get_32();
 
     print_bl("big endian: " + itos(big_endian));
-#ifdef BIG_ENDIAN_ENABLED
-    print_bl("endian swap: " + itos(!big_endian));
-#else
     print_bl("endian swap: " + itos(big_endian));
-#endif
     print_bl("real64: " + itos(use_real64));
     print_bl("major: " + itos(ver_major));
     print_bl("minor: " + itos(ver_minor));
@@ -1438,26 +1384,12 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
             f->store_32(VARIANT_OBJECT);
             RES res(refFromVariant<Resource>(p_property));
-            if (not res) {
-                f->store_32(OBJECT_EMPTY);
-                return; // don't save it
-            }
+            se::UUID to_store = ResourceManager::get_uuid_for_resource(res);
+            ERR_FAIL_COND_MSG(!to_store.valid(),"Resource has no UUID.");
 
-            if (res->get_path().length() && !StringUtils::contains(res->get_path(),"::")) {
-                f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
-                f->store_32(external_resources[res]);
-            } else {
-
-                if (!resource_set.contains(res)) {
-                    f->store_32(OBJECT_EMPTY);
-                    ERR_FAIL_MSG("Resource was not pre cached for the resource section, most likely due to circular reference.");
-                }
-
-                f->store_32(OBJECT_INTERNAL_RESOURCE);
-                f->store_32(res->get_subindex());
-                //internal resource
-            }
-
+            char uuid_data[sizeof(se::UUID)];
+            memcpy(uuid_data,(const char *)&to_store,sizeof(se::UUID));
+            f->store_buffer((uint8_t *)uuid_data,sizeof(se::UUID));
         } break;
         case VariantType::DICTIONARY: {
 
@@ -1595,8 +1527,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
             if (not res || external_resources.contains(res))
                 return;
 
-            if (!p_main && (!bundle_resources) && res->get_path().length() &&
-                    !StringUtils::contains(res->get_path(), "::")) {
+            if (!p_main && !bundle_resources && !res->get_path().empty() &&
+                    !res->get_path().references_nested_resource() ) {
                 if (res->get_path() == path) {
                     ERR_PRINT("Circular reference to resource being saved found: '" + local_path +
                               "' will be null next time it's loaded.");

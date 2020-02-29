@@ -1184,7 +1184,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
                 return;
             }
 
-            Ref<Script> scr = dynamic_ref_cast<Script>(ResourceLoader::load(d["@path"].as<String>()));
+            Ref<Script> scr = ResourceLoader::load<Script>(d["@path"].as<String>());
             if (not scr) {
 
                 r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;

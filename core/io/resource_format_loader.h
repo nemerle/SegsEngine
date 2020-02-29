@@ -5,6 +5,7 @@
 #include "core/string.h"
 #include "core/forward_decls.h"
 #include "core/hash_map.h"
+#include "core/resource_path.h"
 
 template <class T>
 struct Comparator;
@@ -17,7 +18,7 @@ class GODOT_EXPORT ResourceInteractiveLoader : public RefCounted {
 
     GDCLASS(ResourceInteractiveLoader, RefCounted)
     friend class ResourceLoader;
-    String path_loading;
+    ResourcePath path_loading;
     Thread::ID path_loading_thread;
 
 protected:

@@ -116,28 +116,23 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 
     /* STEP 2, INITIALIZE AND CONSTRUCT */
 
-#ifndef NO_THREADS
     GDScriptLanguage::singleton->lock->lock();
-#endif
 
     instances.insert(instance->owner);
 
-#ifndef NO_THREADS
     GDScriptLanguage::singleton->lock->unlock();
-#endif
 
     initializer->call(instance, p_args, p_argcount, r_error);
 
     if (r_error.error != Variant::CallError::CALL_OK) {
         instance->script = Ref<GDScript>();
         instance->owner->set_script_instance(nullptr);
-#ifndef NO_THREADS
+
         GDScriptLanguage::singleton->lock->lock();
-#endif
+
         instances.erase(p_owner);
-#ifndef NO_THREADS
+
         GDScriptLanguage::singleton->lock->unlock();
-#endif
 
         ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, nullptr); // error constructing.
     }
@@ -355,14 +350,9 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 
 bool GDScript::instance_has(const Object *p_this) const {
 
-#ifndef NO_THREADS
     GDScriptLanguage::singleton->lock->lock();
-#endif
     bool hasit = instances.contains((Object *)p_this);
-
-#ifndef NO_THREADS
     GDScriptLanguage::singleton->lock->unlock();
-#endif
 
     return hasit;
 }
@@ -456,7 +446,7 @@ bool GDScript::_update_exports() {
                 if (!path.empty()) {
                     if (path != get_path()) {
 
-                        Ref<GDScript> bf = dynamic_ref_cast<GDScript>(ResourceLoader::load(path));
+                        Ref<GDScript> bf = ResourceLoader::load<GDScript>(path);
 
                         if (bf) {
 
@@ -550,14 +540,9 @@ void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, StringView p_path) {
 
 Error GDScript::reload(bool p_keep_state) {
 
-#ifndef NO_THREADS
     GDScriptLanguage::singleton->lock->lock();
-#endif
     bool has_instances = !instances.empty();
-
-#ifndef NO_THREADS
     GDScriptLanguage::singleton->lock->unlock();
-#endif
 
     ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
 
@@ -1371,16 +1356,12 @@ GDScriptInstance::GDScriptInstance() {
 }
 
 GDScriptInstance::~GDScriptInstance() {
-    if (script && owner) {
-#ifndef NO_THREADS
-        GDScriptLanguage::singleton->lock->lock();
-#endif
+    if (!script || !owner)
+        return;
 
-        script->instances.erase(owner);
-#ifndef NO_THREADS
-        GDScriptLanguage::singleton->lock->unlock();
-#endif
-    }
+    GDScriptLanguage::singleton->lock->lock();
+    script->instances.erase(owner);
+    GDScriptLanguage::singleton->lock->unlock();
 }
 
 /************* SCRIPT LANGUAGE **************/
@@ -2163,11 +2144,7 @@ GDScriptLanguage::GDScriptLanguage() {
     _debug_parse_err_line = -1;
     _debug_parse_err_file = "";
 
-#ifdef NO_THREADS
-    lock = nullptr;
-#else
     lock = memnew(Mutex);
-#endif
     profiling = false;
     script_frame_time = 0;
 

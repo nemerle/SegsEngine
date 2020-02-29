@@ -66,17 +66,12 @@ struct PtrToArg<CharType> {
 };
 
 
-Mutex *CanvasItemMaterial::material_mutex = nullptr;
+Mutex CanvasItemMaterial::material_mutex;
 SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;
 HashMap<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
 CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = nullptr;
 
 void CanvasItemMaterial::init_shaders() {
-
-#ifndef NO_THREADS
-    material_mutex = memnew(Mutex);
-#endif
-
     dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
 
     shader_names = memnew(ShaderNames);
@@ -91,10 +86,6 @@ void CanvasItemMaterial::finish_shaders() {
     memdelete(dirty_materials);
     memdelete(shader_names);
     dirty_materials = nullptr;
-
-#ifndef NO_THREADS
-    memdelete(material_mutex);
-#endif
 }
 
 void CanvasItemMaterial::_update_shader() {
@@ -181,42 +172,32 @@ void CanvasItemMaterial::_update_shader() {
 
 void CanvasItemMaterial::flush_changes() {
 
-    if (material_mutex)
-        material_mutex->lock();
+    MutexLock guard(material_mutex);
 
     while (dirty_materials->first()) {
 
         dirty_materials->first()->self()->_update_shader();
     }
 
-    if (material_mutex)
-        material_mutex->unlock();
 }
 
 void CanvasItemMaterial::_queue_shader_change() {
 
-    if (material_mutex)
-        material_mutex->lock();
+    MutexLock guard(material_mutex);
 
     if (!element.in_list()) {
         dirty_materials->add(&element);
     }
 
-    if (material_mutex)
-        material_mutex->unlock();
 }
 
 bool CanvasItemMaterial::_is_shader_dirty() const {
 
     bool dirty = false;
 
-    if (material_mutex)
-        material_mutex->lock();
+    MutexLock guard(material_mutex);
 
     dirty = element.in_list();
-
-    if (material_mutex)
-        material_mutex->unlock();
 
     return dirty;
 }
@@ -357,8 +338,7 @@ CanvasItemMaterial::CanvasItemMaterial() :
 
 CanvasItemMaterial::~CanvasItemMaterial() {
 
-    if (material_mutex)
-        material_mutex->lock();
+    MutexLock guard(material_mutex);
 
     if (shader_map.contains(current_key)) {
         shader_map[current_key].users--;
@@ -370,9 +350,6 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 
         VisualServer::get_singleton()->material_set_shader(_get_material(), RID());
     }
-
-    if (material_mutex)
-        material_mutex->unlock();
 }
 
 ///////////////////////////////////////////////////////////////////

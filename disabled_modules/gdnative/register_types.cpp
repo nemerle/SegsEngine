@@ -73,7 +73,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
         return;
     }
 
-    Ref<GDNativeLibrary> lib = dynamic_ref_cast<GDNativeLibrary>(ResourceLoader::load(p_path));
+    Ref<GDNativeLibrary> lib = ResourceLoader::load<GDNativeLibrary>(p_path));
 
     if (not lib) {
         return;
@@ -225,7 +225,7 @@ void register_gdnative_types() {
         if (excluded.contains(path))
             continue;
 
-        Ref<GDNativeLibrary> lib = dynamic_ref_cast<GDNativeLibrary>(ResourceLoader::load(path));
+        Ref<GDNativeLibrary> lib = ResourceLoader::load<GDNativeLibrary>(path));
         Ref<GDNative> singleton(make_ref_counted<GDNative>());
         singleton->set_library(lib);
 
