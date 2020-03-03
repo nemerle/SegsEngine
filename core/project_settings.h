@@ -120,6 +120,7 @@ public:
 
     bool has_setting(const StringName &p_var) const;
     String localize_path(StringView p_path) const;
+    ResourcePath localize_path(const ResourcePath& p_path) const;
     String globalize_path(StringView p_path) const;
     ResourcePath globalize_path(const ResourcePath &p_path) const;
 

@@ -72,7 +72,7 @@ public:
     bool is_imported(StringView p_path) const override {
         return recognize_path(p_path);
     }
-    String get_import_group_file(StringView p_path) const override;
+    ResourcePath get_import_group_file(const ResourcePath &p_path) const override;
     bool exists(StringView p_path) const override;
 
     virtual bool can_be_imported(StringView p_path) const;
@@ -95,10 +95,10 @@ public:
 
     void get_importers_for_extension(StringView p_extension, Vector<ResourceImporterInterface *> *r_importers);
 
-    bool are_import_settings_valid(StringView p_path) const;
+    bool are_import_settings_valid(const ResourcePath& p_path) const;
     String get_import_settings_hash() const;
 
-    String get_import_base_path(StringView p_for_file) const;
+    String get_import_base_path(const ResourcePath &p_for_file) const;
     ResourceFormatImporter();
 };
 
@@ -117,7 +117,7 @@ public:
     Error import(StringView p_source_file, StringView p_save_path, const HashMap<StringName, Variant> &p_options, Vector<String> &r_missing_deps,
             Vector<String> *r_platform_variants, Vector<String> *r_gen_files = nullptr,
             Variant *r_metadata = nullptr) override = 0;
-    Error import_group_file(StringView  /*p_group_file*/,
+    Error import_group_file(const ResourcePath &/*p_group_file*/,
             const Map<String, HashMap<StringName, Variant>> & /*p_source_file_options*/,
             const Map<String, String> & /*p_base_paths*/) override {
         return ERR_UNAVAILABLE;

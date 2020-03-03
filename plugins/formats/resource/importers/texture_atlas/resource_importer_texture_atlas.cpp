@@ -203,7 +203,7 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
     }
 }
 
-Error ResourceImporterTextureAtlas::import_group_file(StringView p_group_file, const Map<String, HashMap<StringName, Variant> > &p_source_file_options, const Map<String, String> &p_base_paths) {
+Error ResourceImporterTextureAtlas::import_group_file(const ResourcePath &p_group_file, const Map<String, HashMap<StringName, Variant> > &p_source_file_options, const Map<String, String> &p_base_paths) {
 
     ERR_FAIL_COND_V(p_source_file_options.empty(), ERR_BUG); //should never happen
 
@@ -320,7 +320,8 @@ Error ResourceImporterTextureAtlas::import_group_file(StringView p_group_file, c
 
     //save the atlas
 
-    new_atlas->save_png(p_group_file);
+    Error err=new_atlas->save_png(p_group_file);
+    ERR_FAIL_COND_V(err!=OK, ERR_BUG);
 
     //update cache if existing, else create
     Ref<Texture> cache;
@@ -357,8 +358,8 @@ Error ResourceImporterTextureAtlas::import_group_file(StringView p_group_file, c
         } else {
             Ref<ArrayMesh> mesh(make_ref_counted<ArrayMesh>());
 
-            for (size_t i = 0; i < pack_data.chart_pieces.size(); i++) {
-                const EditorAtlasPacker::Chart &chart = charts[pack_data.chart_pieces[i]];
+            for (int chart_piece : pack_data.chart_pieces) {
+                const EditorAtlasPacker::Chart &chart = charts[chart_piece];
                 Vector<Vector2> vertices;
                 Vector<int> indices;
                 Vector<Vector2> uvs;
@@ -411,5 +412,4 @@ Error ResourceImporterTextureAtlas::import_group_file(StringView p_group_file, c
     return OK;
 }
 
-ResourceImporterTextureAtlas::ResourceImporterTextureAtlas() {
-}
+ResourceImporterTextureAtlas::ResourceImporterTextureAtlas() = default;

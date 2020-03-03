@@ -39,7 +39,7 @@
 /**
  * Multi-Platform abstraction for accessing to files.
  */
-
+class ResourcePath;
 class GODOT_EXPORT FileAccess {
 
 public:
@@ -155,9 +155,12 @@ public:
     static FileAccess *create_for_path(StringView p_path);
     /// Create a file access (for the current platform) this is the only portable way of accessing files.
     static FileAccess *open(StringView p_path, int p_mode_flags, Error *r_error = nullptr);
+    static FileAccess* open(const ResourcePath &p_path, int p_mode_flags, Error* r_error = nullptr);
     static CreateFunc get_create_func(AccessType p_access);
     static bool exists(StringView p_name); ///< return true if a file exists
+    static bool exists(const ResourcePath &r);
     static uint64_t get_modified_time(StringView p_file);
+    static uint64_t get_modified_time(const ResourcePath &p_file);
     static uint32_t get_unix_permissions(StringView p_file);
     static Error set_unix_permissions(StringView p_file, uint32_t p_permissions);
 
@@ -165,6 +168,7 @@ public:
     static bool is_backup_save_enabled() { return backup_save; }
 
     static String get_md5(StringView p_file);
+    static String get_md5(const ResourcePath &p_file);
     static String get_sha256(StringView p_file);
     static String get_multiple_md5(const Vector<String> &p_file);
 
@@ -183,13 +187,13 @@ public:
 
 struct FileAccessRef {
 
-    FileAccess *operator->() {
+    FileAccess *operator->() const {
         return f;
     }
 
     operator bool() const { return f != nullptr; }
     FileAccess *f;
-    operator FileAccess *() { return f; }
+    operator FileAccess *() const { return f; }
     FileAccessRef(FileAccess *fa) { f = fa; }
     ~FileAccessRef() {
         if (f) memdelete(f);

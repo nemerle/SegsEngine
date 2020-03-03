@@ -443,12 +443,12 @@ ResourceImporterInterface *ResourceFormatImporter::get_importer_by_extension(Str
     return importer;
 }
 
-String ResourceFormatImporter::get_import_base_path(StringView p_for_file) const {
+String ResourceFormatImporter::get_import_base_path(const ResourcePath &p_for_file) const {
 
-    return "res://.import/" + String(PathUtils::get_file(p_for_file)) + "-" + StringUtils::md5_text(p_for_file);
+    return "res://.import/" + p_for_file.to_string() + "-" + StringUtils::md5_text(p_for_file);
 }
 
-bool ResourceFormatImporter::are_import_settings_valid(StringView p_path) const {
+bool ResourceFormatImporter::are_import_settings_valid(const ResourcePath &p_path) const {
 
     bool valid = true;
     PathAndType pat;

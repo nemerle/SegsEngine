@@ -121,7 +121,7 @@ public:
     static void remove_resource_format_loader(const ResourceLoaderInterface *p_format_loader);
     static void remove_resource_format_loader(const Ref<ResourceFormatLoader>& p_format_loader);
     static String get_resource_type(const ResourcePath &p_path);
-    static void get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types = false);
+    static void get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types = false);
     static Error rename_dependencies(StringView p_path, const HashMap<String, String> &p_map);
     static bool is_import_valid(StringView p_path);
     static String get_import_group_file(StringView p_path);

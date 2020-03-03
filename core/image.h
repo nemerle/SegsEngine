@@ -210,7 +210,7 @@ public:
     const PoolVector<uint8_t> &get_data() const { return data; }
 
     Error load(StringView p_path);
-    Error save_png(StringView p_path) const;
+    Error save_png(const ResourcePath& p_path) const;
     Error save_exr(StringView p_path, bool p_grayscale) const;
 
     /**

@@ -54,7 +54,7 @@ public:
     virtual Error import(StringView p_source_file, StringView p_save_path,
             const HashMap<StringName, Variant> &p_options, Vector<String> &r_missing_deps, Vector<String> *r_platform_variants,
             Vector<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
-    virtual Error import_group_file(StringView p_group_file,
+    virtual Error import_group_file(const ResourcePath& p_group_file,
             const Map<String, HashMap<StringName, Variant>> &p_source_file_options,
             const Map<String, String> &p_base_paths) = 0;
     virtual bool are_import_settings_valid(StringView p_path) const = 0;

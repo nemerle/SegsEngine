@@ -68,27 +68,31 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
     Node *n = get_node(np);
     ERR_FAIL_COND(!n);
-
-    if (p_id == BUTTON_SUBSCENE) {
+    switch(p_id) {
+    case BUTTON_SUBSCENE: {
         if (n == get_scene_node()) {
             if (n && n->get_scene_inherited_state()) {
                 emit_signal("open", n->get_scene_inherited_state()->get_path());
             }
-        } else {
+        }
+        else {
             emit_signal("open", n->get_filename());
         }
-    } else if (p_id == BUTTON_SCRIPT) {
+        break;
+    }
+    case BUTTON_SCRIPT: {
         RefPtr script = n->get_script();
         Ref<Script> script_typed(refFromRefPtr<Script>(script));
         if (script_typed)
             emit_signal("open_script", Variant(script));
-
-    } else if (p_id == BUTTON_VISIBILITY) {
+        break;
+    }
+    case BUTTON_VISIBILITY: {
         undo_redo->create_action_ui(TTR("Toggle Visible"));
         _toggle_visible(n);
-        const Vector<Node *> &selection = editor_selection->get_selected_node_list();
+        const Vector<Node*>& selection = editor_selection->get_selected_node_list();
         if (selection.size() > 1 && selection.find(n) != nullptr) {
-            for (Node * nv : selection) {
+            for (Node* nv : selection) {
                 ERR_FAIL_COND(!nv);
                 if (nv == n) {
                     continue;
@@ -97,7 +101,9 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
             }
         }
         undo_redo->commit_action();
-    } else if (p_id == BUTTON_LOCK) {
+        break;
+    }
+    case BUTTON_LOCK: {
         undo_redo->create_action_ui(TTR("Unlock Node"));
 
         if (n->is_class("CanvasItem") || n->is_class("Spatial")) {
@@ -110,14 +116,18 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
             undo_redo->add_undo_method(this, "emit_signal", "node_changed");
         }
         undo_redo->commit_action();
-    } else if (p_id == BUTTON_PIN) {
+        break;
+    }
+    case BUTTON_PIN: {
 
         if (n->is_class("AnimationPlayer")) {
             AnimationPlayerEditor::singleton->unpin();
             _update_tree();
         }
+        break;
 
-    } else if (p_id == BUTTON_GROUP) {
+    }
+    case BUTTON_GROUP: {
         undo_redo->create_action_ui(TTR("Button Group"));
 
         if (n->is_class("CanvasItem") || n->is_class("Spatial")) {
@@ -130,16 +140,19 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
             undo_redo->add_undo_method(this, "emit_signal", "node_changed");
         }
         undo_redo->commit_action();
-    } else if (p_id == BUTTON_WARNING) {
+        break;
+    }
+    case BUTTON_WARNING: {
 
         UIString config_err(n->get_configuration_warning());
         if (config_err.isEmpty())
             return;
-        config_err = StringUtils::word_wrap(config_err,80);
+        config_err = StringUtils::word_wrap(config_err, 80);
         warning->set_text(StringName(StringUtils::to_utf8(config_err)));
         warning->popup_centered_minsize();
+        break;
 
-    } else if (p_id == BUTTON_SIGNALS) {
+    } case BUTTON_SIGNALS: {
 
         editor_selection->clear();
         editor_selection->add_node(n);
@@ -148,8 +161,9 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
         NodeDock::singleton->get_parent()->call_va("set_current_tab", NodeDock::singleton->get_index());
         NodeDock::singleton->show_connections();
+        break;
 
-    } else if (p_id == BUTTON_GROUPS) {
+    } case BUTTON_GROUPS: {
 
         editor_selection->clear();
         editor_selection->add_node(n);
@@ -158,6 +172,8 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
         NodeDock::singleton->get_parent()->call_va("set_current_tab", NodeDock::singleton->get_index());
         NodeDock::singleton->show_groups();
+        break;
+    }
     }
 }
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
@@ -178,9 +194,12 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
     bool part_of_subscene = false;
 
-    if (!display_foreign && p_node->get_owner() != get_scene_node() && p_node != get_scene_node()) {
+    Node *scene_node = get_scene_node();
+    Node *owner = p_node->get_owner();
 
-        if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && get_scene_node()->is_editable_instance(p_node->get_owner())) {
+    if (!display_foreign && owner != scene_node && p_node != scene_node) {
+
+        if ((show_enabled_subscene || can_open_instance) && owner && scene_node->is_editable_instance(owner)) {
 
             part_of_subscene = true;
             //allow
@@ -188,7 +207,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
             return false;
         }
     } else {
-        part_of_subscene = p_node != get_scene_node() && get_scene_node()->get_scene_inherited_state() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node)) >= 0;
+        part_of_subscene = p_node != scene_node && scene_node->get_scene_inherited_state() && scene_node->get_scene_inherited_state()->find_node_by_path(scene_node->get_path_to(p_node)) >= 0;
     }
 
     TreeItem *item = tree->create_item(p_parent);
@@ -297,7 +316,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
         }
     }
 
-    if (p_node == get_scene_node() && p_node->get_scene_inherited_state()) {
+    if (p_node == scene_node && p_node->get_scene_inherited_state()) {
         item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
         String tooltip(TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class());
         if (!p_node->get_editor_description().empty()) {
@@ -305,7 +324,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
         }
 
         item->set_tooltip(0, StringName(tooltip));
-    } else if (p_node != get_scene_node() && !p_node->get_filename().empty() && can_open_instance) {
+    } else if (p_node != scene_node && !p_node->get_filename().empty() && can_open_instance) {
         item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
         String tooltip(TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class());
@@ -335,7 +354,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
         Ref<Script> script(refFromRefPtr<Script>(p_node->get_script()));
         if (script) {
-            item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, FormatSN(TTR("Open Script: %s").asCString(),script->get_path().c_str()));
+            item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, FormatSN(TTR("Open Script: %s").asCString(),script->get_path().to_string().c_str()));
             if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == script) {
                 item->set_button_color(0, item->get_button_count(0) - 1, Color(1, 1, 1, 0.5));
             }

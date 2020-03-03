@@ -57,7 +57,7 @@ public:
     Error import(StringView p_source_file, StringView p_save_path, const HashMap<StringName, Variant> &p_options, Vector<String> &r_missing_deps,
             Vector<String> *r_platform_variants, Vector<String> *r_gen_files = nullptr,
             Variant *r_metadata = nullptr) override;
-    Error import_group_file(StringView p_group_file,
+    Error import_group_file(const ResourcePath&p_group_file,
             const Map<String, HashMap<StringName, Variant>> &p_source_file_options,
             const Map<String, String> &p_base_paths) override;
 

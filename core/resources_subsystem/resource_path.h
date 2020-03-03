@@ -7,7 +7,6 @@
 class GODOT_EXPORT ResourcePath {
     TmpString<8> m_mountpoint; // res: user: etc.
     Vector<String> m_path_components;
-
 public:
     ResourcePath() = default;
     explicit ResourcePath(StringView sv);
@@ -31,6 +30,9 @@ public:
         }
         return true;
     }
+    bool operator!=(const ResourcePath& other) const noexcept {
+        return !(*this==other);
+    }
     ResourcePath &set_mountpoint(StringView component) {
         // mountpoint name has to end with :
         ERR_FAIL_COND_V(component.back()!=':',*this);
@@ -44,6 +46,9 @@ public:
             m_path_components.emplace_back(component);
         return *this;
     }
+    const Vector<String> &components() const { return m_path_components; }
+    [[nodiscard]] ResourcePath meta_path() const;
+    [[nodiscard]] ResourcePath import_path() const;
     [[nodiscard]] StringView leaf() const { return m_path_components.empty() ? StringView(m_mountpoint) : StringView(m_path_components.back()); }
     [[nodiscard]] bool is_relative() const { return m_mountpoint.empty(); }
     [[nodiscard]] bool references_nested_resource() const {

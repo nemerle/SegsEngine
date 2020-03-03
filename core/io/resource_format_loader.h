@@ -58,7 +58,7 @@ public:
     virtual bool is_import_valid(StringView /*p_path*/) const { return true; }
     virtual bool is_imported(StringView /*p_path*/) const { return false; }
     virtual int get_import_order(StringView /*p_path*/) const { return 0; }
-    virtual String get_import_group_file(StringView /*p_path*/) const { return String(); } //no group
+    virtual ResourcePath get_import_group_file(const ResourcePath &/*p_path*/) const { return ResourcePath(); } //no group
 
     ~ResourceFormatLoader() override = default;
 };

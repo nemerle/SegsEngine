@@ -377,7 +377,7 @@ public:
     virtual void frame();
 
     virtual bool handles_global_class_type(StringView  /*p_type*/) const { return false; }
-    virtual StringName get_global_class_name(StringView /*p_path*/, String * /*r_base_type*/ = nullptr, String * /*r_icon_path*/ = nullptr) const { return StringName(); }
+    virtual StringName get_global_class_name(const ResourcePath &/*p_path*/, String * /*r_base_type*/ = nullptr, String * /*r_icon_path*/ = nullptr) const { return StringName(); }
 
     virtual ~ScriptLanguage() = default;
 };

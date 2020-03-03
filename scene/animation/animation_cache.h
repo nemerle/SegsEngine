@@ -40,7 +40,7 @@ class AnimationCache : public Object {
 
     struct Path {
 
-        RES resource;
+        HResource resource;
         Object *object;
         Skeleton *skeleton; // haxor
         Node *node;

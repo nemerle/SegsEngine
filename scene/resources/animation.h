@@ -113,7 +113,7 @@ private:
     struct ValueTrack : public Track {
 
         UpdateMode update_mode = UPDATE_CONTINUOUS;
-        bool update_on_seek;
+        bool update_on_seek=false;
         Vector<TKey<Variant> > values;
 
         ValueTrack() : Track(TYPE_VALUE) {

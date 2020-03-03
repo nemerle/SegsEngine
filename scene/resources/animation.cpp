@@ -874,7 +874,7 @@ int Animation::_insert(float p_time, T &p_keys, const V &p_value) {
             return idx;
         }
 
-        idx--;
+        --idx;
     }
 
     return -1;
@@ -2041,7 +2041,7 @@ template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, float from_time, float to_time, ListOld<int> *p_indices) const {
 
     if (from_time != length && to_time == length)
-        to_time = length * 1.01; //include a little more if at the end
+        to_time = length * 1.01f; //include a little more if at the end
 
     int to = _key_find(p_array, to_time);
 
@@ -2049,7 +2049,7 @@ void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, float 
     // if event>=len then it will probably never be requested by the anim player.
 
     if (to >= 0 && p_array[to].time >= to_time)
-        to--;
+        --to;
 
     if (to < 0)
         return; // not bother
@@ -2058,11 +2058,11 @@ void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, float 
 
     // position in the right first event.+
     if (from < 0 || p_array[from].time < from_time)
-        from++;
+        ++from;
 
     int max = p_array.size();
 
-    for (int i = from; i <= to; i++) {
+    for (int i = from; i <= to; ++i) {
 
         ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
         p_indices->push_back(i);
@@ -2195,7 +2195,7 @@ void Animation::track_get_key_indices_in_range(int p_track, float p_time, float 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, ListOld<int> *p_indices) const {
 
     if (from_time != length && to_time == length)
-        to_time = length * 1.01; //include a little more if at the end
+        to_time = length * 1.01f; //include a little more if at the end
 
     int to = _key_find(mt->methods, to_time);
 

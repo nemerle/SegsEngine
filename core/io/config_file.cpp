@@ -75,6 +75,7 @@ void ConfigFile::set_value(StringView _section, StringView _key, const Variant &
         values[p_section][p_key] = p_value;
     }
 }
+
 Variant ConfigFile::get_value(StringView _section, StringView _key, const Variant& p_default) const {
     String p_section(_section);
     String p_key(_key);

@@ -43,7 +43,7 @@ PoolVector<String> EditorFolding::_get_unfolds(const Object *p_object) {
 
     PoolVector<String> sections;
     sections.resize(p_object->get_tooling_interface()->editor_get_section_folding().size());
-    if (sections.size()) {
+    if (not sections.empty()) {
         PoolVector<String>::Write w = sections.write();
         int idx = 0;
         for (const String &E : p_object->get_tooling_interface()->editor_get_section_folding()) {
@@ -108,7 +108,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
     }
     PoolVector<String> unfolds = _get_unfolds(p_node);
 
-    if (unfolds.size()) {
+    if (not unfolds.empty()) {
         p_folds.push_back(p_root->get_path_to(p_node));
         p_folds.push_back(unfolds);
     }
@@ -116,18 +116,17 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
     Vector<PropertyInfo> plist;
     p_node->get_property_list(&plist);
     for (const PropertyInfo &E : plist) {
-        if (E.usage & PROPERTY_USAGE_EDITOR) {
-            if (E.type == VariantType::OBJECT) {
-                RES res(p_node->get(E.name));
-                if (res && !resources.contains(res) && !res->get_path().empty() && !PathUtils::is_resource_file(res->get_path())) {
+        if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.type != VariantType::OBJECT)
+            continue;
 
-                    PoolVector<String> res_unfolds = _get_unfolds(res.get());
-                    resource_folds.push_back(res->get_path());
-                    resource_folds.push_back(res_unfolds);
-                    resources.insert(res);
-                }
-            }
-        }
+        RES res(p_node->get(E.name));
+        if (!res || resources.contains(res) || res->get_path().empty() || PathUtils::is_resource_file(res->get_path()))
+            continue;
+
+        PoolVector<String> res_unfolds = _get_unfolds(res.get());
+        resource_folds.push_back(res->get_path());
+        resource_folds.push_back(res_unfolds);
+        resources.insert(res);
     }
 
     for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -166,18 +165,9 @@ void EditorFolding::load_scene_folding(Node *p_scene, StringView p_path) {
         return;
     }
 
-    Array unfolds;
-    if (config->has_section_key("folding", "node_unfolds")) {
-        unfolds = config->get_value("folding", "node_unfolds");
-    }
-    Array res_unfolds;
-    if (config->has_section_key("folding", "resource_unfolds")) {
-        res_unfolds = config->get_value("folding", "resource_unfolds");
-    }
-    Array nodes_folded;
-    if (config->has_section_key("folding", "nodes_folded")) {
-        nodes_folded = config->get_value("folding", "nodes_folded");
-    }
+    Array unfolds = config->get_folding("node_unfolds");
+    Array res_unfolds = config->get_folding("folding", "resource_unfolds");
+    Array nodes_folded = config->get_folding("folding", "nodes_folded");
 
     ERR_FAIL_COND(unfolds.size() & 1);
     ERR_FAIL_COND(res_unfolds.size() & 1);

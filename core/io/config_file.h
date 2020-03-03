@@ -56,6 +56,10 @@ public:
     void set_value(StringView p_section, StringView p_key, const Variant &p_value);
     Variant get_value(StringView p_section, StringView p_key, const Variant& p_default = Variant::null_variant) const;
 
+    Variant get_folding(StringView p_key, const Variant& p_default = Variant::null_variant) {
+        return get_value("folding",p_key,p_default);
+    }
+
     bool has_section(StringView p_section) const;
     bool has_section_key(StringView p_section, StringView p_key) const;
 
