@@ -3530,10 +3530,8 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 
     Script *p_script = object_cast<Script>(p_object);
     if (p_script) {
-
-        StringView res_path = StringUtils::get_slice(p_script->get_path(), "::", 0);
-
         if (_is_built_in_script(p_script)) {
+            const ResourcePath &res_path = p_script->get_path();
             if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
                 if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
                     EditorNode::get_singleton()->load_scene(res_path);

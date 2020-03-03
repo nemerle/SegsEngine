@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/hash_map.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/shader_enums.h"
 

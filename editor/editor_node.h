@@ -742,7 +742,7 @@ public:
     Error load_scene(StringView p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false);
     Error load_resource(StringView p_resource, bool p_ignore_broken_deps = false);
 
-    bool is_scene_open(StringView p_path);
+    bool is_scene_open(const ResourcePath &p_path);
 
     void set_current_version(uint64_t p_version);
     void set_current_scene(int p_idx);

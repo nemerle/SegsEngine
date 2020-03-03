@@ -240,7 +240,7 @@ class VisualScriptTypeCast : public VisualScriptNode {
 
 
     StringName base_type;
-    String script;
+    ResourcePath script;
 
 protected:
     static void _bind_methods();

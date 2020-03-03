@@ -2355,10 +2355,9 @@ bool PathUtils::is_abs_path(const UIString &str) {
 
     if (str.length() > 1)
         return (str[0] == '/' || str[0] == '\\' || str.contains(":/") || str.contains(":\\"));
-    else if (str.length() == 1)
+    if (str.length() == 1)
         return (str[0] == '/' || str[0] == '\\');
-    else
-        return false;
+    return false;
 }
 bool PathUtils::is_abs_path(StringView str) {
 

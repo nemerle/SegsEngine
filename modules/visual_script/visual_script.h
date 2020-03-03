@@ -408,7 +408,7 @@ class VisualScriptInstance : public ScriptInstance {
     Vector<Variant> default_values;
     int max_input_args, max_output_args;
 
-    StringName source;
+    String source;
 
     void _dependency_step(VisualScriptNodeInstance *node, int p_pass, int *pass_stack, const Variant **input_args, Variant **output_args, Variant *variant_stack, Variant::CallError &r_error, String &error_str, VisualScriptNodeInstance **r_error_node);
     Variant _call_internal(const StringName &p_method, void *p_stack, int p_stack_size, VisualScriptNodeInstance *p_node, int p_flow_stack_pos, int p_pass, bool p_resuming_yield, Variant::CallError &r_error);

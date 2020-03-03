@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/math/rect2.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/rid.h"
 
 class Shape2D : public Resource {

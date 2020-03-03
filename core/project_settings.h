@@ -40,6 +40,7 @@
 #include "core/list.h"
 
 struct PropertyInfo;
+class ResourcePath;
 class GODOT_EXPORT ProjectSettings : public Object {
 
     GDCLASS(ProjectSettings,Object)
@@ -120,6 +121,7 @@ public:
     bool has_setting(const StringName &p_var) const;
     String localize_path(StringView p_path) const;
     String globalize_path(StringView p_path) const;
+    ResourcePath globalize_path(const ResourcePath &p_path) const;
 
     void set_initial_value(const StringName &p_name, const Variant &p_value);
     void set_restart_if_changed(const StringName &p_name, bool p_restart);

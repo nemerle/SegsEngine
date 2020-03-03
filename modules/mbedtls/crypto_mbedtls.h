@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/crypto/crypto.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>

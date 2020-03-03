@@ -31,7 +31,7 @@
 #ifndef physics_material_override_H
 #define physics_material_override_H
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "servers/physics_server.h"
 
 class PhysicsMaterial : public Resource {

@@ -32,7 +32,7 @@
 
 #include "core/color.h"
 #include "core/image_data.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/math/rect2.h"
 #include "core/method_arg_casters.h"
 #include "core/forward_decls.h"

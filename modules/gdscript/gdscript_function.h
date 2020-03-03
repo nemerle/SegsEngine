@@ -161,7 +161,7 @@ public:
 private:
     friend class GDScriptCompiler;
 
-    StringName source;
+    String source;
 
     mutable Variant nil;
     mutable Variant *_constants_ptr;
@@ -256,7 +256,7 @@ public:
     GDScriptDataType get_return_type() const;
     GDScriptDataType get_argument_type(int p_idx) const;
     GDScript *get_script() const { return _script; }
-    StringName get_source() const { return source; }
+    const String &get_source() const { return source; }
 
     void debug_get_stack_member_state(int p_line, Vector<Pair<StringName, int> > *r_stackvars) const;
 

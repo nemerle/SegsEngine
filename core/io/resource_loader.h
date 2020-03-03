@@ -31,13 +31,13 @@
 #pragma once
 
 #include "core/os/thread.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/hashfuncs.h"
 #include "core/hash_map.h"
 #include "core/hash_set.h"
 #include "core/string.h"
 #include "core/string_utils.h"
-#include "core/resource_path.h"
+#include "core/resources_subsystem/resource_path.h"
 namespace std {
 class recursive_mutex;
 }
@@ -120,7 +120,7 @@ public:
     static void add_resource_format_loader(ResourceLoaderInterface *, bool p_at_front = false);
     static void remove_resource_format_loader(const ResourceLoaderInterface *p_format_loader);
     static void remove_resource_format_loader(const Ref<ResourceFormatLoader>& p_format_loader);
-    static String get_resource_type(StringView p_path);
+    static String get_resource_type(const ResourcePath &p_path);
     static void get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types = false);
     static Error rename_dependencies(StringView p_path, const HashMap<String, String> &p_map);
     static bool is_import_valid(StringView p_path);

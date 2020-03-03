@@ -207,7 +207,7 @@ bool ResourceFormatImporter::exists(StringView p_path) const {
     return FileAccess::exists(String(p_path) + ".import");
 }
 
-bool ResourceFormatImporter::recognize_path(StringView p_path, StringView /*p_for_type*/) const {
+bool ResourceFormatImporter::recognize_path(StringView p_path) const {
 
     return FileAccess::exists(String(p_path) + ".import");
 }

@@ -515,7 +515,8 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
                     if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
                         res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
                     } else if (!for_completion || FileAccess::exists(path)) {
-                        res = ResourceLoader::load(path);
+                        assert(false);
+                        //res = ResourceLoader::load(path);
                     }
                 } else {
 
@@ -5524,7 +5525,7 @@ String GDScriptParser::DataType::to_string() const {
             if (!name.empty()) {
                 return name;
             }
-            name = PathUtils::get_file(script_type->get_path());
+            name = PathUtils::get_file(script_type->get_path().to_string());
             if (!name.empty()) {
                 return name;
             }
@@ -6195,7 +6196,7 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
             if (p_container.is_meta_type) {
                 return ClassDB::is_parent_class(expr_native, GDScript::get_class_static_name());
             }
-            if (expr_class == head && p_container.script_type->get_path() == self_path) {
+            if (expr_class == head && p_container.script_type->get_path().to_string() == self_path) {
                 // Special case: container is self script and expression is self
                 return true;
             }
@@ -6211,7 +6212,7 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
             if (p_container.is_meta_type) {
                 return ClassDB::is_parent_class(expr_native, GDScript::get_class_static_name());
             }
-            if (p_container.class_type == head && expr_script && expr_script->get_path() == self_path) {
+            if (p_container.class_type == head && expr_script && expr_script->get_path().to_string() == self_path) {
                 // Special case: container is self and expression is self script
                 return true;
             }

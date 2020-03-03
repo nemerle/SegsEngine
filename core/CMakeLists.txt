@@ -170,12 +170,14 @@ set(core_sources
     reference.h
     register_core_types.cpp
     register_core_types.h
-    resource_path.cpp
-    resource_path.h
-    resource_manifest.cpp
-    resource_manifest.h
-    resource.cpp
-    resource.h
+    resource_subsystem/resource_path.cpp
+    resource_subsystem/resource_path.h
+    resource_subsystem/resource_manifest.cpp
+    resource_subsystem/resource_manifest.h
+    resource_subsystem/resource.cpp
+    resource_subsystem/resource.h
+    resource_subsystem/resource_manager.cpp
+    resource_subsystem/resource_manager.h
     rid.cpp
     rid.h
     script_debugger_local.cpp
@@ -316,6 +318,7 @@ set(generic_core_sources
 
     hash_map.h
     hash_set.h
+    flags.h
     list.h
     map.h
     ordered_hash_map.h

@@ -4,7 +4,7 @@
 #include "core/string.h"
 #include "core/error_macros.h"
 
-class ResourcePath {
+class GODOT_EXPORT ResourcePath {
     TmpString<8> m_mountpoint; // res: user: etc.
     Vector<String> m_path_components;
 
@@ -19,12 +19,12 @@ public:
         m_path_components.clear();
     }
     bool operator==(const ResourcePath &other) const noexcept {
-        if(m_mountpoint.size()!=other.m_mountpoint.size())
+        if(m_mountpoint.size()!=other.m_mountpoint.size() || m_path_components.size() != other.m_path_components.size())
             return false;
-        if(m_path_components.size()!=other.m_path_components.size())
-            return false;
+
         if(m_mountpoint!=other.m_mountpoint)
             return false;
+
         for(uint32_t idx=0,fin=m_path_components.size(); idx<fin;++idx) {
             if(m_path_components[idx]!=other.m_path_components[idx])
                 return false;
@@ -38,18 +38,22 @@ public:
         return *this;
     }
     ResourcePath &cd(StringView component) {
-        m_path_components.emplace_back(component);
+        if(component==".." && !m_path_components.empty())
+            m_path_components.pop_back();
+        else
+            m_path_components.emplace_back(component);
         return *this;
     }
-    bool is_relative() const { return m_mountpoint.empty(); }
-    bool references_nested_resource() const {
+    [[nodiscard]] StringView leaf() const { return m_path_components.empty() ? StringView(m_mountpoint) : StringView(m_path_components.back()); }
+    [[nodiscard]] bool is_relative() const { return m_mountpoint.empty(); }
+    [[nodiscard]] bool references_nested_resource() const {
         for(const String &s: m_path_components)
             if(s.contains("::"))
                 return true;
         return false;
     }
-    String to_string() const;
-    StringView mountpoint() const { return m_mountpoint; }
+    [[nodiscard]] String to_string() const;
+    [[nodiscard]] StringView mountpoint() const { return m_mountpoint; }
 protected:
     friend eastl::hash<ResourcePath>;
     explicit operator size_t() const { // default hash uses this operator to retrieve hash.

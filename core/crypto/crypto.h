@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/reference.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 #include "core/io/resource_format_loader.h"
 #include "core/io/resource_saver.h"

@@ -36,7 +36,7 @@
 #include "core/message_queue.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/script_language.h"
 #include "core/string.h"
 #include "core/string_formatter.h"

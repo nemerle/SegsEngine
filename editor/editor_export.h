@@ -34,7 +34,7 @@
 #include "core/set.h"
 #include "core/map.h"
 #include "core/os/dir_access.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/property_info.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"

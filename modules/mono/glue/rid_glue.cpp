@@ -32,7 +32,7 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 RID *godot_icall_RID_Ctor(Object *p_from) {
 	Resource *res_from = object_cast<Resource>(p_from);

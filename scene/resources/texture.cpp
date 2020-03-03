@@ -431,14 +431,14 @@ void ImageTexture::set_size_override(const Size2 &p_size) {
     VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
 }
 
-void ImageTexture::set_path(StringView p_path, bool p_take_over) {
+//void ImageTexture::set_path(StringView p_path, bool p_take_over) {
 
-    if (texture.is_valid()) {
-        VisualServer::get_singleton()->texture_set_path(texture, p_path);
-    }
+//    if (texture.is_valid()) {
+//        VisualServer::get_singleton()->texture_set_path(texture, p_path);
+//    }
 
-    Resource::set_path(p_path, p_take_over);
-}
+//    Resource::set_path(p_path, p_take_over);
+//}
 
 void ImageTexture::set_storage(Storage p_storage) {
 
@@ -522,14 +522,14 @@ struct StreamTexture::StreamTextureData {
     mutable eastl::unique_ptr<BitMap> alpha_cache;
 };
 
-void StreamTexture::set_path(const ResourcePath &p_path, bool p_take_over) {
+//void StreamTexture::set_path(const ResourcePath &p_path, bool p_take_over) {
 
-    if (m_impl_data->texture.is_valid()) {
-        VisualServer::get_singleton()->texture_set_path(m_impl_data->texture, p_path);
-    }
+//    if (m_impl_data->texture.is_valid()) {
+//        VisualServer::get_singleton()->texture_set_path(m_impl_data->texture, p_path);
+//    }
 
-    Resource::set_path(p_path, p_take_over);
-}
+//    Resource::set_path(p_path, p_take_over);
+//}
 
 void StreamTexture::_requested_3d(void *p_ud) {
 
@@ -1629,14 +1629,14 @@ float CubeMap::get_lossy_storage_quality() const {
     return lossy_storage_quality;
 }
 
-void CubeMap::set_path(StringView p_path, bool p_take_over) {
+//void CubeMap::set_path(StringView p_path, bool p_take_over) {
 
-    if (cubemap.is_valid()) {
-        VisualServer::get_singleton()->texture_set_path(cubemap, p_path);
-    }
+//    if (cubemap.is_valid()) {
+//        VisualServer::get_singleton()->texture_set_path(cubemap, p_path);
+//    }
 
-    Resource::set_path(p_path, p_take_over);
-}
+//    Resource::set_path(p_path, p_take_over);
+//}
 
 bool CubeMap::_set(const StringName &p_name, const Variant &p_value) {
 

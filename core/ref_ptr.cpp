@@ -31,7 +31,7 @@
 #include "ref_ptr.h"
 
 #include "core/reference.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/rid.h"
 
 RefPtr &RefPtr::operator=(const RefPtr &p_other) {

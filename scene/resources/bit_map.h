@@ -32,7 +32,7 @@
 
 #include "core/image.h"
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 class GODOT_EXPORT BitMap : public Resource {
 

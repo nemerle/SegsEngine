@@ -1640,8 +1640,8 @@ PropertyInfo VisualScriptPreload::get_output_value_port_info(int p_idx) const {
     if (preload) {
         pinfo.hint = PropertyHint::ResourceType;
         pinfo.hint_string = preload->get_class();
-        if (PathUtils::is_resource_file(preload->get_path())) {
-            pinfo.name = StringName(preload->get_path());
+        if (!preload->get_path().empty()) { //PathUtils::is_resource_file(
+            pinfo.name = StringName(preload->get_path().to_string());
         } else if (!preload->get_name().empty()) {
             pinfo.name = StringName(preload->get_name());
         } else {

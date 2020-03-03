@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/reference.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 using RES = Ref<Resource>;
 template <class T>

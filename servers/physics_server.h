@@ -30,7 +30,7 @@
 
 #pragma once
 #include "core/object.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/math/transform.h"
 #include "core/method_arg_casters.h"
 #include "core/rid.h"

@@ -836,7 +836,7 @@ class VisualScriptNodeInstanceTypeCast : public VisualScriptNodeInstance {
 public:
     VisualScriptInstance *instance;
     StringName base_type;
-    String script;
+    ResourcePath script;
 
     //virtual int get_working_memory_size() const { return 0; }
     //virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -868,7 +868,7 @@ public:
             Ref<Script> cast_script(dynamic_ref_cast<Script>(RES(ResourceCache::get(script))));
             if (!cast_script) {
                 r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-                r_error_str = "Script path is not a script: " + script;
+                r_error_str = "Script path is not a script: " + script.to_string();
                 return 1;
             }
 

@@ -153,7 +153,28 @@ String ProjectSettings::globalize_path(StringView p_path) const {
 
     return String(p_path);
 }
+ResourcePath ProjectSettings::globalize_path(const ResourcePath &p_path) const {
 
+    if (p_path.mountpoint()=="res:") {
+
+        if (!resource_path.empty()) {
+
+            return StringUtils::replace(p_path, "res:/", resource_path);
+        }
+        return StringUtils::replace(p_path, "res://", "");
+    }
+    else if (StringUtils::begins_with(p_path, "user://")) {
+
+        String data_dir = OS::get_singleton()->get_user_data_dir();
+        if (!data_dir.empty()) {
+
+            return StringUtils::replace(p_path, "user:/", data_dir);
+        }
+        return StringUtils::replace(p_path, "user://", "");
+    }
+
+    return String(p_path);
+}
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
     _THREAD_SAFE_METHOD_

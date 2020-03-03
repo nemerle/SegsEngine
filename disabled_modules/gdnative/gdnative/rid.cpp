@@ -30,7 +30,7 @@
 
 #include "gdnative/rid.h"
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/rid.h"
 #include "core/variant.h"
 

@@ -3321,7 +3321,7 @@ void EditorNode::set_current_scene(int p_idx) {
             "_set_main_scene_state", state, Variant(get_edited_scene())); // do after everything else is done setting up
 }
 
-bool EditorNode::is_scene_open(StringView p_path) {
+bool EditorNode::is_scene_open(const ResourcePath & p_path) {
 
     for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
         if (editor_data.get_scene_path(i) == p_path) return true;

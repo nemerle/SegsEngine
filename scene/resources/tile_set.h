@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/array.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/string.h"
 #include "core/map.h"
 #include "scene/2d/light_occluder_2d.h"

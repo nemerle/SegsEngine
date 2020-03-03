@@ -31,6 +31,7 @@
 #include "gdscript_compiler.h"
 
 #include "gdscript.h"
+#include "core/resources_subsystem/resource_manager.h"
 
 #include "core/class_db.h"
 #include "core/io/resource_loader.h"
@@ -344,13 +345,13 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
                     return -1;
                 }
 
-                RES res(ResourceLoader::load(ScriptServer::get_global_class_path(identifier)));
+                HScript res(gResourceManager().load<Script>(ScriptServer::get_global_class_path(identifier)));
                 if (not res) {
                     _set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
                     return -1;
                 }
 
-                Variant key = res;
+                Variant key = RES(res.get());
                 int idx;
 
                 if (!codegen.constant_map.contains(key)) {
@@ -419,7 +420,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
             int slevel = p_stack_level;
 
-            for (int i = 0; i < an->elements.size(); i++) {
+            for (size_t i = 0; i < an->elements.size(); i++) {
 
                 int ret = _parse_expression(codegen, an->elements[i], slevel);
                 if (ret < 0)
@@ -1788,7 +1789,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
         String signature;
         //path
         if (!p_script->get_path().empty())
-            signature += p_script->get_path();
+            signature += p_script->get_path().to_string();
         //loc
         if (p_func) {
             signature += "::" + ::to_string(p_func->body->line);
@@ -2174,7 +2175,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
     const GDScriptParser::Node *root = parser->get_parse_tree();
     ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, ERR_INVALID_DATA);
 
-    source = StringName(p_script->get_path());
+    source = StringName(p_script->get_path().to_string());
 
     // The best fully qualified name for a base level script is its file path
     p_script->fully_qualified_name = p_script->path;

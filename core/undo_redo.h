@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 class GODOT_EXPORT UndoRedo : public Object {
 

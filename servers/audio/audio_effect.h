@@ -32,7 +32,7 @@
 #define AUDIOEFFECT_H
 
 #include "core/math/audio_frame.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 class AudioEffectInstance : public RefCounted {
 	GDCLASS(AudioEffectInstance,RefCounted)

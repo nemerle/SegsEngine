@@ -32,7 +32,7 @@
 
 #include "core/map.h"
 #include "core/hash_map.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/math/vector2.h"
 #include "core/math/rect2.h"
 #include "core/rid.h"

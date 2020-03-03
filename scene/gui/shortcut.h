@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/input_event.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 class ShortCut : public Resource {
 

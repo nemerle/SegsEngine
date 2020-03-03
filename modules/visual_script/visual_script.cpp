@@ -1874,7 +1874,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
         //error
         // function, file, line, error, explanation
-        String err_file = script->get_path();
+        const auto &err_file = script->get_path();
         String err_func = p_method.asCString();
         int err_line = current_node_id; //not a line but it works as one
 
@@ -1903,7 +1903,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
         if (!VisualScriptLanguage::singleton->debug_break(error_str, false)) {
 
-            _err_print_error(err_func.c_str(), err_file.c_str(), err_line, error_str,{ }, ERR_HANDLER_SCRIPT);
+            _err_print_error(err_func.c_str(), err_file.to_string().c_str(), err_line, error_str,{ }, ERR_HANDLER_SCRIPT);
         }
 
         //}
@@ -2079,7 +2079,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
     script = p_script;
     owner = p_owner;
-    source = StringName(p_script->get_path());
+    source = p_script->get_path().to_string();
 
     max_input_args = 0;
     max_output_args = 0;
@@ -2118,7 +2118,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
         Map<StringName, int> local_var_indices;
 
         if (function.node < 0) {
-            VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No start node in function: " + String(E.first));
+            VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path().to_string(), 0, "No start node in function: " + String(E.first));
 
             ERR_CONTINUE(function.node < 0);
         }
@@ -2127,7 +2127,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
             Ref<VisualScriptFunction> func_node = dynamic_ref_cast<VisualScriptFunction>(script->get_node(E.first, E.second.function_id));
 
             if (not func_node) {
-                VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(), 0, "No VisualScriptFunction typed start node in function: " + String(E.first));
+                VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path().to_string(), 0, "No VisualScriptFunction typed start node in function: " + String(E.first));
             }
 
             ERR_CONTINUE(not func_node);
@@ -2581,7 +2581,7 @@ String VisualScriptLanguage::debug_get_stack_level_source(int p_level) const {
 
     ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, String());
     int l = _debug_call_stack_pos - p_level - 1;
-    return _call_stack[l].instance->get_script_ptr()->get_path();
+    return _call_stack[l].instance->get_script_ptr()->get_path().to_string();
 }
 void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, Vector<String> *p_locals, Vector<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 

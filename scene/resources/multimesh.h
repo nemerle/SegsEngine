@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/rid.h"
 #include "servers/visual_server_enums.h"
 

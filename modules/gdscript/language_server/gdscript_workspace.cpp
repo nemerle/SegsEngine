@@ -424,7 +424,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 
                         String target_script_path = path;
                         if (ret.script) {
-                            target_script_path = ret.script->get_path();
+                            target_script_path = ret.script->get_path().to_string();
                         }
 
                         if (const ExtendGDScriptParser *target_parser = get_parse_result(target_script_path)) {

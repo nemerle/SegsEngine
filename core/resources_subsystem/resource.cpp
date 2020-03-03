@@ -39,7 +39,6 @@
 #include "core/object_db.h"
 #include "core/os/file_access.h"
 #include "core/script_language.h"
-#include "core/self_list.h"
 #include "core/object_tooling.h"
 //#include "core/ustring.h"
 //TODO: SEGS consider removing 'scene/main/node.h' include from core module
@@ -48,6 +47,7 @@
 #include <QMetaProperty>
 
 namespace {
+
     HashMap<ResourcePath, Resource *> cached_resources;
 
 } // end of anonymous namespace
@@ -83,6 +83,7 @@ void Resource::_resource_path_changed() {
 
 void Resource::set_path(const ResourcePath &p_path, bool p_take_over) {
 
+    
     if (impl_data->path_cache == p_path)
         return;
 
@@ -91,7 +92,7 @@ void Resource::set_path(const ResourcePath &p_path, bool p_take_over) {
         cached_resources.erase(impl_data->path_cache);
     }
     HashMap<ResourcePath, Resource*>::iterator lociter;
-    bool has_path=false;
+    bool has_path;
     impl_data->path_cache.clear();
     {
         RWLockRead read_guard(ResourceCache::lock);
@@ -280,12 +281,12 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 
 void Resource::_set_path(StringView p_path) {
 
-    set_path(p_path, false);
+    set_path(ResourcePath(p_path), false);
 }
 
 void Resource::_take_over_path(StringView p_path) {
 
-    set_path(p_path, true);
+    set_path(ResourcePath(p_path), true);
 }
 
 RID Resource::get_rid() const {
@@ -398,7 +399,7 @@ bool Resource::is_translation_remapped() const {
 }
 
 #ifdef TOOLS_ENABLED
-
+/*
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(StringView p_path, int p_id) {
     RWLockWrite wr(Data::path_cache_lock);
@@ -420,6 +421,7 @@ int Resource::get_id_for_path(StringView p_path) const {
     }
     return -1;
 }
+*/
 #endif
 VariantType fromQVariantType(QVariant::Type t) {
     switch(t) {
@@ -575,6 +577,12 @@ int ResourceCache::get_cached_resource_count() {
     lock->read_unlock();
 
     return rc;
+}
+
+HResource ResourceManager::load(const ResourcePath &filePath, se::ResourceLoadFlags loadFlags) {
+    auto res=ResourceLoader::load(filePath);
+    HResource result(res,se::UUID::generate());
+    return result;
 }
 
 void ResourceCache::dump(StringView p_file, bool p_short) {

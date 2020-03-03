@@ -238,7 +238,7 @@ public:
         uint32_t flags=0; // put here to align next field to 8 bytes
         HashSet<Texture *> proxy_owners;
         Vector<Ref<Image> > images; //TODO: SEGS: consider using FixedVector here
-        String path;
+        //String path;
 
         RenderTarget *render_target = nullptr;
         Texture *proxy=nullptr;
@@ -321,8 +321,8 @@ public:
     void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth) override;
     void texture_bind(RID p_texture, uint32_t p_texture_no) override;
 
-    void texture_set_path(RID p_texture, StringView p_path) override;
-    const String &texture_get_path(RID p_texture) const override;
+//    void texture_set_path(RID p_texture, StringView p_path) override;
+//    const String &texture_get_path(RID p_texture) const override;
 
     void texture_set_shrink_all_x2_on_set_data(bool p_enable) override;
 

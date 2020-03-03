@@ -98,25 +98,25 @@ public:
     FUNC3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
     FUNC3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
 
-    void texture_set_path(RID p1, StringView p2) override {
-        if (Thread::get_caller_id() != server_thread) {
-            String by_val(p2);
-            command_queue.push( [this,p1,by_val]() { server_name->texture_set_path(p1, by_val);});
-        } else {
-            server_name->texture_set_path(p1, p2);
-        }
-    }
+//    void texture_set_path(RID p1, StringView p2) override {
+//        if (Thread::get_caller_id() != server_thread) {
+//            String by_val(p2);
+//            command_queue.push( [this,p1,by_val]() { server_name->texture_set_path(p1, by_val);});
+//        } else {
+//            server_name->texture_set_path(p1, p2);
+//        }
+//    }
 
-    const String &texture_get_path(RID p1) const override {
-        if (Thread::get_caller_id() != server_thread) {
-            const String *ret;
-            command_queue.push_and_sync( [this,p1,&ret]() { ret = &server_name->texture_get_path(p1);});
-            SYNC_DEBUG
-            return *ret;
-        } else {
-            return server_name->texture_get_path(p1);
-        }
-    }
+//    const String &texture_get_path(RID p1) const override {
+//        if (Thread::get_caller_id() != server_thread) {
+//            const String *ret;
+//            command_queue.push_and_sync( [this,p1,&ret]() { ret = &server_name->texture_get_path(p1);});
+//            SYNC_DEBUG
+//            return *ret;
+//        } else {
+//            return server_name->texture_get_path(p1);
+//        }
+//    }
     FUNC1(texture_set_shrink_all_x2_on_set_data, bool)
     FUNC1S(texture_debug_usage, Vector<TextureInfo> *)
 

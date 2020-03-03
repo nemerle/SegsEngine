@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/math/vector3.h"
 #include "core/math/vector2.h"
 #include "core/math/quat.h"

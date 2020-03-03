@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/file_access.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/map.h"
 #include "core/variant.h"
 #include "core/string.h"
@@ -57,7 +57,7 @@ public:
     struct ResourceParser {
 
         void *userdata;
-        //ParseResourceFunc func;
+        ParseResourceFunc func;
         ParseResourceFunc ext_func;
         ParseResourceFunc sub_func;
     };

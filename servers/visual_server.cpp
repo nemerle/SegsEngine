@@ -1568,8 +1568,8 @@ void VisualServer::_bind_methods() {
     MethodBinder::bind_method(D_METHOD("texture_get_height", {"texture"}), &VisualServer::texture_get_height);
     MethodBinder::bind_method(D_METHOD("texture_get_depth", {"texture"}), &VisualServer::texture_get_depth);
     MethodBinder::bind_method(D_METHOD("texture_set_size_override", {"texture", "width", "height", "depth"}), &VisualServer::texture_set_size_override);
-    MethodBinder::bind_method(D_METHOD("texture_set_path", {"texture", "path"}), &VisualServer::texture_set_path);
-    MethodBinder::bind_method(D_METHOD("texture_get_path", {"texture"}), &VisualServer::texture_get_path);
+//    MethodBinder::bind_method(D_METHOD("texture_set_path", {"texture", "path"}), &VisualServer::texture_set_path);
+//    MethodBinder::bind_method(D_METHOD("texture_get_path", {"texture"}), &VisualServer::texture_get_path);
     MethodBinder::bind_method(D_METHOD("texture_set_shrink_all_x2_on_set_data", {"shrink"}), &VisualServer::texture_set_shrink_all_x2_on_set_data);
     MethodBinder::bind_method(D_METHOD("texture_bind", {"texture", "number"}), &VisualServer::texture_bind);
 

@@ -245,9 +245,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
         if (node->value.get_type() == VariantType::OBJECT) {
             RES res(node->value);
             if (res && !res->get_path().empty()) {
-                value_text = "preload(\"" + res->get_path() + "\")";
+                value_text = "preload(\"" + res->get_path().to_string() + "\")";
                 if (symbol.documentation.empty()) {
-                    auto S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path());
+                    auto S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path().to_string());
                     if (S!=GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.end()) {
                         symbol.documentation = S->second->class_symbol.documentation;
                     }

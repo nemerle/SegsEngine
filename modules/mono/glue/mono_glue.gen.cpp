@@ -234,7 +234,7 @@
 #include "modules/regex/regex.h"
 #include "scene/3d/remote_transform.h"
 #include "scene/2d/remote_transform_2d.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/resource_importer.h"

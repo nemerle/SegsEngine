@@ -142,7 +142,7 @@ public:
     /* TEXTURE API */
 
     RID texture_create() override { return BINDBASE->texture_create(); }
-    void texture_allocate(RID arg1, int arg2, int arg3, int arg4, Image::Format arg5, VS::TextureType arg6, uint32_t arg7) override { DISPLAY_CHANGED BINDBASE->texture_allocate(arg1, arg2, arg3, arg4, arg5, arg6, arg7); }
+    void texture_allocate(RID arg1, int arg2, int arg3, int arg4, Image::Format arg5, VS::TextureType arg6, uint32_t arg7) override { DISPLAY_CHANGED VSG::storage->texture_allocate(arg1, arg2, arg3, arg4, arg5, arg6, arg7); }
     void texture_set_data(RID arg1, const Ref<Image> & arg2, int arg3) override { DISPLAY_CHANGED BINDBASE->texture_set_data(arg1, arg2, arg3); }
     void texture_set_data_partial(RID arg1, const Ref<Image> & arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10) override { DISPLAY_CHANGED BINDBASE->texture_set_data_partial(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10); }
     Ref<Image> texture_get_data(RID arg1, int arg2) const override { return BINDBASE->texture_get_data(arg1, arg2); }
@@ -161,8 +161,8 @@ public:
     void texture_set_detect_srgb_callback(RID arg1, TextureDetectCallback arg2, void * arg3) override { DISPLAY_CHANGED BINDBASE->texture_set_detect_srgb_callback(arg1, arg2, arg3); }
     void texture_set_detect_normal_callback(RID arg1, TextureDetectCallback arg2, void * arg3) override { DISPLAY_CHANGED BINDBASE->texture_set_detect_normal_callback(arg1, arg2, arg3); }
 
-    void texture_set_path(RID arg1, StringView arg2) override { DISPLAY_CHANGED BINDBASE->texture_set_path(arg1, arg2); }
-    const String & texture_get_path(RID arg1) const override { return BINDBASE->texture_get_path(arg1); }
+//    void texture_set_path(RID arg1, StringView arg2) override { DISPLAY_CHANGED VSG::storage->texture_set_path(arg1, arg2); }
+//    const String & texture_get_path(RID arg1) const override { return BINDBASE->texture_get_path(arg1); }
     void texture_set_shrink_all_x2_on_set_data(bool arg1) override { DISPLAY_CHANGED BINDBASE->texture_set_shrink_all_x2_on_set_data(arg1); }
     void texture_debug_usage(Vector<TextureInfo> * arg1) override { DISPLAY_CHANGED BINDBASE->texture_debug_usage(arg1); }
 

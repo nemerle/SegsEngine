@@ -11,8 +11,10 @@ namespace se {
 class GODOT_EXPORT ResourceManifest : public RefCounted {
     GDCLASS(ResourceManifest,RefCounted)
 public:
-    /**	Registers a new resource path in the manifest, optionally \a md5 of the resource can be provided */
-    void register_resource(const se::UUID& uuid, const ResourcePath& filePath,const String &md5={});
+    /**	Registers a new resource path in the manifest
+     *@note Registering a new resource path for a resource that already exists will override the path
+     */
+    void register_resource(const se::UUID& uuid, const ResourcePath& filePath);
 
     /**	Removes a resource from the manifest. */
     void unregister_resource(const se::UUID& uuid);

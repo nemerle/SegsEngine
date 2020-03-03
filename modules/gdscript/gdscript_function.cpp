@@ -150,7 +150,7 @@ static String _get_var_type(const Variant *p_var) {
         } else {
             if (ObjectDB::instance_validate(bobj)) {
                 if (bobj->get_script_instance())
-                    basestr = String(bobj->get_class()) + " (" + PathUtils::get_file(bobj->get_script_instance()->get_script()->get_path()) + ")";
+                    basestr = String(bobj->get_class()) + " (" + PathUtils::get_file(bobj->get_script_instance()->get_script()->get_path().to_string()) + ")";
                 else
                     basestr = bobj->get_class();
             } else {
@@ -841,7 +841,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
                 GD_ERR_BREAK(!base_type);
 
                 if (src->get_type() != VariantType::OBJECT && src->get_type() != VariantType::NIL) {
-                    err_text = String("Trying to assign a non-object value to a variable of type '") + PathUtils::get_file(base_type->get_path()) + "'.";
+                    err_text = String("Trying to assign a non-object value to a variable of type '") + PathUtils::get_file(base_type->get_path().to_string()) + "'.";
                     OPCODE_BREAK;
                 }
 
@@ -850,7 +850,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
                     ScriptInstance *scr_inst = src->as<Object *>()->get_script_instance();
                     if (!scr_inst) {
                         err_text = "Trying to assign value of type '" + String(src->as<Object *>()->get_class_name()) +
-                                   "' to a variable of type '" + PathUtils::get_file(base_type->get_path()) + "'.";
+                                   "' to a variable of type '" + PathUtils::get_file(base_type->get_path().to_string()) + "'.";
                         OPCODE_BREAK;
                     }
 
@@ -866,8 +866,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
                     }
 
                     if (!valid) {
-                        err_text = "Trying to assign value of type '" + String(PathUtils::get_file(src->as<Object *>()->get_script_instance()->get_script()->get_path())) +
-                                   "' to a variable of type '" + PathUtils::get_file(base_type->get_path()) + "'.";
+                        err_text = "Trying to assign value of type '" + String(PathUtils::get_file(src->as<Object *>()->get_script_instance()->get_script()->get_path().to_string())) +
+                                   "' to a variable of type '" + PathUtils::get_file(base_type->get_path().to_string()) + "'.";
                         OPCODE_BREAK;
                     }
                 }
@@ -943,7 +943,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
                 if (src->get_type() != VariantType::OBJECT && src->get_type() != VariantType::NIL) {
-                    err_text = "Trying to assign a non-object value to a variable of type '" + String(PathUtils::get_file(base_type->get_path())) + "'.";
+                    err_text = "Trying to assign a non-object value to a variable of type '" + String(PathUtils::get_file(base_type->get_path().to_string())) + "'.";
                     OPCODE_BREAK;
                 }
 #endif
@@ -1843,7 +1843,9 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
     ERR_FAIL_COND_V(!function, Variant());
     if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
-        ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + ::to_string(state.line));
+        ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) +
+                                          "()' after yield, but class instance is gone. At script: " +
+                                          state.script->get_path().to_string() + ":" + ::to_string(state.line));
 #else
         return Variant();
 #endif

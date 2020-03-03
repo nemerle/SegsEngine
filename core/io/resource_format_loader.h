@@ -5,7 +5,7 @@
 #include "core/string.h"
 #include "core/forward_decls.h"
 #include "core/hash_map.h"
-#include "core/resource_path.h"
+#include "core/resources_subsystem/resource_path.h"
 
 template <class T>
 struct Comparator;
@@ -50,7 +50,7 @@ public:
     virtual bool exists(StringView p_path) const;
     virtual void get_recognized_extensions(Vector<String> &p_extensions) const;
     virtual void get_recognized_extensions_for_type(StringView p_type, Vector<String> &p_extensions) const;
-    virtual bool recognize_path(StringView p_path, StringView p_for_type = StringView()) const;
+    virtual bool recognize_path(StringView p_path) const;
     virtual bool handles_type(StringView p_type) const;
     virtual String get_resource_type(StringView p_path) const;
     virtual void get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types = false);

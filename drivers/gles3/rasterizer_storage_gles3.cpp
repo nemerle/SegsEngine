@@ -1346,19 +1346,19 @@ void RasterizerStorageGLES3::texture_set_size_override(RID p_texture, int p_widt
     texture->height = p_height;
 }
 
-void RasterizerStorageGLES3::texture_set_path(RID p_texture, StringView p_path) {
-    Texture *texture = texture_owner.get(p_texture);
-    ERR_FAIL_COND(!texture);
+//void RasterizerStorageGLES3::texture_set_path(RID p_texture, StringView p_path) {
+//    Texture *texture = texture_owner.get(p_texture);
+//    ERR_FAIL_COND(!texture);
 
-    texture->path = p_path;
-}
+//    texture->path = p_path;
+//}
 
-const String &RasterizerStorageGLES3::texture_get_path(RID p_texture) const {
+//const String &RasterizerStorageGLES3::texture_get_path(RID p_texture) const {
 
-    Texture *texture = texture_owner.get(p_texture);
-    ERR_FAIL_COND_V(!texture, null_string);
-    return texture->path;
-}
+//    Texture *texture = texture_owner.get(p_texture);
+//    ERR_FAIL_COND_V(!texture, null_string);
+//    return texture->path;
+//}
 void RasterizerStorageGLES3::texture_debug_usage(Vector<VisualServer::TextureInfo> *r_info) {
 
     List<RID> textures;
@@ -1370,7 +1370,7 @@ void RasterizerStorageGLES3::texture_debug_usage(Vector<VisualServer::TextureInf
         if (!t)
             continue;
         VisualServer::TextureInfo tinfo;
-        tinfo.path = t->path;
+        //tinfo.path = t->path;
         tinfo.format = t->format;
         tinfo.width = t->alloc_width;
         tinfo.height = t->alloc_height;

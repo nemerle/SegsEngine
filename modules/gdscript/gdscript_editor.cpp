@@ -296,7 +296,7 @@ String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
 
     ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, String());
     int l = _debug_call_stack_pos - p_level - 1;
-    return _call_stack[l].function->get_source().asCString();
+    return _call_stack[l].function->get_source();
 }
 void GDScriptLanguage::debug_get_stack_level_locals(int p_level, Vector<String> *p_locals, Vector<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 

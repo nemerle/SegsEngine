@@ -327,9 +327,13 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
         if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
 
             if (ScriptDebugger::get_singleton()) {
-                GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
+                GDScriptLanguage::get_singleton()->debug_break_parse(get_path().to_string(), 1,
+                        "Script inherits from native type '" + String(top->native->get_name()) +
+                                "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
             }
-            ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type '" + p_this->get_class() + "'" + ".");
+            ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) +
+                                            "', so it can't be instanced in object of type '" + p_this->get_class() +
+                                            "'" + ".");
         }
     }
 
@@ -402,7 +406,7 @@ bool GDScript::_update_exports() {
         String basedir = path;
 
         if (basedir.empty())
-            basedir = get_path();
+            basedir = get_path().to_string();
 
         if (!basedir.empty())
             basedir = PathUtils::get_base_dir(basedir);
@@ -424,11 +428,11 @@ bool GDScript::_update_exports() {
 
             if (c->extends_used) {
                 String path;
-                if (!c->extends_file.empty() && c->extends_file.asCString() != get_path()) {
+                if (!c->extends_file.empty() && c->extends_file.asCString() != get_path().to_string()) {
                     path = c->extends_file.asCString();
                     if (PathUtils::is_rel_path(path)) {
 
-                        String base = get_path();
+                        String base = get_path().to_string();
                         if (base.empty() || PathUtils::is_rel_path(base)) {
 
                             ERR_PRINT("Could not resolve relative path for parent class: " + path);
@@ -444,7 +448,7 @@ bool GDScript::_update_exports() {
                 }
 
                 if (!path.empty()) {
-                    if (path != get_path()) {
+                    if (path != get_path().to_string()) {
 
                         Ref<GDScript> bf = ResourceLoader::load<GDScript>(path);
 
@@ -549,7 +553,7 @@ Error GDScript::reload(bool p_keep_state) {
     String basedir = path;
 
     if (basedir.empty())
-        basedir = get_path();
+        basedir = get_path().to_string();
 
     if (!basedir.empty())
         basedir = PathUtils::get_base_dir(basedir);
@@ -564,7 +568,7 @@ Error GDScript::reload(bool p_keep_state) {
     Error err = parser.parse(source, basedir, false, path);
     if (err) {
         if (ScriptDebugger::get_singleton()) {
-            GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_error_line(), "Parser Error: " + parser.get_error());
+            GDScriptLanguage::get_singleton()->debug_break_parse(get_path().to_string(), parser.get_error_line(), "Parser Error: " + parser.get_error());
         }
         _err_print_error("GDScript::reload", path.empty() ? "built-in" : path.c_str(),
                          parser.get_error_line(), ("Parse Error: " + parser.get_error()), {},ERR_HANDLER_SCRIPT);
@@ -580,7 +584,7 @@ Error GDScript::reload(bool p_keep_state) {
 
         if (can_run) {
             if (ScriptDebugger::get_singleton()) {
-                GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
+                GDScriptLanguage::get_singleton()->debug_break_parse(get_path().to_string(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
             }
             _err_print_error("GDScript::reload", path.empty() ? "built-in" : path.c_str(), compiler.get_error_line(),
                              ("Compile Error: " + compiler.get_error()), {},ERR_HANDLER_SCRIPT);
@@ -593,7 +597,7 @@ Error GDScript::reload(bool p_keep_state) {
     Vector<ScriptLanguage::StackInfo> si;
     for (const GDScriptWarning &warning : parser.get_warnings()) {
         if (ScriptDebugger::get_singleton()) {
-            ScriptDebugger::get_singleton()->send_error({}, get_path(), warning.line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
+            ScriptDebugger::get_singleton()->send_error({}, get_path().to_string(), warning.line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
         }
     }
 #endif
@@ -758,14 +762,14 @@ Error GDScript::load_byte_code(StringView p_path) {
     String basedir = path;
 
     if (basedir.empty())
-        basedir = get_path();
+        basedir = get_path().to_string();
 
     if (!basedir.empty())
         basedir = PathUtils::get_base_dir(basedir);
 
     valid = false;
     GDScriptParser parser;
-    Error err = parser.parse_bytecode(bytecode, basedir, get_path());
+    Error err = parser.parse_bytecode(bytecode, basedir, get_path().to_string());
     if (err) {
         _err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : path.c_str(), parser.get_error_line(),
                 ("Parse Error: " + parser.get_error()), {},ERR_HANDLER_SCRIPT);
@@ -1595,8 +1599,8 @@ void GDScriptLanguage::reload_all_scripts() {
 
     SelfList<GDScript> *elem = script_list.first();
     while (elem) {
-        if (PathUtils::is_resource_file(elem->self()->get_path())) {
-            print_verbose("GDScript: Found: " + elem->self()->get_path());
+        if (PathUtils::is_resource_file(elem->self()->get_path().to_string())) {
+            print_verbose("GDScript: Found: " + elem->self()->get_path().to_string());
             scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
         }
         elem = elem->next();
@@ -1611,8 +1615,8 @@ void GDScriptLanguage::reload_all_scripts() {
 
     for (Ref<GDScript> &E : scripts) {
 
-        print_verbose("GDScript: Reloading: " + E->get_path());
-        E->load_source_code(E->get_path());
+        print_verbose("GDScript: Reloading: " + E->get_path().to_string());
+        E->load_source_code(E->get_path().to_string());
         E->reload(true);
     }
 #endif
@@ -1630,7 +1634,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
     SelfList<GDScript> *elem = script_list.first();
     while (elem) {
-        if (PathUtils::is_resource_file(elem->self()->get_path())) {
+        if (PathUtils::is_resource_file(elem->self()->get_path().to_string())) {
 
             scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
         }
@@ -2216,7 +2220,7 @@ RES ResourceFormatLoaderGDScript::load(StringView p_path, StringView p_original_
     if (StringUtils::ends_with(p_path,".gde") || StringUtils::ends_with(p_path,".gdc")) {
 
         script->set_script_path(p_original_path); // script needs this.
-        script->set_path(p_original_path);
+        script->set_path(ResourcePath(p_original_path));
         Error err = script->load_byte_code(p_path);
         ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load byte code from file '" + String(p_path) + "'.");
 
@@ -2225,7 +2229,7 @@ RES ResourceFormatLoaderGDScript::load(StringView p_path, StringView p_original_
         ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load source code from file '" + String(p_path) + "'.");
 
         script->set_script_path(p_original_path); // script needs this.
-        script->set_path(p_original_path);
+        script->set_path(ResourcePath(p_original_path));
 
         script->reload();
     }

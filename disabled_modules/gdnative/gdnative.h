@@ -34,7 +34,7 @@
 #include "core/io/resource_saver.h"
 #include "core/os/thread_safe.h"
 #include "core/map.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 #include "gdnative/gdnative.h"
 #include "gdnative_api_struct.gen.h"

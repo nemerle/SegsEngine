@@ -36,6 +36,7 @@
 #include "core/method_bind.h"
 #include "core/method_enum_caster.h"
 #include "core/object_tooling.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/os/os.h"
 #include "core/string_formatter.h"
 #include "core/translation_helpers.h"
@@ -1934,7 +1935,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
                 if (ResourceCache::has(base_script)) {
 
-                    script = ObjectNS::cast_to<Script>(ResourceCache::get(base_script));
+                    script = gResourceManager().load<Script>(base_script).get();
                 } else {
                     return;
                 }
@@ -2112,8 +2113,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
                 }
 
                 if (ResourceCache::has(base_script)) {
-
-                    Ref<Script> script(ObjectNS::cast_to<Script>(ResourceCache::get(base_script)));
+                    HScript script = gResourceManager().load<Script>(base_script);
                     if (script) {
 
                         property.hint = PropertyHint::PropertyOfScript;

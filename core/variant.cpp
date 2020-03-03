@@ -52,7 +52,7 @@
 #include "core/string.h"
 #include "core/pool_vector.h"
 #include "core/print_string.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/string_formatter.h"
 #include "core/variant_parser.h"
 #include "core/script_language.h"

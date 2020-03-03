@@ -35,7 +35,7 @@
 #include "core/hash_set.h"
 #include "core/hash_map.h"
 #include "core/pair.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/variant.h"
 #include "core/string.h"
 #include "core/property_info.h"
@@ -442,7 +442,7 @@ class GODOT_EXPORT ScriptDebugger {
     int depth;
 
     static ScriptDebugger *singleton;
-    Map<int, HashSet<StringName> > breakpoints;
+    Map<int, HashSet<String> > breakpoints;
 
     ScriptLanguage *break_lang;
 
@@ -456,12 +456,12 @@ public:
     int get_depth() const;
 
     String breakpoint_find_source(StringView p_source) const;
-    void insert_breakpoint(int p_line, const StringName &p_source);
-    void remove_breakpoint(int p_line, const StringName &p_source);
-    bool is_breakpoint(int p_line, const StringName &p_source) const;
+    void insert_breakpoint(int p_line, const String &p_source);
+    void remove_breakpoint(int p_line, const String &p_source);
+    bool is_breakpoint(int p_line, const String &p_source) const;
     bool is_breakpoint_line(int p_line) const;
     void clear_breakpoints();
-    const Map<int, HashSet<StringName> > &get_breakpoints() const { return breakpoints; }
+    const Map<int, HashSet<String> > &get_breakpoints() const { return breakpoints; }
 
     virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
     virtual void idle_poll();

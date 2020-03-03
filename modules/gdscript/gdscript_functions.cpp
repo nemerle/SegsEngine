@@ -1079,7 +1079,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
                 r_error.expected = VariantType::STRING;
                 r_ret = Variant();
             } else {
-                r_ret = ResourceLoader::load(p_args[0]->as<String>());
+                r_ret = ResourceLoader::load(ResourcePath(p_args[0]->as<String>()));
             }
 
         } break;
@@ -1144,7 +1144,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
                     Dictionary d;
                     d["@subpath"] = cp;
-                    d["@path"] = p->get_path();
+                    d["@path"] = p->get_path().to_string();
 
                     p = base.get();
 

@@ -32,7 +32,7 @@
 #define ROOM_BOUNDS_H
 
 #include "core/math/bsp_tree.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 
 // FIXME: left for reference but will be removed when portals are reimplemented using Area
 #if 0

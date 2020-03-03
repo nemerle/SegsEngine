@@ -36,7 +36,7 @@
 #include "core/oa_hash_map.h"
 #include "core/ordered_hash_map.h"
 #include "core/os/thread_safe.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/script_language.h"
 #include "core/self_list.h"
 #include "core/hash_set.h"

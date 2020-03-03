@@ -33,7 +33,7 @@
 #include "core/object.h"
 #include "core/math/transform_2d.h"
 #include "core/reference.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/rid.h"
 
 #include <utility>

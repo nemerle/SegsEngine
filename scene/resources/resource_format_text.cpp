@@ -52,7 +52,7 @@
 namespace {
 class ResourceFormatSaverTextInstance {
 
-    String local_path;
+    ResourcePath local_path;
 
     Ref<PackedScene> packed_scene;
 
@@ -202,34 +202,28 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParserStream *p_
 
     int id = token.value;
 
-    if (!ignore_resource_parsing) {
-
-        if (!ext_resources.contains(id)) {
-            r_err_str = "Can't load cached ext-resource #" + itos(id);
-            return ERR_PARSE_ERROR;
-        }
-
-        String path = ext_resources[id].path;
-        StringView type = ext_resources[id].type;
-
-        if (!StringUtils::contains(path,"://") && PathUtils::is_rel_path(path)) {
-            // path is relative to file being loaded, so convert to a resource path
-            path = ProjectSettings::get_singleton()->localize_path(PathUtils::plus_file(PathUtils::get_base_dir(res_path),path));
-        }
-
-        r_res = ResourceLoader::load(path, type);
-
-        if (not r_res) {
-            WARN_PRINT("Couldn't load external resource: " + path);
-        }
-    } else {
-        r_res = RES();
-    }
-
     VariantParser::get_token(p_stream, token, line, r_err_str);
     if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
         r_err_str = "Expected ')'";
         return ERR_PARSE_ERROR;
+    }
+
+    if (ignore_resource_parsing) {
+        r_res = RES();
+        return OK;
+    }
+
+    if (!ext_resources.contains(id)) {
+        r_err_str = "Can't load cached ext-resource #" + itos(id);
+        return ERR_PARSE_ERROR;
+    }
+    const String &path = ext_resources[id].path;
+    StringView type = ext_resources[id].type;
+
+    r_res = ResourceManager::load(path, se::ResourceLoadFlag::KeepInternalRef);
+
+    if (not r_res) {
+        WARN_PRINT("Couldn't load external resource: " + path.to_string());
     }
 
     return OK;
@@ -440,6 +434,78 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
     return packed_scene;
 }
 
+Error ResourceInteractiveLoaderText::poll_handle_ext_resource()
+{
+    if (!next_tag.fields.contains("path")) {
+        error = ERR_FILE_CORRUPT;
+        error_text = "Missing 'path' in external resource tag";
+        _printerr();
+        return error;
+    }
+
+    if (!next_tag.fields.contains("type")) {
+        error = ERR_FILE_CORRUPT;
+        error_text = "Missing 'type' in external resource tag";
+        _printerr();
+        return error;
+    }
+
+    if (!next_tag.fields.contains("id")) {
+        error = ERR_FILE_CORRUPT;
+        error_text = "Missing 'id' in external resource tag";
+        _printerr();
+        return error;
+    }
+
+    ResourcePath path = ResourcePath(next_tag.fields["path"].as<String>());
+    StringName type = next_tag.fields["type"];
+    int index = next_tag.fields["id"];
+
+    if (path.is_relative()) {
+        // path is relative to file being loaded, so convert to a resource path
+        path = ProjectSettings::get_singleton()->localize_path(ResourcePath(local_path).cd("..").cd(path));
+    }
+
+    if (remaps.contains(path)) {
+        path = remaps[path];
+    }
+
+    RES res(ResourceLoader::load(path, type));
+
+    if (not res) {
+
+        if (ResourceLoader::get_abort_on_missing_resources()) {
+            error = ERR_FILE_CORRUPT;
+            error_text = "[ext_resource] referenced nonexistent resource at: " + path;
+            _printerr();
+            return error;
+        } else {
+            ResourceLoader::notify_dependency_error(local_path, path, type);
+        }
+    } else {
+
+        resource_cache.push_back(res);
+#ifdef TOOLS_ENABLED
+        //remember ID for saving
+        res->set_id_for_path(local_path, index);
+#endif
+    }
+
+    ExtResource er;
+    er.path = path;
+    er.type = type;
+    ext_resources[index] = er;
+
+    error = VariantParser::parse_tag(stream, lines, error_text, next_tag, &rp);
+
+    if (error) {
+        _printerr();
+    }
+
+    resource_current++;
+    return error;
+}
+
 Error ResourceInteractiveLoaderText::poll() {
 
     if (error != OK)
@@ -447,74 +513,7 @@ Error ResourceInteractiveLoaderText::poll() {
 
     if (next_tag.name == "ext_resource") {
 
-        if (!next_tag.fields.contains("path")) {
-            error = ERR_FILE_CORRUPT;
-            error_text = "Missing 'path' in external resource tag";
-            _printerr();
-            return error;
-        }
-
-        if (!next_tag.fields.contains("type")) {
-            error = ERR_FILE_CORRUPT;
-            error_text = "Missing 'type' in external resource tag";
-            _printerr();
-            return error;
-        }
-
-        if (!next_tag.fields.contains("id")) {
-            error = ERR_FILE_CORRUPT;
-            error_text = "Missing 'id' in external resource tag";
-            _printerr();
-            return error;
-        }
-
-        String path = next_tag.fields["path"];
-        StringName type = next_tag.fields["type"];
-        int index = next_tag.fields["id"];
-
-        if (!StringUtils::contains(path,"://") && PathUtils::is_rel_path(path)) {
-            // path is relative to file being loaded, so convert to a resource path
-            path = ProjectSettings::get_singleton()->localize_path(PathUtils::plus_file(PathUtils::get_base_dir(local_path),path));
-        }
-
-        if (remaps.contains(path)) {
-            path = remaps[path];
-        }
-
-        RES res(ResourceLoader::load(path, type));
-
-        if (not res) {
-
-            if (ResourceLoader::get_abort_on_missing_resources()) {
-                error = ERR_FILE_CORRUPT;
-                error_text = "[ext_resource] referenced nonexistent resource at: " + path;
-                _printerr();
-                return error;
-            } else {
-                ResourceLoader::notify_dependency_error(local_path, path, type);
-            }
-        } else {
-
-            resource_cache.push_back(res);
-#ifdef TOOLS_ENABLED
-            //remember ID for saving
-            res->set_id_for_path(local_path, index);
-#endif
-        }
-
-        ExtResource er;
-        er.path = path;
-        er.type = type;
-        ext_resources[index] = er;
-
-        error = VariantParser::parse_tag(stream, lines, error_text, next_tag, &rp);
-
-        if (error) {
-            _printerr();
-        }
-
-        resource_current++;
-        return error;
+        return poll_handle_ext_resource();
 
     } else if (next_tag.name == "sub_resource") {
 
@@ -1415,24 +1414,22 @@ String ResourceFormatSaverTextInstance::_write_resources(void *ud, const RES &p_
 String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 
     if (external_resources.contains(res)) {
-
         return "ExtResource( " + itos(external_resources[res]) + " )";
-    } else {
-
-        if (internal_resources.contains(res)) {
-            return "SubResource( " + itos(internal_resources[res]) + " )";
-        } else if (res->get_path().length() && !StringUtils::contains(res->get_path(),"::") ) {
-            if (res->get_path() == local_path) { //circular reference attempt
-                return "null";
-            }
-            //external resource
-            String path = relative_paths ? PathUtils::path_to_file(local_path,res->get_path()) : res->get_path();
-            return "Resource( \"" + path + "\" )";
-        } else {
-            ERR_FAIL_V_MSG("null", "Resource was not pre cached for the resource section, bug?");
-            //internal resource
-        }
     }
+    if (internal_resources.contains(res)) {
+        return "SubResource( " + itos(internal_resources[res]) + " )";
+    }
+
+    if (res->get_path().references_nested_resource() ) {
+        //internal resource
+        ERR_FAIL_V_MSG("null", "Resource was not pre cached for the resource section, bug?");
+    }
+    if (res->get_path() == local_path) { //circular reference attempt
+        return "null";
+    }
+    //external resource
+    String path = relative_paths ? PathUtils::path_to_file(local_path,res->get_path()) : res->get_path();
+    return "Resource( \"" + path + "\" )";
 }
 
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {

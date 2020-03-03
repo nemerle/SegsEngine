@@ -41,6 +41,7 @@
 #include "core/string_formatter.h"
 #include "core/object_tooling.h"
 #include "core/property_info.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/string.h"
 #include "core/translation_helpers.h"
 #include "core/variant.h"
@@ -2132,7 +2133,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
             for (int i = 0; i < files.size(); i++) {
 
-                Ref<Resource> res(ResourceLoader::load(files[i].as<String>()));
+                HResource res(gResourceManager().load(files[i].as<String>()));
                 if (not res)
                     continue;
 
@@ -2437,8 +2438,8 @@ String VisualScriptEditor::get_name() {
 
     String name;
 
-    if (!StringUtils::contains(script->get_path(),("local://")) && StringUtils::contains(script->get_path(),("::"))) {
-        name = PathUtils::get_file(script->get_path());
+    if (!StringUtils::contains(script->get_path(),"local://") && StringUtils::contains(script->get_path(),("::"))) {
+        name = script->get_path().leaf();
         if (is_unsaved()) {
             name += ("(*)");
         }
@@ -3596,7 +3597,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, StringView
                     }
                 }
                 if (tg.script) {
-                    vsfc->set_base_script(tg.script->get_path());
+                    vsfc->set_base_script(tg.script->get_path().to_string());
                 }
             } else if (tg.type == VariantType::NIL) {
                 vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
@@ -3628,7 +3629,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, StringView
                         }
                     }
                     if (tg.script) {
-                        vspg->set_base_script(tg.script->get_path());
+                        vspg->set_base_script(tg.script->get_path().to_string());
                     }
                 } else if (tg.type == VariantType::NIL) {
                     vspg->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
@@ -3657,7 +3658,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, StringView
                     }
                 }
                 if (tg.script) {
-                    vsp->set_base_script(tg.script->get_path());
+                    vsp->set_base_script(tg.script->get_path().to_string());
                 }
             } else if (tg.type == VariantType::NIL) {
                 vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);

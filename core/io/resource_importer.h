@@ -63,7 +63,7 @@ public:
     RES load(StringView p_path, StringView p_original_path = StringView(), Error *r_error = nullptr) override;
     void get_recognized_extensions(Vector<String> &p_extensions) const override;
     void get_recognized_extensions_for_type(StringView p_type, Vector<String> &p_extensions) const override;
-    bool recognize_path(StringView p_path, StringView p_for_type = StringView()) const override;
+    bool recognize_path(StringView p_path) const override;
     bool handles_type(StringView p_type) const override;
     String get_resource_type(StringView p_path) const override;
     virtual Variant get_resource_metadata(StringView p_path) const;

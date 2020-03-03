@@ -5,7 +5,7 @@
 */
 #pragma once
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/map.h"
 #include "core/string.h"
 #include "scene/resources/packed_scene.h"

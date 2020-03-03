@@ -57,7 +57,7 @@ public:
 private:
     CallMode call_mode;
     StringName base_type;
-    String base_script;
+    ResourcePath base_script;
     VariantType basic_type;
     NodePath base_path;
     StringName function;

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/self_list.h"
 #include "scene/resources/shader_enums.h"
 #include "core/color.h"

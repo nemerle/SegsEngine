@@ -425,7 +425,7 @@ public:
             csi[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
             if (_call_stack[i].function) {
                 csi[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name().asCString();
-                csi[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+                csi[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path().to_string();
             }
         }
         return csi;

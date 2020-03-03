@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/project_settings.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "servers/physics_2d_server.h"
 
 class VisibilityNotifier2D;

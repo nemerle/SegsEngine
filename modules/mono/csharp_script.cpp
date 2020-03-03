@@ -2736,10 +2736,10 @@ Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, i
 
 void CSharpScript::_resource_path_changed() {
 
-    String path = get_path();
+    const ResourcePath &path = get_path();
 
     if (!path.empty()) {
-        name = StringName(PathUtils::get_basename(PathUtils::get_file(get_path())));
+        name = StringName(PathUtils::get_basename(path.leaf()));
     }
 }
 
@@ -2860,13 +2860,13 @@ bool CSharpScript::can_instance() const {
     if (Engine::get_singleton()->is_editor_hint()) {
 
         // Hack to lower the risk of attached scripts not being added to the C# project
-        if (!get_path().empty() && !get_path().contains("::")) { // Ignore if built-in script. Can happen if the file is deleted...
+        if (!get_path().empty() && !get_path().references_nested_resource() ) { // Ignore if built-in script. Can happen if the file is deleted...
             if (_create_project_solution_if_needed()) {
                 CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
                         "Compile",
-                        ProjectSettings::get_singleton()->globalize_path(get_path()));
+                        ProjectSettings::get_singleton()->globalize_path(get_path()).to_string());
             } else {
-                ERR_PRINT("C# project could not be created; cannot add file: '" + get_path() + "'.");
+                ERR_PRINT("C# project could not be created; cannot add file: '" + get_path().to_string() + "'.");
             }
         }
     }
@@ -2884,10 +2884,10 @@ bool CSharpScript::can_instance() const {
     if (extra_cond && !script_class) {
         if (GDMono::get_singleton()->get_project_assembly() == nullptr) {
             // The project assembly is not loaded
-            ERR_FAIL_V_MSG(NULL, "Cannot instance script because the project assembly is not loaded. Script: '" + get_path() + "'.");
+            ERR_FAIL_V_MSG(false, "Cannot instance script because the project assembly is not loaded. Script: '" + get_path().to_string() + "'.");
         } else {
             // The project assembly is loaded, but the class could not found
-            ERR_FAIL_V_MSG(NULL, "Cannot instance script because the class '" + name + "' could not be found. Script: '" + get_path() + "'.");
+            ERR_FAIL_V_MSG(false, "Cannot instance script because the class '" + name + "' could not be found. Script: '" + get_path().to_string() + "'.");
         }
     }
 
@@ -2910,10 +2910,10 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
     // Search the constructor first, to fail with an error if it's not found before allocating anything else.
     GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
     if (ctor == nullptr) {
-        ERR_FAIL_COND_V_MSG(p_argcount == 0, NULL,
+        ERR_FAIL_COND_V_MSG(p_argcount == 0, nullptr,
                 "Cannot create script instance. The class '" + script_class->get_full_name() +
                         "' does not define a parameterless constructor." +
-                        (get_path().empty() ? String() : " Path: '" + get_path() + "'."));
+                        (get_path().empty() ? String() : " Path: '" + get_path().to_string() + "'."));
 
         ERR_FAIL_V_MSG(NULL, "Constructor not found.");
     }
@@ -3037,7 +3037,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
         StringName native_name(NATIVE_GDMONOCLASS_NAME(native));
         if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
             if (ScriptDebugger::get_singleton()) {
-                CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
+                CSharpLanguage::get_singleton()->debug_break_parse(get_path().to_string(), 0,
                         String("Script inherits from native type '") + native_name +
                                 "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
             }
@@ -3152,7 +3152,7 @@ Error CSharpScript::reload(bool p_keep_state) {
     if (!project_assembly)
         return ERR_FILE_MISSING_DEPENDENCIES;
 
-    const Variant *script_metadata_var = CSharpLanguage::get_singleton()->get_scripts_metadata().getptr(get_path());
+    const Variant *script_metadata_var = CSharpLanguage::get_singleton()->get_scripts_metadata().getptr(get_path().to_string());
     if (script_metadata_var) {
         Dictionary script_metadata = script_metadata_var->as<Dictionary>()["class"];
         const Variant *namespace_ = script_metadata.getptr("namespace");
@@ -3174,7 +3174,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 
     if (script_class) {
 #ifdef DEBUG_ENABLED
-        print_verbose("Found class " + script_class->get_full_name() + " for script " + get_path());
+        print_verbose("Found class " + script_class->get_full_name() + " for script " + get_path().to_string());
 #endif
 
         tool = script_class->has_attribute(CACHED_CLASS(ToolAttribute));

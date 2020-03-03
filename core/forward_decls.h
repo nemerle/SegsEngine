@@ -30,7 +30,8 @@ namespace eastl {
     class bitvector;
     template <class TKey, class TData, class HashFunc, class CompareFunc,typename Allocator, bool bCacheHashCode>
     class hash_map;
-
+    template <typename T>
+    class shared_ptr;
 }
 
 template <class T>
@@ -75,3 +76,5 @@ template <class T> struct Hasher;
 
 using UIString = class QString;
 
+template<typename T>
+using SPtr = eastl::shared_ptr<T>;

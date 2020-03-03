@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/string.h"
 #include "core/map.h"
 #include "core/hash_map.h"

@@ -42,7 +42,7 @@
 class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
     bool translation_remapped;
-    String local_path;
+    ResourcePath local_path;
     String res_path;
     String error_text;
 
@@ -118,6 +118,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
     RES resource;
 
     Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
+    Error poll_handle_ext_resource();
 
 public:
     void set_local_path(StringView p_local_path) override;

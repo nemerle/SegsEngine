@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"

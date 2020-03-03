@@ -973,7 +973,7 @@ void _OS::print_all_textures_by_size() {
             _OSCoreBindImg img;
             img.size = size;
             img.fmt = fmt;
-            img.path = E->get_path();
+            img.path = E->get_path().to_string();
             img.vram = Image::get_image_data_size(img.size.width, img.size.height, Image::Format(img.fmt));
             img.id = E->get_instance_id();
             total += img.vram;

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/math/transform.h"
 
 class GODOT_EXPORT Skin : public Resource {

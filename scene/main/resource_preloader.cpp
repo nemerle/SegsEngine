@@ -30,7 +30,7 @@
 
 #include "resource_preloader.h"
 #include "core/method_bind.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "core/pool_vector.h"
 
 IMPL_GDCLASS(ResourcePreloader)

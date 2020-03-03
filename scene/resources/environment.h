@@ -31,7 +31,7 @@
 #pragma once
 
 
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "scene/resources/sky.h"
 
 #include "servers/visual_server.h"

@@ -33,7 +33,7 @@
 #include "core/math/rect2.h"
 #include "core/image.h"
 #include "core/rid.h"
-#include "core/resource.h"
+#include "core/resources_subsystem/resource.h"
 #include "scene/resources/gradient.h"
 //
 #include "servers/visual_server_enums.h"
@@ -153,8 +153,6 @@ public:
 
     void set_size_override(const Size2 &p_size);
 
-    void set_path(StringView p_path, bool p_take_over = false) override;
-
     ImageTexture();
     ~ImageTexture() override;
 };
@@ -212,7 +210,7 @@ public:
     int get_height() const override;
     RID get_rid() const override;
 
-    void set_path(const ResourcePath &p_path, bool p_take_over) override;
+    //void set_path(const ResourcePath &p_path, bool p_take_over) override;
 
     void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const override;
     void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const override;
@@ -443,8 +441,6 @@ public:
     void set_lossy_storage_quality(float p_lossy_storage_quality);
     float get_lossy_storage_quality() const;
 
-    void set_path(StringView p_path, bool p_take_over = false) override;
-
     CubeMap();
     ~CubeMap() override;
 };
@@ -494,7 +490,6 @@ public:
     void set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_z, int p_mipmap = 0);
 
     RID get_rid() const override;
-    void set_path(StringView p_path, bool p_take_over = false) override;
 
     TextureLayered(bool p_3d = false);
     ~TextureLayered() override;
