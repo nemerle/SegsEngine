@@ -50,7 +50,7 @@ public:
 	static void make_default() { CryptoKey::_create = create; }
 	static void finalize() { CryptoKey::_create = nullptr; }
 
-    Error load(StringView p_path) override;
+    Error load(const ResourcePath &p_path) override;
     Error save(StringView p_path) override;
 
 	CryptoKeyMbedTLS() {
@@ -79,7 +79,7 @@ public:
 	static void make_default() { X509Certificate::_create = create; }
 	static void finalize() { X509Certificate::_create = nullptr; }
 
-    Error load(StringView p_path) override;
+    Error load(const ResourcePath &p_path) override;
 	Error load_from_memory(const uint8_t *p_buffer, int p_len) override;
     Error save(StringView p_path) override;
 

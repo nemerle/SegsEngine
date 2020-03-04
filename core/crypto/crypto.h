@@ -40,12 +40,13 @@ class CryptoKey : public Resource {
     GDCLASS(CryptoKey, Resource)
 
 protected:
+    Error _load(StringView p_path);
     static void _bind_methods();
     static CryptoKey *(*_create)();
 
 public:
     static CryptoKey *create();
-    virtual Error load(StringView p_path) = 0;
+    virtual Error load(const ResourcePath &p_path) = 0;
     virtual Error save(StringView p_path) = 0;
 };
 
@@ -53,12 +54,13 @@ class X509Certificate : public Resource {
     GDCLASS(X509Certificate, Resource)
 
 protected:
+    Error _load(StringView p_path);
     static void _bind_methods();
     static X509Certificate *(*_create)();
 
 public:
     static X509Certificate *create();
-    virtual Error load(StringView p_path) = 0;
+    virtual Error load(const ResourcePath &p_path) = 0;
     virtual Error load_from_memory(const uint8_t *p_buffer, int p_len) = 0;
     virtual Error save(StringView p_path) = 0;
 };

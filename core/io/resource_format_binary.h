@@ -54,8 +54,8 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
     Vector<StringName> string_map;
     Vector<IntResource> internal_resources;
     Vector<ExtResource> external_resources;
-    List<RES> resource_cache;
-    String local_path;
+    List<HResource> resource_cache;
+    ResourcePath local_path;
     ResourcePath res_path;
     String type;
     Ref<Resource> resource;
@@ -129,14 +129,15 @@ class ResourceFormatSaverBinaryInstance {
     HashMap<StringName, int> string_map;
     Vector<StringName> strings;
 
-    HashMap<RES, int> external_resources;
+    HashMap<HResource, int> external_resources;
     List<RES> saved_resources;
 
     static void _pad_buffer(FileAccess *f, int p_bytes);
     void _write_variant(const Variant &p_property);
     void _find_resources(const Variant &p_variant, bool p_main = false);
     static void save_unicode_string(FileAccess *f, StringView p_string, bool p_bit_on_len = false);
-    int get_string_index(const StringName &p_string);
+    static void save_uuid(FileAccess *f, const se::UUID &uuid);
+    int get_or_create_index_for_string(const StringName &p_string);
 
 public:
     Error save(StringView p_path, const RES &p_resource, uint32_t p_flags = 0);

@@ -60,14 +60,19 @@ public:
      * @see		load(const Path&, bool)
      */
     INVOCABLE HResource loadFromUUID(const se::UUID& uuid, bool async = false, se::ResourceLoadFlags loadFlags = se::ResourceLoadFlag::Default);
-
+    /** Attempts to retrieve file path from the provided UUID. Returns true if successful, false otherwise. */
+    INVOCABLE bool file_path_from_UUID(const UUID& uuid, ResourcePath& filePath) const;
     /**
      * Updates an existing resource handle with a new resource. Caller must ensure that new resource type matches the
      * original resource type.
      */
     void update(HResource& handle, const Ref<Resource>& resource);
+    /**
+     * @brief Retrieve the given resource's metadata information
+     */
+    void get_metadata();
 private:
-    Vector<SPtr<ResourceManifest>> mResourceManifests;
+    Vector<SPtr<ResourceManifest>> m_resource_manifests;
     SPtr<ResourceManifest> mDefaultResourceManifest;
 };
 /** Provides easier access to Resources manager. */

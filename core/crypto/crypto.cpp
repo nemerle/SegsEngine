@@ -52,10 +52,12 @@ CryptoKey *CryptoKey::create() {
         return _create();
     return nullptr;
 }
-
+Error CryptoKey::_load(StringView p_path) {
+    return load(ResourcePath(p_path));
+}
 void CryptoKey::_bind_methods() {
     MethodBinder::bind_method(D_METHOD("save", {"path"}), &CryptoKey::save);
-    MethodBinder::bind_method(D_METHOD("load", {"path"}), &CryptoKey::load);
+    MethodBinder::bind_method(D_METHOD("load", {"path"}), &CryptoKey::_load);
 }
 
 X509Certificate *(*X509Certificate::_create)() = nullptr;
@@ -65,9 +67,12 @@ X509Certificate *X509Certificate::create() {
     return nullptr;
 }
 
+Error X509Certificate::_load(StringView p_path) {
+    return load(ResourcePath(p_path));
+}
 void X509Certificate::_bind_methods() {
     MethodBinder::bind_method(D_METHOD("save", {"path"}), &X509Certificate::save);
-    MethodBinder::bind_method(D_METHOD("load", {"path"}), &X509Certificate::load);
+    MethodBinder::bind_method(D_METHOD("load", {"path"}), &X509Certificate::_load);
 }
 
 /// Crypto
@@ -112,7 +117,7 @@ Crypto::Crypto() = default;
 
 RES ResourceFormatLoaderCrypto::load(const ResourcePath &p_path, StringView p_original_path, Error *r_error) {
 
-    String el = StringUtils::to_lower(PathUtils::get_extension(p_path));
+    String el = StringUtils::to_lower(PathUtils::get_extension(p_path.leaf()));
     if (el == "crt") {
         X509Certificate *cert = X509Certificate::create();
         if (cert)
@@ -140,7 +145,7 @@ bool ResourceFormatLoaderCrypto::handles_type(StringView p_type) const {
 
 String ResourceFormatLoaderCrypto::get_resource_type(const ResourcePath &p_path) const {
 
-    String el = StringUtils::to_lower(PathUtils::get_extension(p_path));
+    String el = StringUtils::to_lower(PathUtils::get_extension(p_path.leaf()));
     if (el == "crt")
         return "X509Certificate";
     else if (el == "key")

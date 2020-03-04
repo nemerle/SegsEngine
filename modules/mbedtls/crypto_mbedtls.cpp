@@ -54,7 +54,7 @@ CryptoKey *CryptoKeyMbedTLS::create() {
     return memnew(CryptoKeyMbedTLS);
 }
 
-Error CryptoKeyMbedTLS::load(StringView p_path) {
+Error CryptoKeyMbedTLS::load(const ResourcePath &p_path) {
     ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Key is in use");
 
     PoolByteArray out;
@@ -103,7 +103,7 @@ X509Certificate *X509CertificateMbedTLS::create() {
     return memnew(X509CertificateMbedTLS);
 }
 
-Error X509CertificateMbedTLS::load(StringView p_path) {
+Error X509CertificateMbedTLS::load(const ResourcePath &p_path) {
     ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
 
     PoolByteArray out;

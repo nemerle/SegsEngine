@@ -109,7 +109,15 @@ public:
      *									they are loaded.
      */
     bool is_loaded(bool checkDependencies = true) const;
+    /**
+     * Releases an internal reference to this resource held by the resources system, if there is one.
+     *
+     * @see		Resources::release(ResourceHandleBase&)
+     */
+    void release();
 
+    /** Returns the UUID of the resource the handle is referring to. */
+    const UUID& get_uuid() const noexcept { return m_data != nullptr ? m_data->m_UUID : UUID::EMPTY; }
 protected:
     /**	Destroys the resource the handle is pointing to. */
     void destroy();

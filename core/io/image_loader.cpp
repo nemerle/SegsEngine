@@ -278,5 +278,5 @@ bool ResourceFormatLoaderImage::handles_type(StringView p_type) const {
 
 String ResourceFormatLoaderImage::get_resource_type(const ResourcePath &p_path) const {
 
-    return StringUtils::to_lower(PathUtils::get_extension(p_path)) == "image" ? "Image" : String();
+    return StringUtils::to_lower(PathUtils::get_extension(p_path.leaf())) == "image" ? "Image" : String();
 }

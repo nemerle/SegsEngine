@@ -375,7 +375,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
                         HResource res(gResourceManager().loadFromUUID(rpath));
 
                         if (not res) {
-                            WARN_PRINT("Couldn't load resource: " + rpath);
+                            WARN_PRINT("Couldn't load resource: " + rpath.to_string());
                         }
                         r_v = RES(res.get());
                     }
@@ -549,7 +549,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 
             if (!ResourceLoader::get_abort_on_missing_resources()) {
 
-                ResourceLoader::notify_dependency_error(local_path, path, external_resources[s].type);
+                ResourceLoader::notify_dependency_error(local_path, path.to_string(), external_resources[s].type);
             } else {
 
                 error = ERR_FILE_MISSING_DEPENDENCIES;
@@ -557,7 +557,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
             }
 
         } else {
-            resource_cache.push_back(res);
+            resource_cache.emplace_back(eastl::move(res));
         }
 
         stage++;
@@ -579,8 +579,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
     int subindex = 0;
 
     if (!main) {
-
-        path = internal_resources[s].path;
+        gResourceManager().file_path_from_UUID(internal_resources[s].uuid,path);
         if (path.mountpoint()=="local:") {
 #ifdef REMOVED_CODE
             path = StringUtils::replace_first(path,"local://", "");
@@ -1589,16 +1588,18 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
             //take the chance and save node path strings
             NodePath np = p_variant;
             for (int i = 0; i < np.get_name_count(); i++)
-                get_string_index(np.get_name(i));
+                get_or_create_index_for_string(np.get_name(i));
             for (int i = 0; i < np.get_subname_count(); i++)
-                get_string_index(np.get_subname(i));
+                get_or_create_index_for_string(np.get_subname(i));
 
         } break;
         default: {
         }
     }
 }
-
+void ResourceFormatSaverBinaryInstance::save_uuid(FileAccess *f, const se::UUID &uuid) {
+    f->store_buffer((const uint8_t *)&uuid,sizeof(se::UUID));
+}
 void ResourceFormatSaverBinaryInstance::save_unicode_string(FileAccess *f, StringView p_string, bool p_bit_on_len) {
 
     if (p_bit_on_len) {
@@ -1611,7 +1612,7 @@ void ResourceFormatSaverBinaryInstance::save_unicode_string(FileAccess *f, Strin
 
 }
 
-int ResourceFormatSaverBinaryInstance::get_string_index(const StringName &p_string) {
+int ResourceFormatSaverBinaryInstance::get_or_create_index_for_string(const StringName &p_string) {
 
     StringName s(p_string);
     if (string_map.contains(s))
@@ -1660,11 +1661,11 @@ Error ResourceFormatSaverBinaryInstance::save(StringView p_path, const RES &p_re
         f->store_buffer(header, 4);
     }
 
-    if (big_endian) {
-        f->store_32(1);
-        f->set_endian_swap(true);
-    } else
-        f->store_32(0);
+//    if (big_endian) {
+//        f->store_32(1);
+//        f->set_endian_swap(true);
+//    } else
+    f->store_32(0);
 
     f->store_32(0); //64 bits file, false for now
     f->store_32(VERSION_MAJOR);
@@ -1684,69 +1685,68 @@ Error ResourceFormatSaverBinaryInstance::save(StringView p_path, const RES &p_re
 
     Vector<ResourceData> resources;
 
-    {
+    for(RES &E : saved_resources ) {
 
-        for(RES &E : saved_resources ) {
+        ResourceData &rd = resources.emplace_back();
+        rd.type = E->get_class();
 
-            ResourceData &rd = resources.emplace_back();
-            rd.type = E->get_class();
+        Vector<PropertyInfo> property_list;
+        E->get_property_list(&property_list);
 
-            Vector<PropertyInfo> property_list;
-            E->get_property_list(&property_list);
+        for(PropertyInfo &F : property_list ) {
 
-            for(PropertyInfo &F : property_list ) {
+            if (skip_editor && StringUtils::begins_with(F.name,"__editor"))
+                continue;
+            if ((F.usage & PROPERTY_USAGE_STORAGE)) {
+                Property p;
+                p.name_idx = get_or_create_index_for_string(F.name);
 
-                if (skip_editor && StringUtils::begins_with(F.name,"__editor"))
-                    continue;
-                if ((F.usage & PROPERTY_USAGE_STORAGE)) {
-                    Property p;
-                    p.name_idx = get_string_index(F.name);
-
-                    if (F.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
-                        NonPersistentKey npk;
-                        npk.base = E;
-                        npk.property = F.name;
-                        if (non_persistent_map.contains(npk)) {
-                            p.value = non_persistent_map[npk];
-                        }
-                    } else {
-                        p.value = E->get(F.name);
+                if (F.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+                    NonPersistentKey npk;
+                    npk.base = E;
+                    npk.property = F.name;
+                    if (non_persistent_map.contains(npk)) {
+                        p.value = non_persistent_map[npk];
                     }
-
-                    Variant default_value = ClassDB::class_get_default_property_value(E->get_class_name(), F.name);
-
-                    if (default_value.get_type() != VariantType::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
-                        continue;
-                    }
-
-                    p.pi = F;
-
-                    rd.properties.push_back(p);
+                } else {
+                    p.value = E->get(F.name);
                 }
+
+                Variant default_value = ClassDB::class_get_default_property_value(E->get_class_name(), F.name);
+
+                if (default_value.get_type() != VariantType::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
+                    continue;
+                }
+
+                p.pi = F;
+
+                rd.properties.push_back(p);
             }
         }
     }
 
     f->store_32(strings.size()); //string table size
-    for (int i = 0; i < strings.size(); i++) {
+    for (size_t i = 0; i < strings.size(); i++) {
         save_unicode_string(f, strings[i].asCString());
     }
 
     // save external resource table
     f->store_32(external_resources.size()); //amount of external resources
-    Vector<RES> save_order;
+    Vector<HResource> save_order;
     save_order.resize(external_resources.size());
 
-    for (const eastl::pair<const RES,int> &E : external_resources) {
+    for (const eastl::pair<const HResource,int> &E : external_resources) {
         save_order[E.second] = E.first;
     }
 
     for (int i = 0; i < save_order.size(); i++) {
 
         save_unicode_string(f, save_order[i]->get_save_class());
-        String path = save_order[i]->get_path();
+        const se::UUID &path = save_order[i].get_uuid();
+        ERR_FAIL_COND(path==se::UUID::EMPTY);
         path = relative_paths ? PathUtils::path_to_file(local_path,path) : path;
-        save_unicode_string(f, path);
+
+        save_uuid(f, path);
     }
     // save internal resource table
     f->store_32(saved_resources.size()); //amount of internal resources
