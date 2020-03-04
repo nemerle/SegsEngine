@@ -72,8 +72,8 @@ public:
 
 class ResourceFormatLoaderImage : public ResourceFormatLoader {
 public:
-    RES load(StringView p_path, StringView p_original_path = StringView(), Error *r_error = nullptr) override;
+    RES load(const ResourcePath &p_path, StringView p_original_path = StringView(), Error *r_error = nullptr) override;
     void get_recognized_extensions(Vector<String> &p_extensions) const override;
     bool handles_type(StringView p_type) const override;
-    String get_resource_type(StringView p_path) const override;
+    String get_resource_type(const ResourcePath &p_path) const override;
 };

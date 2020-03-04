@@ -41,22 +41,22 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
     friend class ResourceFormatLoaderBinary;
 
     struct ExtResource {
-        String path;
+        se::UUID uuid;
         String type;
     };
     struct IntResource {
-        String path;
+        se::UUID uuid;
         uint64_t offset;
     };
 
-    HashMap<String, String> remaps;
+    HashMap<se::UUID, se::UUID> remaps;
     Vector<char> str_buf;
     Vector<StringName> string_map;
     Vector<IntResource> internal_resources;
     Vector<ExtResource> external_resources;
     List<RES> resource_cache;
     String local_path;
-    String res_path;
+    ResourcePath res_path;
     String type;
     Ref<Resource> resource;
     uint32_t ver_format;
@@ -73,17 +73,17 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
     Error parse_variant(Variant &r_v);
 
 public:
-    void set_local_path(StringView p_local_path) override;
+    void set_local_path(const ResourcePath &p_local_path) override;
     Ref<Resource> get_resource() override;
     Error poll() override;
     int get_stage() const override;
     int get_stage_count() const override;
     void set_translation_remapped(bool p_remapped) override;
 
-    void set_remaps(const HashMap<String, String> &p_remaps) { remaps = p_remaps; }
+    void set_remaps(const HashMap<se::UUID, se::UUID> &p_remaps) { remaps = p_remaps; }
     void open(FileAccess *p_f);
     String recognize(FileAccess *p_f);
-    void get_dependencies(FileAccess *p_f, Vector<String> &p_dependencies, bool p_add_types);
+    void get_dependencies(FileAccess *p_f, Vector<se::UUID> &p_dependencies);
 
     ResourceInteractiveLoaderBinary() = default;
     ~ResourceInteractiveLoaderBinary() override;
@@ -91,13 +91,13 @@ public:
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-    Ref<ResourceInteractiveLoader> load_interactive(StringView p_path, StringView p_original_path = StringView(), Error *r_error = nullptr) override;
+    Ref<ResourceInteractiveLoader> load_interactive(const ResourcePath &p_path, StringView p_original_path = StringView(), Error *r_error = nullptr) override;
     void get_recognized_extensions_for_type(StringView p_type, Vector<String> &p_extensions) const override;
     void get_recognized_extensions(Vector<String> &p_extensions) const override;
     bool handles_type(StringView /*p_type*/) const override;
-    String get_resource_type(StringView p_path) const override;
-    void get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types = false) override;
-    Error rename_dependencies(StringView p_path, const HashMap<String, String> &p_map) override;
+    String get_resource_type(const ResourcePath &p_path) const override;
+    void get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types = false) override;
+    Error rename_dependencies(const ResourcePath &p_path, const HashMap<String, String> &p_map) override;
 };
 
 class ResourceFormatSaverBinaryInstance {

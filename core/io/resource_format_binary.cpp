@@ -44,7 +44,8 @@
 #include "core/rid.h"
 #include "core/version.h"
 #include "core/object_tooling.h"
-#include "core/resource_manifest.h"
+#include "core/resources_subsystem/resource_manifest.h"
+#include "core/resources_subsystem/resource_manager.h"
 
 #include "EASTL/sort.h"
 #include <cstring>
@@ -369,19 +370,14 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
                     } else {
 
                         String exttype = external_resources[erindex].type;
-                        String path = external_resources[erindex].path;
-                        ResourcePath rpath(path);
-                        if (rpath.is_relative()) {
-                            // path is relative to file being loaded, so convert to a resource path
-                            path = ProjectSettings::get_singleton()->localize_path(PathUtils::plus_file(PathUtils::get_base_dir(res_path),path));
-                        }
+                        se::UUID rpath = external_resources[erindex].uuid;
 
-                        RES res(ResourceLoader::load(rpath, exttype));
+                        HResource res(gResourceManager().loadFromUUID(rpath));
 
                         if (not res) {
-                            WARN_PRINT(("Couldn't load resource: " + path));
+                            WARN_PRINT("Couldn't load resource: " + rpath);
                         }
-                        r_v = res;
+                        r_v = RES(res.get());
                     }
 
                 } break;
@@ -525,7 +521,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
     return OK; //never reach anyway
 }
 
-void ResourceInteractiveLoaderBinary::set_local_path(StringView p_local_path) {
+void ResourceInteractiveLoaderBinary::set_local_path(const ResourcePath &p_local_path) {
 
     res_path = p_local_path;
 }
@@ -543,12 +539,12 @@ Error ResourceInteractiveLoaderBinary::poll() {
 
     if (s < external_resources.size()) {
 
-        String path(external_resources[s].path);
+        se::UUID path(external_resources[s].uuid);
 
         if (remaps.contains(path)) {
             path = remaps[path];
         }
-        RES res(ResourceLoader::load(path, external_resources[s].type));
+        HResource res(gResourceManager().loadFromUUID(path));
         if (not res) {
 
             if (!ResourceLoader::get_abort_on_missing_resources()) {
@@ -557,7 +553,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
             } else {
 
                 error = ERR_FILE_MISSING_DEPENDENCIES;
-                ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
+                ERR_FAIL_V_MSG(error, "Can't load dependency: " + path.to_string() + ".");
             }
 
         } else {
@@ -579,16 +575,18 @@ Error ResourceInteractiveLoaderBinary::poll() {
     bool main = s == (internal_resources.size() - 1);
 
     //maybe it is loaded already
-    String path;
+    ResourcePath path;
     int subindex = 0;
 
     if (!main) {
 
         path = internal_resources[s].path;
-        if (StringUtils::begins_with(path,"local://")) {
+        if (path.mountpoint()=="local:") {
+#ifdef REMOVED_CODE
             path = StringUtils::replace_first(path,"local://", "");
             subindex = StringUtils::to_int(path);
             path = res_path + "::" + path;
+#endif
         }
 
         if (ResourceCache::has(path)) {
@@ -710,21 +708,14 @@ String ResourceInteractiveLoaderBinary::get_unicode_string() {
     return (&str_buf[0]);
 }
 
-void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f, Vector<String> &p_dependencies, bool p_add_types) {
+void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f, Vector<se::UUID> &p_dependencies) {
 
     open(p_f);
     if (error)
         return;
     p_dependencies.reserve(p_dependencies.size()+external_resources.size());
     for (const ExtResource & er : external_resources) {
-
-        String dep = er.path;
-
-        if (p_add_types && !er.type.empty()) {
-            dep += "::" + er.type;
-        }
-
-        p_dependencies.push_back(dep);
+        p_dependencies.push_back(er.uuid);
     }
 }
 
@@ -801,7 +792,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
         ExtResource er;
         er.type = get_unicode_string();
 
-        er.path = get_unicode_string();
+        er.uuid = se::UUID(get_unicode_string());
 
         external_resources.push_back(er);
     }
@@ -812,7 +803,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
     for (uint32_t i = 0; i < int_resources_size; i++) {
 
         IntResource ir;
-        ir.path = get_unicode_string();
+        ir.uuid = se::UUID(get_unicode_string());
         ir.offset = f->get_64();
         internal_resources.push_back(ir);
     }
@@ -878,7 +869,7 @@ ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {
         memdelete(f);
 }
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(StringView p_path, StringView p_original_path, Error *r_error) {
+Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const ResourcePath &p_path, StringView p_original_path, Error *r_error) {
 
     if (r_error)
         *r_error = ERR_FILE_CANT_OPEN;
@@ -933,7 +924,7 @@ bool ResourceFormatLoaderBinary::handles_type(StringView /*p_type*/) const {
     return true; //handles all
 }
 
-void ResourceFormatLoaderBinary::get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types) {
+void ResourceFormatLoaderBinary::get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types) {
 
     FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
     ERR_FAIL_COND_MSG(!f, "Cannot open file '" + String(p_path) + "'.");
@@ -945,7 +936,7 @@ void ResourceFormatLoaderBinary::get_dependencies(StringView p_path, Vector<Stri
     ria->get_dependencies(f, p_dependencies, p_add_types);
 }
 
-Error ResourceFormatLoaderBinary::rename_dependencies(StringView _path, const HashMap<String, String> &p_map) {
+Error ResourceFormatLoaderBinary::rename_dependencies(const ResourcePath &_path, const HashMap<String, String> &p_map) {
 
     //Error error=OK;
     String p_path(_path);
@@ -1152,7 +1143,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(StringView _path, const Ha
     return OK;
 }
 
-String ResourceFormatLoaderBinary::get_resource_type(StringView p_path) const {
+String ResourceFormatLoaderBinary::get_resource_type(const ResourcePath &p_path) const {
 
     FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
     if (!f) {
@@ -1651,7 +1642,8 @@ Error ResourceFormatSaverBinaryInstance::save(StringView p_path, const RES &p_re
     relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
     skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
     bundle_resources = p_flags & ResourceSaver::FLAG_BUNDLE_RESOURCES;
-    big_endian = p_flags & ResourceSaver::FLAG_SAVE_BIG_ENDIAN;
+    assert(false == (p_flags & ResourceSaver::FLAG_SAVE_BIG_ENDIAN));
+    big_endian = false; //p_flags & ResourceSaver::FLAG_SAVE_BIG_ENDIAN;
     takeover_paths = p_flags & ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
     if (!StringUtils::begins_with(p_path,"res://"))

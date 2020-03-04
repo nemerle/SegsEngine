@@ -62,7 +62,7 @@ struct Hasher<LoadingMapKey> {
 };
 
 using ResourceLoadErrorNotify = void (*)(void *, StringView);
-using DependencyErrorNotify = void (*)(void *, StringView, StringView, StringView);
+using DependencyErrorNotify = void (*)(void *, const ResourcePath &, StringView, StringView);
 using ResourceLoaderImport = Error (*)(StringView);
 using ResourceLoadedCallback = void (*)(RES, se::UUID );
 
@@ -140,8 +140,9 @@ public:
         err_notify_ud = p_ud;
     }
 
-    static void notify_dependency_error(StringView p_path, StringView p_dependency, StringView p_type) {
-        if (dep_err_notify) dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+    static void notify_dependency_error(const ResourcePath &p_path, StringView p_dependency, StringView p_type) {
+        if (dep_err_notify)
+            dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
     }
     static void set_dependency_error_notify_func(void *p_ud, DependencyErrorNotify p_err_notify) {
         dep_err_notify = p_err_notify;

@@ -110,7 +110,7 @@ Crypto::Crypto() = default;
 
 /// Resource loader/saver
 
-RES ResourceFormatLoaderCrypto::load(StringView p_path, StringView p_original_path, Error *r_error) {
+RES ResourceFormatLoaderCrypto::load(const ResourcePath &p_path, StringView p_original_path, Error *r_error) {
 
     String el = StringUtils::to_lower(PathUtils::get_extension(p_path));
     if (el == "crt") {
@@ -138,7 +138,7 @@ bool ResourceFormatLoaderCrypto::handles_type(StringView p_type) const {
     return p_type == "X509Certificate"_sv || p_type == "CryptoKey"_sv;
 }
 
-String ResourceFormatLoaderCrypto::get_resource_type(StringView p_path) const {
+String ResourceFormatLoaderCrypto::get_resource_type(const ResourcePath &p_path) const {
 
     String el = StringUtils::to_lower(PathUtils::get_extension(p_path));
     if (el == "crt")

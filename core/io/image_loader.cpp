@@ -203,7 +203,7 @@ void ImageLoader::cleanup() {
 
 /////////////////
 
-RES ResourceFormatLoaderImage::load(StringView p_path, StringView p_original_path, Error *r_error) {
+RES ResourceFormatLoaderImage::load(const ResourcePath &p_path, StringView p_original_path, Error *r_error) {
 
     FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
     if (!f) {
@@ -276,7 +276,7 @@ bool ResourceFormatLoaderImage::handles_type(StringView p_type) const {
     return p_type == StringView("Image");
 }
 
-String ResourceFormatLoaderImage::get_resource_type(StringView p_path) const {
+String ResourceFormatLoaderImage::get_resource_type(const ResourcePath &p_path) const {
 
     return StringUtils::to_lower(PathUtils::get_extension(p_path)) == "image" ? "Image" : String();
 }

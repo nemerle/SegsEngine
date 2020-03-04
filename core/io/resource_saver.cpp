@@ -133,7 +133,7 @@ Error ResourceSaver::save(StringView p_path, const RES &p_resource, uint32_t p_f
         if (!recognized)
             continue;
 
-        const String &old_path(p_resource->get_path());
+        const ResourcePath &old_path(p_resource->get_path());
 
         String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 

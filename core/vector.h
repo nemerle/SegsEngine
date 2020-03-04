@@ -45,6 +45,10 @@ template <typename T>
 using Span = eastl::span<T,eastl::dynamic_extent>;
 class Variant;
 
+//TODO: this should use per-frame allocator
+template<class T>
+using FrameVector = eastl::vector<T,wrap_allocator>;
+
 
 #ifndef __MINGW32__
 extern template class EXPORT_TEMPLATE_DECLARE(GODOT_EXPORT) eastl::vector<class StringName,wrap_allocator>;

@@ -170,14 +170,14 @@ set(core_sources
     reference.h
     register_core_types.cpp
     register_core_types.h
-    resource_subsystem/resource_path.cpp
-    resource_subsystem/resource_path.h
-    resource_subsystem/resource_manifest.cpp
-    resource_subsystem/resource_manifest.h
-    resource_subsystem/resource.cpp
-    resource_subsystem/resource.h
-    resource_subsystem/resource_manager.cpp
-    resource_subsystem/resource_manager.h
+    resources_subsystem/resource_path.cpp
+    resources_subsystem/resource_path.h
+    resources_subsystem/resource_manifest.cpp
+    resources_subsystem/resource_manifest.h
+    resources_subsystem/resource.cpp
+    resources_subsystem/resource.h
+    resources_subsystem/resource_manager.cpp
+    resources_subsystem/resource_manager.h
     rid.cpp
     rid.h
     script_debugger_local.cpp
@@ -212,6 +212,20 @@ set(generic_core_sources
 
     io/logger.cpp
     io/logger.h
+
+    jlsignal/Signal.h
+    jlsignal/SignalBase.h
+    jlsignal/FastFunc.h
+    jlsignal/SignalDefinitions.h
+    jlsignal/DoublyLinkedList.h
+    jlsignal/ObjectPool.h
+    jlsignal/ObjectPoolScopedAllocator.h
+    jlsignal/Utils.h
+    jlsignal/ScopedAllocator.h
+    jlsignal/StaticSignalConnectionAllocators.h
+    jlsignal/ObjectPool.cpp
+    jlsignal/SignalBase.cpp
+
     rotated_file_loger.h
 
     math/aabb.cpp

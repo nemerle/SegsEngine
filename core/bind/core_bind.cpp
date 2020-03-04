@@ -127,14 +127,14 @@ void _ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 Vector<String> _ResourceLoader::get_dependencies(StringView p_path) {
 
     Vector<String> deps;
-    ResourceLoader::get_dependencies(p_path, deps);
+    ResourceLoader::get_dependencies(ResourcePath(p_path), deps);
     return deps;
 };
 
 bool _ResourceLoader::has_cached(StringView p_path) {
 
     String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
-    return ResourceCache::has(local_path);
+    return ResourceCache::has(ResourcePath(local_path));
 }
 
 bool _ResourceLoader::exists(StringView p_path, StringView p_type_hint) {
@@ -188,7 +188,7 @@ void _ResourceSaver::_bind_methods() {
     BIND_ENUM_CONSTANT(FLAG_BUNDLE_RESOURCES)
     BIND_ENUM_CONSTANT(FLAG_CHANGE_PATH)
     BIND_ENUM_CONSTANT(FLAG_OMIT_EDITOR_PROPERTIES)
-    BIND_ENUM_CONSTANT(FLAG_SAVE_BIG_ENDIAN)
+    //BIND_ENUM_CONSTANT(FLAG_SAVE_BIG_ENDIAN)
     BIND_ENUM_CONSTANT(FLAG_COMPRESS)
     BIND_ENUM_CONSTANT(FLAG_REPLACE_SUBRESOURCE_PATHS)
 }

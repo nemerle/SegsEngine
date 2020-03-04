@@ -7,6 +7,7 @@
 #include "core/error_list.h"
 
 class EditorServiceInterface;
+class ResourcePath;
 /* NOTE: the orignal importer order was as follows:
  * ResourceImporterTexture 14
  * ResourceImporterLayeredTexture 3d -> array  13/12
@@ -57,7 +58,7 @@ public:
     virtual Error import_group_file(const ResourcePath& p_group_file,
             const Map<String, HashMap<StringName, Variant>> &p_source_file_options,
             const Map<String, String> &p_base_paths) = 0;
-    virtual bool are_import_settings_valid(StringView p_path) const = 0;
+    virtual bool are_import_settings_valid(const ResourcePath &p_path) const = 0;
     virtual String get_import_settings_string() const = 0;
     // Currently only implemented by ResourceImporterTexture
     /**

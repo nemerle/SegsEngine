@@ -7,6 +7,8 @@ class QChar;
 class QByteArray;
 class Variant;
 class Array;
+class ResourcePath;
+
 using CharType = QChar;
 using CharString = QByteArray;
 
@@ -52,6 +54,7 @@ enum Compare {
 [[nodiscard]] GODOT_EXPORT String percent_decode(StringView str);
 
 [[nodiscard]] GODOT_EXPORT String md5_text(StringView str);
+[[nodiscard]] GODOT_EXPORT String md5_text(const ResourcePath &str);
 [[nodiscard]] GODOT_EXPORT String md5_text(const UIString &str);
 [[nodiscard]] GODOT_EXPORT String sha1_text(StringView str);
 [[nodiscard]] GODOT_EXPORT String sha1_text(const UIString &str);

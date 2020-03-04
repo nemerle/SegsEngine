@@ -25,7 +25,7 @@ protected:
     static void _bind_methods();
 
 public:
-    virtual void set_local_path(StringView p_local_path) = 0;
+    virtual void set_local_path(const ResourcePath &p_local_path) = 0;
     virtual Ref<Resource> get_resource() = 0;
     virtual Error poll() = 0;
     virtual int get_stage() const = 0;
@@ -45,19 +45,19 @@ protected:
     static void _bind_methods();
 
 public:
-    virtual Ref<ResourceInteractiveLoader> load_interactive(StringView p_path, StringView p_original_path = StringView(), Error *r_error = nullptr);
-    virtual Ref<Resource> load(StringView p_path, StringView p_original_path = StringView(), Error *r_error = nullptr);
+    virtual Ref<ResourceInteractiveLoader> load_interactive(const ResourcePath &p_path, StringView p_original_path = StringView(), Error *r_error = nullptr);
+    virtual Ref<Resource> load(const ResourcePath &p_path, StringView p_original_path = StringView(), Error *r_error = nullptr);
     virtual bool exists(StringView p_path) const;
     virtual void get_recognized_extensions(Vector<String> &p_extensions) const;
     virtual void get_recognized_extensions_for_type(StringView p_type, Vector<String> &p_extensions) const;
-    virtual bool recognize_path(StringView p_path) const;
-    virtual bool handles_type(StringView p_type) const;
-    virtual String get_resource_type(StringView p_path) const;
-    virtual void get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types = false);
-    virtual Error rename_dependencies(StringView p_path, const HashMap<String, String> &p_map);
-    virtual bool is_import_valid(StringView /*p_path*/) const { return true; }
-    virtual bool is_imported(StringView /*p_path*/) const { return false; }
-    virtual int get_import_order(StringView /*p_path*/) const { return 0; }
+    virtual bool recognize_path(const ResourcePath &p_path) const;
+    virtual bool handles_type(StringView p_type) const=0;
+    virtual String get_resource_type(const ResourcePath &p_path) const=0;
+    virtual void get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types = false)=0;
+    virtual Error rename_dependencies(const ResourcePath & p_path, const HashMap<String, String> &p_map);
+    virtual bool is_import_valid(const ResourcePath & /*p_path*/) const { return true; }
+    virtual bool is_imported(const ResourcePath & /*p_path*/) const { return false; }
+    virtual int get_import_order(const ResourcePath & /*p_path*/) const { return 0; }
     virtual ResourcePath get_import_group_file(const ResourcePath &/*p_path*/) const { return ResourcePath(); } //no group
 
     ~ResourceFormatLoader() override = default;
