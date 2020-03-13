@@ -84,9 +84,9 @@ public:
 //    void add_importer(ResourceImporterInterface *p_importer) {
 //        importers.push_back(p_importer);
 //    }
-//    void add_importer(const Ref<ResourceImporter> &p_importer) {
-//        owned_importers.push_back(p_importer);
-//    }
+    void add_importer(const Ref<ResourceImporter> &p_importer) {
+        owned_importers.push_back(p_importer);
+    }
 //    void remove_importer(const Ref<ResourceImporter> &p_importer) { owned_importers.erase_first(p_importer); }
 //    void remove_importer(ResourceImporterInterface *p_importer) { importers.erase_first(p_importer); }
 
@@ -95,8 +95,8 @@ public:
 
 //    void get_importers_for_extension(StringView p_extension, Vector<ResourceImporterInterface *> *r_importers);
 
-//    bool are_import_settings_valid(const ResourcePath& p_path) const;
-//    String get_import_settings_hash() const;
+    bool are_import_settings_valid(const ResourcePath& p_path) const;
+    String get_import_settings_hash() const;
 
 //    String get_import_base_path(const ResourcePath &p_for_file) const;
     ResourceFormatImporter();

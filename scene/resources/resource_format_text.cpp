@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "resource_format_text.h"
-
+#if 0
 #include "core/io/resource_format_binary.h"
 #include "core/object_tooling.h"
 #include "core/os/dir_access.h"
@@ -44,6 +44,7 @@
 #define FORMAT_VERSION 2
 
 #include "core/os/dir_access.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/version.h"
 
 #include "EASTL/sort.h"
@@ -220,10 +221,10 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParserStream *p_
     const String &path = ext_resources[id].path;
     StringView type = ext_resources[id].type;
 
-    r_res = ResourceManager::load(path, se::ResourceLoadFlag::KeepInternalRef);
+    r_res = ResourceManager::load(ResourcePath(path), se::ResourceLoadFlag::KeepInternalRef);
 
     if (not r_res) {
-        WARN_PRINT("Couldn't load external resource: " + path.to_string());
+        WARN_PRINT("Couldn't load external resource: " + path);
     }
 
     return OK;
@@ -1856,3 +1857,4 @@ ResourceFormatSaverText *ResourceFormatSaverText::singleton = nullptr;
 ResourceFormatSaverText::ResourceFormatSaverText() {
     singleton = this;
 }
+#endif

@@ -70,7 +70,7 @@ public:
     /**
      * @brief Retrieve the given resource's metadata information
      */
-    void get_metadata();
+    void get_metadata(HResource& handle);
 
     /**
      * Saves the resource at the specified location.

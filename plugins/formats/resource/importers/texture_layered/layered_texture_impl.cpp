@@ -38,7 +38,7 @@
 #include "editor/editor_node.h"
 #include "scene/resources/texture.h"
 
-
+#if 0
 StringName LayeredTextureImpl::get_importer_name() const {
 
     return is_3d ? StringName("texture_3d") : StringName("texture_array");
@@ -398,3 +398,4 @@ LayeredTextureImpl::LayeredTextureImpl() {
     is_3d = true;
 }
 
+#endif

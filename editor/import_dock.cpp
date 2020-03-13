@@ -104,6 +104,7 @@ void register_import_dock_classes()
 {
     ImportDockParameters::initialize_class();
 }
+#if 0
 void ImportDock::set_edit_path(StringView p_path) {
 
     Ref<ConfigFile> config(make_ref_counted<ConfigFile>());
@@ -532,6 +533,7 @@ void ImportDock::initialize_import_options() const {
 
     import_opts->edit(params);
 }
+#endif
 
 ImportDock::ImportDock() {
 
@@ -581,7 +583,6 @@ ImportDock::ImportDock() {
 
     params = memnew(ImportDockParameters);
 }
-
 ImportDock::~ImportDock() {
 
     memdelete(params);

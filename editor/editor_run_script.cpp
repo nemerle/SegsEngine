@@ -72,7 +72,7 @@ void EditorScript::_run() {
     ERR_FAIL_COND(not s);
     if (!get_script_instance()) {
         EditorNode::add_io_error(FormatSN(
-                TTR("Couldn't instance script:\n %s\nDid you forget the 'tool' keyword?").asCString(), s->get_path().c_str()));
+                TTR("Couldn't instance script:\n %s\nDid you forget the 'tool' keyword?").asCString(), s->get_path().to_string()));
         return;
     }
 
@@ -81,7 +81,7 @@ void EditorScript::_run() {
     get_script_instance()->call("_run", nullptr, 0, ce);
     if (ce.error != Variant::CallError::CALL_OK) {
         EditorNode::add_io_error(FormatSN(
-                TTR("Couldn't run script:\n %s\nDid you forget the '_run' method?").asCString(), s->get_path().c_str()));
+                TTR("Couldn't run script:\n %s\nDid you forget the '_run' method?").asCString(), s->get_path().to_string()));
     }
 }
 

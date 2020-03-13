@@ -372,7 +372,7 @@ void EditorFileSystem::_thread_func(void *_userdata) {
     EditorFileSystem *sd = (EditorFileSystem *)_userdata;
     sd->_scan_filesystem();
 }
-
+#if 0
 bool EditorFileSystem::_test_for_reimport(const ResourcePath &p_path, bool p_only_imported_files) const {
 
     if (!reimport_on_missing_imported_files && p_only_imported_files)
@@ -2222,6 +2222,7 @@ void EditorFileSystem::_update_extensions() {
         import_extensions.insert(E);
     }
 }
+#endif
 
 EditorFileSystem::EditorFileSystem() {
     __thread__safe__.reset(new Mutex);

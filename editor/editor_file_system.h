@@ -35,6 +35,7 @@
 #include "core/os/thread_safe.h"
 #include "core/list.h"
 #include "core/set.h"
+#include "core/hash_set.h"
 #include "core/resources_subsystem/resource_path.h"
 #include "core/hash_map.h"
 

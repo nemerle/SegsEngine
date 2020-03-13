@@ -56,7 +56,9 @@ public:
     virtual bool recognize_path(const ResourcePath &p_path) const;
     virtual bool handles_type(StringView p_type) const=0;
     virtual String get_resource_type(const ResourcePath &p_path) const=0;
-    virtual void get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types = false)=0;
+    virtual void get_dependencies(const ResourcePath & /*p_path*/, Vector<String> &/*p_dependencies*/, bool /*p_add_types*/ = false) {
+        // By default no dependencies. override this method to inform resource subsytem about dependent resources
+    }
     //virtual Error rename_dependencies(const ResourcePath & p_path, const HashMap<se::UUID, se::UUID> &p_map);
     virtual bool is_import_valid(const ResourcePath & /*p_path*/) const { return true; }
     virtual bool is_imported(const ResourcePath & /*p_path*/) const { return false; }

@@ -36,8 +36,9 @@
 #include "core/os/mutex.h"
 #include "core/project_settings.h"
 #include "editor/service_interfaces/EditorServiceInterface.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "scene/resources/texture.h"
-
+#if 0
 void ResourceImporterTexture::_texture_reimport_srgb(StringName p_tex_path) {
 
     singleton->mutex->lock();
@@ -565,6 +566,7 @@ String ResourceImporterTexture::get_import_settings_string() const {
 bool ResourceImporterTexture::are_import_settings_valid(StringView p_path) const {
 
     //will become invalid if formats are missing to import
+    
     Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
     if (!metadata.has("vram_texture")) {
@@ -614,3 +616,4 @@ ResourceImporterTexture::~ResourceImporterTexture() {
 
     memdelete(mutex);
 }
+#endif
