@@ -39,6 +39,7 @@
 #include "core/string_utils.h"
 #include "core/script_language.h"
 #include "core/object_tooling.h"
+#include "core/resources_subsystem/resource_manager.h"
 
 #include "scene/resources/texture.h"
 #include "EASTL/deque.h"
@@ -114,7 +115,8 @@ Error ResourceSaver::save(StringView p_path, const RES &p_resource, uint32_t p_f
 
     StringView extension = PathUtils::get_extension(p_path);
     Error err = ERR_FILE_UNRECOGNIZED;
-
+    assert(false);
+#if 0
     for (const Ref<ResourceFormatSaver> & s : saver) {
 
         if (!s->recognize(p_resource))
@@ -162,7 +164,7 @@ Error ResourceSaver::save(StringView p_path, const RES &p_resource, uint32_t p_f
             return OK;
         }
     }
-
+#endif
     return err;
 }
 
@@ -202,7 +204,7 @@ void ResourceSaver::remove_resource_format_saver(const Ref<ResourceFormatSaver>&
 
 Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(StringView path) {
     for (const Ref<ResourceFormatSaver> & s : saver) {
-        if (s->get_script_instance() && s->get_script_instance()->get_script()->get_path() == path) {
+        if (s->get_script_instance() && s->get_script_instance()->get_script()->get_path().to_string() == path) {
             return s;
         }
     }

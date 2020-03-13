@@ -577,9 +577,9 @@ private:
     bool _list_skip_hidden;
 };
 
-class _Marshalls : public RefCounted {
+class _Marshalls : public Object {
 
-    GDCLASS(_Marshalls, RefCounted)
+    GDCLASS(_Marshalls, Object)
 
     static _Marshalls *singleton;
 

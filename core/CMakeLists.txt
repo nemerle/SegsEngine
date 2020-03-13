@@ -76,15 +76,15 @@ set(core_sources
     io/packet_peer_udp.h
     io/pck_packer.cpp
     io/pck_packer.h
-    io/resource_format_binary.cpp
-    io/resource_format_binary.h
-    io/resource_format_loader.h
-    io/resource_importer.cpp
-    io/resource_importer.h
-    io/resource_loader.cpp
-    io/resource_loader.h
-    io/resource_saver.cpp
-    io/resource_saver.h
+#    io/resource_format_binary.cpp
+#    io/resource_format_binary.h
+#    io/resource_format_loader.h
+#    io/resource_importer.cpp
+#    io/resource_importer.h
+#    io/resource_loader.cpp
+#    io/resource_loader.h
+#    io/resource_saver.cpp
+#    io/resource_saver.h
     io/stream_peer.cpp
     io/stream_peer.h
     io/stream_peer_ssl.cpp

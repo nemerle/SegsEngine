@@ -119,7 +119,7 @@ void register_core_types() {
     TranslationLoaderPO::initialize_class();
     ResourceFormatSaverBinary::initialize_class();
     ResourceFormatLoaderBinary::initialize_class();
-    ResourceFormatImporter::initialize_class();
+    //ResourceFormatImporter::initialize_class();
     ResourceFormatLoaderImage::initialize_class();
 
     resource_format_po = make_ref_counted<TranslationLoaderPO>();

@@ -451,6 +451,10 @@ EditorNavigationMeshGenerator::~EditorNavigationMeshGenerator() {
 
 void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
 
+    if (!Engine::get_singleton()->is_editor_hint()) {
+        ERR_PRINT("Invoking EditorNavigationMeshGenerator::bake(...) in-game is not supported in Godot 3.2 or below. Aborting bake...");
+        return;
+    }
     ERR_FAIL_COND(not p_nav_mesh);
 
     EditorProgress ep(("bake"), TTR("Navigation Mesh Generator Setup:"), 11);

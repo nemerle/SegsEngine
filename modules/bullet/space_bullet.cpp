@@ -597,7 +597,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
         world_mem = malloc(sizeof(btDiscreteDynamicsWorld));
     }
 
-    ERR_FAIL_COND_MSG(!world_mem, "Out of memory."); 
+    ERR_FAIL_COND_MSG(!world_mem, "Out of memory.");
 
     if (p_create_soft_world) {
         collisionConfiguration = bulletnew(GodotSoftCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
@@ -731,9 +731,6 @@ void SpaceBullet::check_ghost_overlaps() {
                 for (z = otherObject->get_shape_count() - 1; 0 <= z; --z) {
 
                     other_body_shape = static_cast<btCollisionShape *>(otherObject->get_bt_shape(z));
-
-                    if (other_body_shape->isConcave())
-                        continue;
 
                     btTransform other_shape_transform(otherObject->get_bt_shape_transform(z));
                     other_shape_transform.getOrigin() *= other_body_scale;

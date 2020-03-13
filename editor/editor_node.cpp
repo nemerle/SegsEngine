@@ -2745,7 +2745,7 @@ void EditorNode::_save_screenshot(const NodePath &p_path) {
     Ref<Image> img = viewport->get_texture()->get_data();
     img->flip_y();
     viewport->set_clear_mode(Viewport::CLEAR_MODE_ALWAYS);
-    Error error = img->save_png((String)p_path);
+    Error error = img->save_png(ResourcePath((String)p_path));
     ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + (String)p_path + "'.");
 }
 

@@ -92,7 +92,7 @@ class GODOT_EXPORT ResourceLoader {
     friend class ResourceFormatImporter;
     friend class ResourceInteractiveLoader;
     //internal load function
-    static RES _load(StringView p_path, StringView p_original_path, StringView p_type_hint, bool p_no_cache, Error *r_error);
+    static RES _load(const ResourcePath &p_path, StringView p_original_path, StringView p_type_hint, bool p_no_cache, Error *r_error);
 
     static ResourceLoadedCallback _loaded_callback;
 

@@ -1176,7 +1176,7 @@ Error Expression::_get_token(Token &r_token) {
                     if (is_float)
                         r_token.value = StringUtils::to_double(num);
                     else
-                        r_token.value = StringUtils::to_int(num);
+                        r_token.value = StringUtils::to_int64(num);
                     return OK;
 
                 } else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {

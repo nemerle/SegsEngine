@@ -1205,6 +1205,8 @@ void ResourceImporterScene::get_import_options(Vector<ResourceImporterInterface:
     r_options->push_back(ImportOption(
             PropertyInfo(VariantType::REAL, "meshes/lightmap_texel_size", PropertyHint::Range, "0.001,100,0.001"),
             0.1));
+    r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "skins/use_named_skins"), true));
+
     r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "external_files/store_in_subdir"), false));
     r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "animation/import", PropertyHint::None, "",
                                               PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED),
@@ -1363,6 +1365,9 @@ Error ResourceImporterScene::import(StringView p_source_file, StringView p_save_
 
     if (int(p_options.at("materials/location")) == 0)
         import_flags |= EditorSceneImporter::IMPORT_MATERIALS_IN_INSTANCES;
+
+    if (bool(p_options.at("skins/use_named_skins")))
+        import_flags |= EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 
     Error err = OK;
     Node *scene = importer->import_scene(src_path, import_flags, fps, &r_missing_deps, &err);

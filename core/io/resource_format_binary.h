@@ -97,7 +97,7 @@ public:
     bool handles_type(StringView /*p_type*/) const override;
     String get_resource_type(const ResourcePath &p_path) const override;
     void get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types = false) override;
-    Error rename_dependencies(const ResourcePath &p_path, const HashMap<String, String> &p_map) override;
+    //Error rename_dependencies(const ResourcePath &p_path, const HashMap<se::UUID, se::UUID> &p_map) override;
 };
 
 class ResourceFormatSaverBinaryInstance {

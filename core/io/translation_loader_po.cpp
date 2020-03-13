@@ -180,13 +180,13 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, StringV
     return translation;
 }
 
-RES TranslationLoaderPO::load(StringView p_path, StringView p_original_path, Error *r_error) {
+RES TranslationLoaderPO::load(const ResourcePath &p_path, StringView p_original_path, Error *r_error) {
 
     if (r_error)
         *r_error = ERR_CANT_OPEN;
 
     FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-    ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + String(p_path) + "'.");
+    ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + p_path.to_string() + "'.");
 
     return load_translation(f, r_error);
 }
@@ -201,9 +201,9 @@ bool TranslationLoaderPO::handles_type(StringView p_type) const {
     return (p_type == StringView("Translation"));
 }
 
-String TranslationLoaderPO::get_resource_type(StringView p_path) const {
+String TranslationLoaderPO::get_resource_type(const ResourcePath &p_path) const {
 
-    if (StringUtils::to_lower(PathUtils::get_extension(p_path)) == "po")
+    if (StringUtils::to_lower(PathUtils::get_extension(p_path.leaf())) == "po")
         return "Translation";
     return String();
 }

@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  translation_loader_po.h                                              */
+/*  vector3i.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,24 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#include "vector3i.h"
 
-#include "core/io/resource_format_loader.h"
-#include "core/os/file_access.h"
-#include "core/translation.h"
+void Vector3i::set_axis(int p_axis, int32_t p_value) {
+	ERR_FAIL_INDEX(p_axis, 3);
+	coord[p_axis] = p_value;
+}
+int32_t Vector3i::get_axis(int p_axis) const {
 
-class TranslationLoaderPO : public ResourceFormatLoader {
-public:
-    static RES load_translation(FileAccess *f, Error *r_error, StringView p_path = StringView());
-    RES load(const ResourcePath &p_path, StringView p_original_path = StringView (), Error *r_error = nullptr) override;
-    void get_recognized_extensions(Vector<String> &p_extensions) const override;
-    bool handles_type(StringView p_type) const override;
-    String get_resource_type(const ResourcePath &p_path) const override;
+	ERR_FAIL_INDEX_V(p_axis, 3, 0);
+	return operator[](p_axis);
+}
 
-    TranslationLoaderPO() = default;
+int Vector3i::min_axis() const {
 
-    // ResourceFormatLoader interface
-public:
-    void get_dependencies(const ResourcePath &/*p_path*/, Vector<String> & /*p_dependencies*/, bool /*p_add_types*/) override {
-    }
-};
+	return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
+}
+int Vector3i::max_axis() const {
+
+	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
+}
+
+Vector3i::operator String() const {
+
+	return (itos(x) + ", " + itos(y) + ", " + itos(z));
+}

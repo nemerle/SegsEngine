@@ -9,7 +9,7 @@ constexpr const char HEX_TO_LITERAL[16] =
 
 } // end of anonymous namespace
 namespace se {
-UUID::UUID(const String &uuid)
+UUID::UUID(const String &uuid) noexcept
 {
     QUuid from=QUuid::fromString(QLatin1String(uuid.begin(),uuid.end()));
     memcpy(m_data,&from.data1,sizeof(se::UUID));

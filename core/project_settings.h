@@ -89,6 +89,8 @@ protected:
     bool _set(const StringName &p_name, const Variant &p_value);
     bool _get(const StringName &p_name, Variant &r_ret) const;
     void _get_property_list(Vector<PropertyInfo> *p_list) const;
+    String _localize_path(StringView p);
+    String _globalize_path(StringView p);
 
     static ProjectSettings *singleton;
 public:

@@ -669,13 +669,14 @@ if (ScriptInstance *si = obj->get_script_instance()) {
         const PropertyInfo &pi = desc.first;
         Variant &var = desc.second;
 
-        WeakRef *ref = object_cast<WeakRef>(var);
-        if (ref) {
-            var = ref->get_ref();
-        }
 
         RES res(refFromVariant<Resource>(var));
-
+        if (var.get_type() == VariantType::OBJECT && var.is_ref()) {
+            auto r = RefPtr(var);
+            if (r.is_null()) {
+                res = RES();
+            }
+        }
         Array prop;
         prop.push_back(pi.name);
         prop.push_back(int(pi.type));

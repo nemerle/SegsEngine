@@ -72,7 +72,7 @@ class GODOT_EXPORT Image : public Resource, public ImageData {
     GDCLASS(Image, Resource)
 
 public:
-    static Error save_png_func(StringView p_path, const Ref<Image> &p_img);
+    static Error save_png_func(const ResourcePath &p_path, const Ref<Image> &p_img);
     static Error save_exr_func(StringView p_path, const Ref<Image> &p_img, bool p_grayscale);
 
     using Format = ImageData::Format;
@@ -136,6 +136,8 @@ protected:
 
     Error _load_from_buffer(const PoolVector<uint8_t> &p_array, const char *ext);
     Error _load_from_buffer(const uint8_t *p_array,int size, const char *ext);
+
+    Error _save_png(StringView p_path) const;
 
 public:
     int get_width() const; ///< Get image width

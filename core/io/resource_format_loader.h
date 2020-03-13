@@ -13,6 +13,9 @@ class wrap_allocator;
 
 class Resource;
 using RES = Ref<Resource>;
+namespace se {
+class UUID;
+}
 
 class GODOT_EXPORT ResourceInteractiveLoader : public RefCounted {
 
@@ -22,7 +25,7 @@ class GODOT_EXPORT ResourceInteractiveLoader : public RefCounted {
     Thread::ID path_loading_thread;
 
 protected:
-    static void _bind_methods();
+    static void re_bind_methods();
 
 public:
     virtual void set_local_path(const ResourcePath &p_local_path) = 0;
@@ -54,7 +57,7 @@ public:
     virtual bool handles_type(StringView p_type) const=0;
     virtual String get_resource_type(const ResourcePath &p_path) const=0;
     virtual void get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types = false)=0;
-    virtual Error rename_dependencies(const ResourcePath & p_path, const HashMap<String, String> &p_map);
+    //virtual Error rename_dependencies(const ResourcePath & p_path, const HashMap<se::UUID, se::UUID> &p_map);
     virtual bool is_import_valid(const ResourcePath & /*p_path*/) const { return true; }
     virtual bool is_imported(const ResourcePath & /*p_path*/) const { return false; }
     virtual int get_import_order(const ResourcePath & /*p_path*/) const { return 0; }

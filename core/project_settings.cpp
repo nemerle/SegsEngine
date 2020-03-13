@@ -157,23 +157,21 @@ ResourcePath ProjectSettings::globalize_path(const ResourcePath &p_path) const {
 
     if (p_path.mountpoint()=="res:") {
 
-        if (!resource_path.empty()) {
-
-            return StringUtils::replace(p_path, "res:/", resource_path);
-        }
-        return StringUtils::replace(p_path, "res://", "");
+        ResourcePath res(resource_path);
+        for(const auto & cmp : p_path.components())
+            res.cd(cmp);
+        return res;
     }
-    else if (StringUtils::begins_with(p_path, "user://")) {
+    else if (p_path.mountpoint()=="user:") {
 
         String data_dir = OS::get_singleton()->get_user_data_dir();
-        if (!data_dir.empty()) {
-
-            return StringUtils::replace(p_path, "user:/", data_dir);
-        }
-        return StringUtils::replace(p_path, "user://", "");
+        ResourcePath res(data_dir);
+        for(const auto & cmp : p_path.components())
+            res.cd(cmp);
+        return res;
     }
 
-    return String(p_path);
+    return p_path;
 }
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -1011,6 +1009,12 @@ Variant ProjectSettings::get_setting(const StringName &p_setting) const {
 bool ProjectSettings::has_custom_feature(StringView p_feature) const {
     return custom_features.find_as(p_feature)!=custom_features.end();
 }
+String ProjectSettings::_localize_path(StringView p) {
+    return localize_path(ResourcePath(p)).to_string();
+}
+String ProjectSettings::_globalize_path(StringView p) {
+    return globalize_path(ResourcePath(p)).to_string();
+}
 
 void ProjectSettings::_bind_methods() {
 
@@ -1022,8 +1026,8 @@ void ProjectSettings::_bind_methods() {
     MethodBinder::bind_method(D_METHOD("set_initial_value", {"name", "value"}), &ProjectSettings::set_initial_value);
     MethodBinder::bind_method(D_METHOD("add_property_info", {"hint"}), &ProjectSettings::_add_property_info_bind);
     MethodBinder::bind_method(D_METHOD("clear", {"name"}), &ProjectSettings::clear);
-    MethodBinder::bind_method(D_METHOD("localize_path", {"path"}), &ProjectSettings::localize_path);
-    MethodBinder::bind_method(D_METHOD("globalize_path", {"path"}), &ProjectSettings::globalize_path);
+    MethodBinder::bind_method(D_METHOD("localize_path", {"path"}), &ProjectSettings::_localize_path);
+    MethodBinder::bind_method(D_METHOD("globalize_path", {"path"}), &ProjectSettings::_globalize_path);
     MethodBinder::bind_method(D_METHOD("save"), &ProjectSettings::save);
     MethodBinder::bind_method(D_METHOD("load_resource_pack", {"pack", "replace_files"}), &ProjectSettings::_load_resource_pack,{Variant(true)});
     MethodBinder::bind_method(D_METHOD("property_can_revert", {"name"}), &ProjectSettings::property_can_revert);

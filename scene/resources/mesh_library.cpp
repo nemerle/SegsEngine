@@ -32,7 +32,7 @@
 #include "scene/resources/texture.h"
 #include "core/method_bind.h"
 #include "core/object_tooling.h"
-#include "core/engine.h"
+
 
 IMPL_GDCLASS(MeshLibrary)
 RES_BASE_EXTENSION_IMPL(MeshLibrary,"meshlib")
@@ -208,11 +208,6 @@ Transform MeshLibrary::get_item_navmesh_transform(int p_item) const {
 }
 
 Ref<Texture> MeshLibrary::get_item_preview(int p_item) const {
-
-    if (!Engine::get_singleton()->is_editor_hint()) {
-        ERR_PRINT("MeshLibrary item previews are only generated in an editor context, which means they aren't available in a running project.");
-        return Ref<Texture>();
-    }
 
     ERR_FAIL_COND_V_MSG(!item_map.contains(p_item), Ref<Texture>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
     return item_map.at(p_item).preview;

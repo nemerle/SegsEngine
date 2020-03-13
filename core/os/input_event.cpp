@@ -366,7 +366,7 @@ void InputEventKey::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "pressed"), "set_pressed", "is_pressed");
     ADD_PROPERTY(PropertyInfo(VariantType::INT, "scancode"), "set_scancode", "get_scancode");
     ADD_PROPERTY(PropertyInfo(VariantType::INT, "unicode"), "set_unicode", "get_unicode");
-    ADD_PROPERTY(PropertyInfo(VariantType::INT, "echo"), "set_echo", "is_echo");
+    ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 InputEventKey::InputEventKey() {

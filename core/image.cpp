@@ -226,7 +226,7 @@ namespace {
     };
 }
 
-Error Image::save_png_func(StringView p_path, const Ref<Image> &p_img)
+Error Image::save_png_func(const ResourcePath &p_path, const Ref<Image> &p_img)
 {
     Vector<uint8_t> buffer;
     Ref<Image> source_image = prepareForPngStorage(p_img);
@@ -1603,6 +1603,8 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 
     ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
 
+    ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444 || format == FORMAT_RGB565, ERR_UNAVAILABLE, "Cannot generate mipmaps in custom image formats.");
+
     ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
     int mmcount;
@@ -2249,8 +2251,10 @@ Error Image::load(StringView p_path) {
 #endif
     return ImageLoader::load_image(p_path, Ref<Image>(this));
 }
-
-Error Image::save_png(StringView p_path) const {
+Error Image::_save_png(StringView p_path) const {
+    return save_png_func(ResourcePath(p_path), Ref<Image>((Image *)this));
+}
+Error Image::save_png(const ResourcePath& p_path) const {
     return save_png_func(p_path, Ref<Image>((Image *)this));
 }
 
@@ -3116,7 +3120,7 @@ void Image::_bind_methods() {
     MethodBinder::bind_method(D_METHOD("is_empty"), &Image::empty);
 
     MethodBinder::bind_method(D_METHOD("load", {"path"}), &Image::load);
-    MethodBinder::bind_method(D_METHOD("save_png", {"path"}), &Image::save_png);
+    MethodBinder::bind_method(D_METHOD("save_png", {"path"}), &Image::_save_png);
     MethodBinder::bind_method(D_METHOD("save_exr", {"path", "grayscale"}), &Image::save_exr, {DEFVAL(false)});
 
     MethodBinder::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);

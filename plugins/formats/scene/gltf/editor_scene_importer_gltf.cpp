@@ -224,6 +224,7 @@ namespace {
         // A mapping from the joint indices (in the order of joints_original) to the
         // Godot Skeleton's bone_indices
         HashMap<int, int> joint_i_to_bone_i;
+        HashMap<int, StringName> joint_i_to_name;
 
         // The Actual Skin that will be created as a mapping between the IBM's of this skin
         // to the generated skeleton for the mesh instances.
@@ -313,6 +314,8 @@ namespace {
         Vector<GLTFAnimation> animations;
 
         HashMap<GLTFNodeIndex, Node*> scene_nodes;
+
+        bool use_named_skin_binds;
 
         ~GLTFState() {
             for (int i = 0; i < nodes.size(); i++) {
@@ -2521,6 +2524,8 @@ namespace {
                 const GLTFNodeIndex node_i = skin.joints_original[joint_index];
                 const GLTFNode* node = state.nodes[node_i];
 
+                skin.joint_i_to_name.emplace(joint_index, node->name);
+
                 const int bone_index = skeleton.godot_skeleton->find_bone(node->name);
                 ERR_FAIL_COND_V(bone_index < 0, FAILED);
 
@@ -3257,6 +3262,7 @@ Node *EditorSceneImporterGLTF::import_scene(StringView p_path, uint32_t p_flags,
 
     state.major_version = StringUtils::to_int(StringUtils::get_slice(version,".", 0));
     state.minor_version = StringUtils::to_int(StringUtils::get_slice(version,".", 1));
+    state.use_named_skin_binds = p_flags & IMPORT_USE_NAMED_SKIN_BINDS;
 
     /* STEP 0 PARSE SCENE */
     Error err = _parse_scenes(state);

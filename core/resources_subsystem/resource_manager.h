@@ -61,7 +61,7 @@ public:
      */
     INVOCABLE HResource loadFromUUID(const se::UUID& uuid, bool async = false, se::ResourceLoadFlags loadFlags = se::ResourceLoadFlag::Default);
     /** Attempts to retrieve file path from the provided UUID. Returns true if successful, false otherwise. */
-    INVOCABLE bool file_path_from_UUID(const UUID& uuid, ResourcePath& filePath) const;
+    INVOCABLE bool file_path_from_UUID(const se::UUID& uuid, ResourcePath& filePath) const;
     /**
      * Updates an existing resource handle with a new resource. Caller must ensure that new resource type matches the
      * original resource type.
@@ -71,6 +71,21 @@ public:
      * @brief Retrieve the given resource's metadata information
      */
     void get_metadata();
+
+    /**
+     * Saves the resource at the specified location.
+     *
+     * @param[in]	resource 	Handle to the resource.
+     * @param[in]	file_path 	Full pathname of the file to save as.
+     * @param[in]	overwrite	If true, any existing resource at the specified location will be overwritten.
+     * @param[in]	compress	Should the resource be compressed before saving. Some resources have data that is
+     *							already	compressed and this option will be ignored for such resources.
+     *
+     * @note
+     * Thread safe if you guarantee the resource isn't being written to from another thread.
+     */
+    INVOCABLE void save(const HResource& resource, const ResourcePath& file_path, bool overwrite, bool compress = false);
+
 private:
     Vector<SPtr<ResourceManifest>> m_resource_manifests;
     SPtr<ResourceManifest> mDefaultResourceManifest;

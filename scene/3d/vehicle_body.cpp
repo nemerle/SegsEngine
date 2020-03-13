@@ -362,9 +362,6 @@ float VehicleWheel::get_rpm() const {
 }
 
 VehicleWheel::VehicleWheel() {
-
-    //m_engineForce = real_t(0.);
-    body = nullptr;
 }
 
 void VehicleBody::_update_wheel_transform(VehicleWheel &wheel, PhysicsDirectBodyState *s) {

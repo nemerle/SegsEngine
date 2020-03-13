@@ -609,7 +609,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
     Object *obj = ClassDB::instance(StringName(t));
     if (!obj) {
         error = ERR_FILE_CORRUPT;
-        ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+        ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path.to_string() + ":Resource of unrecognized type in file: " + t + ".");
     }
 
     Resource *r = object_cast<Resource>(obj);
@@ -617,7 +617,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
         const char *obj_class = obj->get_class();
         error = ERR_FILE_CORRUPT;
         memdelete(obj); //bye
-        ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+        ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path.to_string() + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
     }
 
     RES res(r);
@@ -732,7 +732,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
         if (error != OK) {
             memdelete(fac);
             f->close();
-            ERR_FAIL_MSG("Failed to open binary resource file: " + local_path + ".");
+            ERR_FAIL_MSG("Failed to open compressed resource file: " + f->get_path() + ".");
         }
         f = fac;
 
@@ -741,7 +741,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
         error = ERR_FILE_UNRECOGNIZED;
         f->close();
-        ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
+        ERR_FAIL_MSG("Unrecognized binary resource file: " + f->get_path() + ".");
     }
 
     bool big_endian = f->get_32();
@@ -764,7 +764,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
         f->close();
         ERR_FAIL_MSG("File format '" + ::to_string(FORMAT_VERSION) + "." + ::to_string(ver_major) + "." +
-                     ::to_string(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path +
+                     ::to_string(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path.to_string() +
                      ".");
     }
 
@@ -813,7 +813,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
         error = ERR_FILE_CORRUPT;
         f->close();
-        ERR_FAIL_MSG("Premature end of file (EOF): " + local_path + ".");
+        ERR_FAIL_MSG("Premature end of file (EOF): " + local_path.to_string() + ".");
     }
 }
 
@@ -876,7 +876,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
     Error err;
     FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-    ERR_FAIL_COND_V_MSG(err != OK, Ref<ResourceInteractiveLoader>(), "Cannot open file '" + String(p_path) + "'.");
+    ERR_FAIL_COND_V_MSG(err != OK, Ref<ResourceInteractiveLoader>(), "Cannot open file '" + p_path.to_string() + "'.");
 
     Ref<ResourceInteractiveLoaderBinary> ria(make_ref_counted<ResourceInteractiveLoaderBinary>());
     StringView path = !p_original_path.empty() ? p_original_path : p_path;
@@ -935,7 +935,7 @@ void ResourceFormatLoaderBinary::get_dependencies(const ResourcePath &p_path, Ve
     ria->get_dependencies(f, p_dependencies, p_add_types);
 }
 
-Error ResourceFormatLoaderBinary::rename_dependencies(const ResourcePath &_path, const HashMap<String, String> &p_map) {
+Error ResourceFormatLoaderBinary::rename_dependencies(const ResourcePath &_path, const HashMap<se::UUID, se::UUID> &p_map) {
 
     //Error error=OK;
     String p_path(_path);

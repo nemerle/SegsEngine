@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "resource.h"
-#include "rid.h"
+#include "core/rid.h"
 
 #include "core/class_db.h"
 #include "core/core_string_names.h"
@@ -51,7 +51,7 @@ namespace {
     HashMap<ResourcePath, Resource *> cached_resources;
 
 } // end of anonymous namespace
-
+#if 0
 struct Resource::Data {
     Data() {}
 #ifdef TOOLS_ENABLED
@@ -83,7 +83,7 @@ void Resource::_resource_path_changed() {
 
 void Resource::set_path(const ResourcePath &p_path, bool p_take_over) {
 
-    
+
     if (impl_data->path_cache == p_path)
         return;
 
@@ -627,3 +627,4 @@ void ResourceCache::dump(StringView p_file, bool p_short) {
 
 #endif
 }
+#endif

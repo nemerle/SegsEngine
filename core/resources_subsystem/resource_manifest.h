@@ -2,11 +2,11 @@
 
 #include "core/reference.h"
 #include "core/hash_map.h"
+#include "core/string.h"
+#include "core/uuid.h"
+#include "core/resources_subsystem/resource_path.h"
 
 class ResourcePath;
-namespace se {
-    class UUID;
-}
 
 class GODOT_EXPORT ResourceManifest : public RefCounted {
     GDCLASS(ResourceManifest,RefCounted)

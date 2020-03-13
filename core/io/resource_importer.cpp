@@ -41,8 +41,8 @@
 #include "core/variant_parser.h"
 #include "EASTL/sort.h"
 
-IMPL_GDCLASS(ResourceImporter)
-
+//IMPL_GDCLASS(ResourceImporter)
+#if 0
 bool ResourceFormatImporter::SortImporterByName::operator()(const ResourceImporterInterface *p_a, const ResourceImporterInterface *p_b) const {
     return StringView(p_a->get_importer_name()) < StringView(p_b->get_importer_name());
 }
@@ -71,13 +71,13 @@ Error ResourceFormatImporter::_get_path_and_type(const ResourcePath &p_path, Pat
         if (!path_found && StringUtils::begins_with(remap_kv.first, "path.") && r_path_and_type.path.empty()) {
             StringView feature(StringUtils::get_slice(remap_kv.first, '.', 1));
             if (OS::get_singleton()->has_feature(feature)) {
-                r_path_and_type.path = remap_kv.second.as<String>();
+                r_path_and_type.path = ResourcePath(remap_kv.second.as<String>());
                 path_found = true; //first match must have priority
             }
 
         }
         else if (!path_found && remap_kv.first == "path") {
-            r_path_and_type.path = remap_kv.second.as<String>();
+            r_path_and_type.path = ResourcePath(remap_kv.second.as<String>());
             path_found = true; //first match must have priority
         }
         else if (remap_kv.first == "type") {
@@ -489,6 +489,7 @@ String ResourceFormatImporter::get_import_settings_hash() const {
     }
     return StringUtils::md5_text(hash);
 }
+#endif
 
 ResourceFormatImporter *ResourceFormatImporter::singleton = nullptr;
 
