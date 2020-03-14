@@ -35,7 +35,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "servers/physics_2d/area_2d_sw.h"
-#include "servers/physics_2d/area_2d_sw.h"
+#include "core/resources_subsystem/resource_path.h"
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
@@ -49,11 +49,11 @@ class DependencyEditor : public AcceptDialog {
 
     EditorFileDialog *search;
 
-    String replacing;
-    String editing;
-    List<String> missing;
+    ResourcePath replacing;
+    ResourcePath editing;
+    Vector<ResourcePath> missing;
 
-    void _fix_and_find(EditorFileSystemDirectory *efsd, Map<StringView, Map<String, String> > &candidates);
+    void _fix_and_find(EditorFileSystemDirectory *efsd, Map<StringView, Map< ResourcePath, ResourcePath> > &candidates);
 
     void _searched(StringView p_path);
     void _load_pressed(Object *p_item, int p_cell, int p_button);

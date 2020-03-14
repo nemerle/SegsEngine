@@ -529,7 +529,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String
     const StringView quote_style(EDITOR_DEF(("text_editor/completion/use_single_quotes"), false) ? "'" : "\"");
 
     for (int i = 0; i < p_dir->get_file_count(); i++) {
-        ScriptCodeCompletionOption option(p_dir->get_file_path(i), ScriptCodeCompletionOption::KIND_FILE_PATH);
+        ScriptCodeCompletionOption option(p_dir->get_file_path(i).to_string(), ScriptCodeCompletionOption::KIND_FILE_PATH);
         option.insert_text = String(quote_style) + option.display + quote_style;
         r_list.emplace(option.display, option);
     }

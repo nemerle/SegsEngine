@@ -565,3 +565,4 @@ public:
 
 using HResource = se::ResourceHandle<Resource>;
 using HScript = se::ResourceHandle<class Script>;
+using HAnimation = se::ResourceHandle<class Animation>;

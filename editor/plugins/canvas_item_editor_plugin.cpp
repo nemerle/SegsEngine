@@ -5842,7 +5842,7 @@ void CanvasItemEditorViewport::_on_change_type_closed() {
 
     _remove_preview();
 }
-
+#if 0
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
 
     bool add_preview = false;
@@ -6198,7 +6198,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
         _perform_drop_data();
     }
 }
-
+#endif
 void CanvasItemEditorViewport::_notification(int p_what) {
     switch (p_what) {
         case NOTIFICATION_ENTER_TREE: {

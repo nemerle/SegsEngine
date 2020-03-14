@@ -50,8 +50,8 @@ IMPL_GDCLASS(OrphanResourcesDialog)
 
 void DependencyEditor::_searched(StringView p_path) {
 
-    HashMap<String, String> dep_rename;
-    dep_rename[replacing] = p_path;
+    HashMap<ResourcePath, ResourcePath> dep_rename;
+    dep_rename[replacing] = ResourcePath(p_path);
 
     ResourceLoader::rename_dependencies(editing, dep_rename);
 
@@ -62,9 +62,9 @@ void DependencyEditor::_searched(StringView p_path) {
 void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 
     TreeItem *ti = object_cast<TreeItem>(p_item);
-    replacing = ti->get_text(1);
+    replacing = ResourcePath(ti->get_text(1));
 
-    search->set_title(TTR("Search Replacement For:") + " " + PathUtils::get_file(replacing));
+    search->set_title(TTR("Search Replacement For:") + " " + replacing.leaf());
 
     search->clear_filters();
     Vector<String> ext;
@@ -75,7 +75,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
     search->popup_centered_ratio(0.65f); // So it doesn't completely cover the dialog below it.
 }
 
-void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<StringView, Map<String, String> > &candidates) {
+void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<StringView, Map<ResourcePath, ResourcePath> > &candidates) {
 
     for (int i = 0; i < efsd->get_subdir_count(); i++) {
         _fix_and_find(efsd->get_subdir(i), candidates);
@@ -87,7 +87,7 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
         if (!candidates.contains(file))
             continue;
 
-        String path = efsd->get_file_path(i);
+        ResourcePath path = efsd->get_file_path(i);
 
         for (auto & E : candidates[file]) {
 
@@ -97,13 +97,16 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
             }
 
             //must match the best, using subdirs
-            String existing = StringUtils::replace_first(E.second,"res://", String());
-            String current = StringUtils::replace_first(path,"res://", String());
-            String lost = StringUtils::replace_first(E.first,"res://", String());
+            ResourcePath existing(E.second);
+            existing.set_mountpoint("");
+            ResourcePath current(path);
+            current.set_mountpoint("");
+            ResourcePath lost(E.first);
+            lost.set_mountpoint("");
 
-            Vector<StringView> existingv = StringUtils::split(existing,'/');
-            Vector<StringView> currentv = StringUtils::split(current,'/');
-            Vector<StringView> lostv = StringUtils::split(lost,'/');
+            Vector<String> existingv = existing.components();
+            Vector<String> currentv = current.components();
+            Vector<String> lostv = lost.components();
             eastl::reverse(existingv.begin(),existingv.end());
             eastl::reverse(currentv.begin(),currentv.end());
             eastl::reverse(lostv.begin(),lostv.end());
@@ -136,21 +139,21 @@ void DependencyEditor::_fix_all() {
     if (!EditorFileSystem::get_singleton()->get_filesystem())
         return;
 
-    Map<StringView, Map<String, String> > candidates;
+    Map<StringView, Map<ResourcePath, ResourcePath> > candidates;
 
-    for (const String &E : missing) {
+    for (const ResourcePath &E : missing) {
 
-        StringView base = PathUtils::get_file(E);
-        candidates[base][E] = "";
+        StringView base = E.leaf();
+        candidates[base][E] = ResourcePath();
     }
 
     _fix_and_find(EditorFileSystem::get_singleton()->get_filesystem(), candidates);
 
-    HashMap<String, String> remaps;
+    HashMap<ResourcePath, ResourcePath> remaps;
 
-    for (eastl::pair<const StringView, Map<String, String> > &E : candidates) {
+    for (eastl::pair<const StringView, Map<ResourcePath, ResourcePath> > &E : candidates) {
 
-        for (eastl::pair<const String, String> &F : E.second) {
+        for (eastl::pair<const ResourcePath, ResourcePath> &F : E.second) {
 
             if (!F.second.empty()) {
                 remaps[F.first] = F.second;
@@ -222,16 +225,18 @@ void DependencyEditor::_update_list() {
 
 void DependencyEditor::edit(StringView p_path) {
 
-    editing = p_path;
+    editing = ResourcePath(p_path);
     set_title(TTR("Dependencies For:") + " " + PathUtils::get_file(p_path));
 
     _update_list();
     popup_centered_ratio(0.7f); // So it doesn't completely cover the dialog below it.
     StringView filepath = PathUtils::get_file(p_path);
-    if (EditorNode::get_singleton()->is_scene_open(p_path)) {
-        EditorNode::get_singleton()->show_warning(FormatSN(TTR("Scene '%.*s' is currently being edited.\nChanges will only take effect when reloaded.").asCString(), filepath.length(),filepath.data()));
-    } else if (ResourceCache::has(p_path)) {
-        EditorNode::get_singleton()->show_warning(FormatSN(TTR("Resource '%.*s' is in use.\nChanges will only take effect when reloaded.").asCString(), filepath.length(),filepath.data()));
+    EditorNode *editor_node = EditorNode::get_singleton();
+
+    if (editor_node->is_scene_open(editing)) {
+        editor_node->show_warning(FormatSN(TTR("Scene '%.*s' is currently being edited.\nChanges will only take effect when reloaded.").asCString(), filepath.length(),filepath.data()));
+    } else if (ResourceCache::has(editing)) {
+        editor_node->show_warning(FormatSN(TTR("Resource '%.*s' is in use.\nChanges will only take effect when reloaded.").asCString(), filepath.length(),filepath.data()));
     }
 }
 
@@ -295,7 +300,7 @@ void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) 
 
 void DependencyEditorOwners::_select_file(int p_idx) {
 
-    String fpath(owners->get_item_text(p_idx));
+    ResourcePath fpath(owners->get_item_text(p_idx));
 
     if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
         editor->open_request(fpath);

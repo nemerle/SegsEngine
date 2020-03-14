@@ -306,7 +306,7 @@ void EditorAutoloadSettings::_autoload_activated() {
         return;
     _autoload_open(ti->get_text(1));
 }
-
+#if 0
 void EditorAutoloadSettings::_autoload_open(StringView fpath) {
     if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
         EditorNode::get_singleton()->open_request(fpath);
@@ -315,7 +315,7 @@ void EditorAutoloadSettings::_autoload_open(StringView fpath) {
     }
     ProjectSettingsEditor::get_singleton()->hide();
 }
-
+#endif
 void EditorAutoloadSettings::_autoload_file_callback(StringView p_path) {
     using namespace PathUtils;
     using namespace StringUtils;
@@ -348,7 +348,7 @@ void EditorAutoloadSettings::_autoload_text_changed(StringView p_name) {
     add_autoload->set_disabled(
             autoload_add_path->get_line_edit()->get_text().empty() || !_autoload_name_is_valid(StringName(p_name), NULL));
 }
-
+#if 0
 Node *EditorAutoloadSettings::_create_autoload(StringView p_path) {
     RES res(ResourceLoader::load(p_path));
     ERR_FAIL_COND_V_MSG(not res, nullptr, String("Can't autoload: ") + p_path + ".");
@@ -374,7 +374,7 @@ Node *EditorAutoloadSettings::_create_autoload(StringView p_path) {
 
     return n;
 }
-
+#endif
 void EditorAutoloadSettings::update_autoload() {
 
     if (updating_autoload)

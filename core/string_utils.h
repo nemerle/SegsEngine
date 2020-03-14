@@ -301,6 +301,7 @@ namespace PathUtils
     [[nodiscard]] GODOT_EXPORT bool is_rel_path(StringView p);
     [[nodiscard]] GODOT_EXPORT bool is_resource_file(const UIString &p);
     [[nodiscard]] GODOT_EXPORT bool is_resource_file(StringView p);
+    [[nodiscard]] GODOT_EXPORT bool is_resource_file(const ResourcePath& p);
     [[nodiscard]] GODOT_EXPORT String path_to(StringView p, StringView  p_path);
     [[nodiscard]] GODOT_EXPORT String path_to_file(StringView p, StringView  p_path);
     [[nodiscard]] GODOT_EXPORT String get_base_dir(StringView path);

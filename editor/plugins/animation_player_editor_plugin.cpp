@@ -37,6 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/translation_helpers.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "editor/animation_track_editor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_scale.h"
@@ -372,7 +373,7 @@ void AnimationPlayerEditor::_animation_load() {
     file->popup_centered_ratio();
     current_option = RESOURCE_LOAD;
 }
-
+#if 0
 void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resource, StringView p_path) {
 
     int flg = 0;
@@ -388,7 +389,7 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resou
         return;
     }
 
-    ((Resource *)p_resource.get())->set_path(path);
+    p_resource->set_path(path);
     editor->emit_signal("resource_saved", p_resource);
 }
 
@@ -438,7 +439,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
     file->set_title(TTR("Save Resource As..."));
     current_option = RESOURCE_SAVE;
 }
-
+#endif
 void AnimationPlayerEditor::_animation_remove() {
 
     if (animation->get_item_count() == 0)
@@ -745,8 +746,8 @@ void AnimationPlayerEditor::_dialog_action(StringView p_file) {
     switch (current_option) {
         case RESOURCE_LOAD: {
             ERR_FAIL_COND(!player);
-
-            Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
+            HAnimation res = gResourceManager().load<Animation>(p_file);
+            //Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
             ERR_FAIL_COND_MSG(not res, "Cannot load Animation from file '" + String(p_file) + "'."); 
             ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + String(p_file) + "' is not Animation."); 
             if (StringUtils::contains(p_file,'/')) {
@@ -762,7 +763,7 @@ void AnimationPlayerEditor::_dialog_action(StringView p_file) {
                 p_file = StringUtils::substr(p_file,0, StringUtils::find(p_file,"."));
 
             undo_redo->create_action_ui(TTR("Load Animation"));
-            undo_redo->add_do_method(player, "add_animation", p_file, res);
+            undo_redo->add_do_method(player, "add_animation", p_file, Ref<Animation>(res.get()));
             undo_redo->add_undo_method(player, "remove_animation", p_file);
             if (player->has_animation(StringName(p_file))) {
                 undo_redo->add_undo_method(player, "add_animation", p_file, player->get_animation(StringName(p_file)));
@@ -976,7 +977,7 @@ void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_o
         } while (cidx < base_cidx + onion.steps); // In case there's the present capture at the end, skip it.
     }
 }
-
+#if 0
 void AnimationPlayerEditor::_animation_duplicate() {
 
     if (!animation->get_item_count())
@@ -1024,7 +1025,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
         }
     }
 }
-
+#endif
 void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 
     if (updating || !player || player->is_playing()) {
