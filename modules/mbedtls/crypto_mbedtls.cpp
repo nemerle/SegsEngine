@@ -59,7 +59,7 @@ Error CryptoKeyMbedTLS::load(const ResourcePath &p_path) {
 
     PoolByteArray out;
     FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-    ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + String(p_path) + "'.");
+    ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path.to_string() + "'.");
 
     int flen = f->get_len();
     out.resize(flen + 1);
@@ -108,7 +108,7 @@ Error X509CertificateMbedTLS::load(const ResourcePath &p_path) {
 
     PoolByteArray out;
     FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-    ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + String(p_path) + "'.");
+    ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path.to_string() + "'.");
 
     int flen = f->get_len();
     out.resize(flen + 1);
@@ -201,7 +201,7 @@ X509CertificateMbedTLS *CryptoMbedTLS::get_default_certificates() {
     return default_certs;
 }
 
-void CryptoMbedTLS::load_default_certificates(StringView p_path) {
+void CryptoMbedTLS::load_default_certificates(const ResourcePath &p_path) {
     ERR_FAIL_COND(default_certs != nullptr);
 
     default_certs = memnew(X509CertificateMbedTLS);

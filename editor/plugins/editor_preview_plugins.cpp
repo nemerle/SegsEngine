@@ -280,7 +280,7 @@ Ref<Texture> EditorPackedScenePreviewPlugin::generate(const RES &p_from, const S
     return generate_from_path(p_from->get_path(), p_size);
 }
 
-Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(StringView p_path, const Size2 &p_size) const {
+Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const ResourcePath &p_path, const Size2 &p_size) const {
 
     String temp_path = EditorSettings::get_singleton()->get_cache_dir();
     String cache_base = StringUtils::md5_text(ProjectSettings::get_singleton()->globalize_path(p_path));

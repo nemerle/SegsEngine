@@ -73,7 +73,7 @@ class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
 public:
     bool handles(StringView p_type) const override;
 	Ref<Texture> generate(const RES &p_from, const Size2 &p_size) const override;
-	Ref<Texture> generate_from_path(StringView p_path, const Size2 &p_size) const override;
+	Ref<Texture> generate_from_path(const ResourcePath &p_path, const Size2 &p_size) const override;
 
 	EditorPackedScenePreviewPlugin();
 };

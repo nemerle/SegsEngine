@@ -77,7 +77,7 @@ void X509Certificate::_bind_methods() {
 
 /// Crypto
 
-void (*Crypto::_load_default_certificates)(StringView p_path) = nullptr;
+void (*Crypto::_load_default_certificates)(const ResourcePath &p_path) = nullptr;
 Crypto *(*Crypto::_create)() = nullptr;
 Crypto *Crypto::create() {
     if (_create)
@@ -85,7 +85,7 @@ Crypto *Crypto::create() {
     return memnew(Crypto);
 }
 
-void Crypto::load_default_certificates(StringView p_path) {
+void Crypto::load_default_certificates(const ResourcePath &p_path) {
 
     if (_load_default_certificates)
         _load_default_certificates(p_path);

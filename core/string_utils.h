@@ -305,6 +305,7 @@ namespace PathUtils
     [[nodiscard]] GODOT_EXPORT String path_to(StringView p, StringView  p_path);
     [[nodiscard]] GODOT_EXPORT String path_to_file(StringView p, StringView  p_path);
     [[nodiscard]] GODOT_EXPORT String get_base_dir(StringView path);
+    [[nodiscard]] GODOT_EXPORT String get_base_dir(const ResourcePath &path);
     [[nodiscard]] GODOT_EXPORT StringView get_file(StringView p);
     [[nodiscard]] GODOT_EXPORT String humanize_size(uint64_t p_size);
     [[nodiscard]] GODOT_EXPORT StringView trim_trailing_slash(StringView path);

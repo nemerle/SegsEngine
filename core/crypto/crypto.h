@@ -71,11 +71,11 @@ class Crypto : public RefCounted {
 protected:
     static void _bind_methods();
     static Crypto *(*_create)();
-    static void (*_load_default_certificates)(StringView p_path);
+    static void (*_load_default_certificates)(const ResourcePath &p_path);
 
 public:
     static Crypto *create();
-    static void load_default_certificates(StringView p_path);
+    static void load_default_certificates(const ResourcePath &p_path);
 
     virtual PoolByteArray generate_random_bytes(int p_bytes);
     virtual Ref<CryptoKey> generate_rsa(int p_bytes);

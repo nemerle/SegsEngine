@@ -110,7 +110,7 @@ public:
 	static void initialize_crypto();
 	static void finalize_crypto();
 	static X509CertificateMbedTLS *get_default_certificates();
-    static void load_default_certificates(StringView p_path);
+    static void load_default_certificates(const ResourcePath &p_path);
 
 	PoolByteArray generate_random_bytes(int p_bytes) override;
 	Ref<CryptoKey> generate_rsa(int p_bytes) override;

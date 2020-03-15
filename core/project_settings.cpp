@@ -907,14 +907,15 @@ Error ProjectSettings::save_custom(StringView p_path, const CustomMap &p_custom,
 Variant _GLOBAL_DEF(const StringName &p_var, const Variant &p_default, bool p_restart_if_changed) {
 
     Variant ret;
-    if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
-        ProjectSettings::get_singleton()->set(p_var, p_default);
+    ProjectSettings * settings=ProjectSettings::get_singleton();
+    if (!settings->has_setting(p_var)) {
+        settings->set(p_var, p_default);
     }
-    ret = ProjectSettings::get_singleton()->get(p_var);
+    ret = settings->get(p_var);
 
-    ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
-    ProjectSettings::get_singleton()->set_builtin_order(p_var);
-    ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
+    settings->set_initial_value(p_var, p_default);
+    settings->set_builtin_order(p_var);
+    settings->set_restart_if_changed(p_var, p_restart_if_changed);
     return ret;
 }
 Vector<String> ProjectSettings::get_optimizer_presets() const {

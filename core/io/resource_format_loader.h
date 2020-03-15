@@ -54,8 +54,12 @@ public:
     virtual void get_recognized_extensions(Vector<String> &p_extensions) const;
     virtual void get_recognized_extensions_for_type(StringView p_type, Vector<String> &p_extensions) const;
     virtual bool recognize_path(const ResourcePath &p_path) const;
-    virtual bool handles_type(StringView p_type) const=0;
-    virtual String get_resource_type(const ResourcePath &p_path) const=0;
+    virtual bool handles_type(StringView p_type) const {
+        return false;
+    }
+    virtual String get_resource_type(const ResourcePath &p_path) const {
+        return "";
+    }
     virtual void get_dependencies(const ResourcePath & /*p_path*/, Vector<String> &/*p_dependencies*/, bool /*p_add_types*/ = false) {
         // By default no dependencies. override this method to inform resource subsytem about dependent resources
     }

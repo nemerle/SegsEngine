@@ -182,15 +182,15 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 
             if (StringUtils::get_slice_count(line,' ') <= 1) {
 
-                const Map<int, HashSet<StringName> > &breakpoints = get_breakpoints();
+                const Map<int, HashSet<String> > &breakpoints = get_breakpoints();
                 if (breakpoints.empty()) {
                     print_line("No Breakpoints.");
                     continue;
                 }
 
                 print_line("Breakpoint(s): " + itos(breakpoints.size()));
-                for (const eastl::pair<const int,HashSet<StringName> > &E : breakpoints) {
-                    print_line("\t" + String(*E.second.begin()) + ":" + itos(E.first));
+                for (const eastl::pair<const int,HashSet<String> > &E : breakpoints) {
+                    print_line("\t" + *E.second.begin() + ":" + itos(E.first));
                 }
 
             } else {
@@ -203,7 +203,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
                 if (source.empty())
                     continue;
 
-                insert_breakpoint(linenr, StringName(source));
+                insert_breakpoint(linenr, source);
 
                 print_line("Added breakpoint at " + source + ":" + itos(linenr));
             }
@@ -231,7 +231,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
                 if (source.empty())
                     continue;
 
-                remove_breakpoint(linenr, StringName(source));
+                remove_breakpoint(linenr, source);
 
                 print_line("Removed breakpoint at " + source + ":" + itos(linenr));
             }

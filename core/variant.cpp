@@ -3122,7 +3122,7 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
     Ref<Script> script = refFromRefPtr<Script>(p_base->get_script());
     if (script && PathUtils::is_resource_file(script->get_path())) {
 
-        class_name += "(" + String(PathUtils::get_file(script->get_path())) + ")";
+        class_name += "(" + String(script->get_path().leaf()) + ")";
     }
     return "'" + class_name + "::" + String(p_method) + "': " + err_text;
 }

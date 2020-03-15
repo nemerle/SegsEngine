@@ -33,6 +33,7 @@
 #include "core/class_db.h"
 #include "core/color.h"
 #include "core/io/resource_loader.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/list.h"
 #include "core/map.h"
 #include "core/math/aabb.h"
@@ -844,7 +845,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, VariantParserStre
                 get_token(p_stream, token, line, r_err_str);
                 if (token.type == TK_STRING) {
                     String path = token.value.as<String>();
-                    RES res(ResourceLoader::load(path));
+                    HResource res(gResourceManager().load(path));
                     if (not res) {
                         r_err_str = "Can't load resource at path: '" + path + "'.";
                         return ERR_PARSE_ERROR;
@@ -856,7 +857,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, VariantParserStre
                         return ERR_PARSE_ERROR;
                     }
 
-                    value = res;
+                    value = RES(res.get());
                     return OK;
 
                 } else {

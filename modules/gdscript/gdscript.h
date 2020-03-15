@@ -518,7 +518,7 @@ public:
     /* GLOBAL CLASSES */
 
     bool handles_global_class_type(StringView p_type) const override;
-    StringName get_global_class_name(StringView p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
+    StringName get_global_class_name(const ResourcePath & p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
 
     void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
     Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
@@ -529,11 +529,11 @@ public:
 
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
 public:
-    RES load(StringView p_path, StringView p_original_path = StringView(), Error *r_error = nullptr) override;
+    RES load(const ResourcePath & p_path, StringView p_original_path = StringView(), Error *r_error = nullptr) override;
     void get_recognized_extensions(Vector<String> &p_extensions) const override;
     bool handles_type(StringView p_type) const override;
-    String get_resource_type(StringView p_path) const override;
-    void get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types = false) override;
+    String get_resource_type(const ResourcePath &p_path) const override;
+    void get_dependencies(const ResourcePath & p_path, Vector<String> &p_dependencies, bool p_add_types = false) override;
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {

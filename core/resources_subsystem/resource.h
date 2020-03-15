@@ -566,3 +566,5 @@ public:
 using HResource = se::ResourceHandle<Resource>;
 using HScript = se::ResourceHandle<class Script>;
 using HAnimation = se::ResourceHandle<class Animation>;
+using HTexture = se::ResourceHandle<class Texture>;
+using HPackedScene = se::ResourceHandle<class PackedScene>;
