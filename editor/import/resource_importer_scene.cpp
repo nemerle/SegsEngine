@@ -33,6 +33,7 @@
 #include "core/io/resource_saver.h"
 #include "core/method_bind.h"
 #include "core/translation_helpers.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
 
@@ -379,7 +380,7 @@ Node *ResourceImporterScene::_fix_node(
         Vector<StringName> anims(ap->get_animation_list());
         for (const StringName &E : anims) {
 
-            Ref<Animation> anim = ap->get_animation(E);
+            const HAnimation &anim = ap->get_animation(E);
             ERR_CONTINUE(not anim);
             for (int i = 0; i < anim->get_track_count(); i++) {
                 NodePath path = anim->track_get_path(i);
@@ -684,7 +685,7 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 
     if (!anim->has_animation("default")) return;
 
-    Ref<Animation> default_anim = anim->get_animation("default");
+    const HAnimation &default_anim = anim->get_animation("default");
 
     for (int i = 0; i < p_clips.size(); i += 4) {
 
@@ -788,17 +789,16 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
     anim->remove_animation("default"); // remove default (no longer needed)
 }
 //TODO: SEGS: use UnorderedSet here.
-void ResourceImporterScene::_filter_anim_tracks(const Ref<Animation> &anim, Set<String> &keep) {
+void ResourceImporterScene::_filter_anim_tracks(const HAnimation &anim, Set<String> &keep) {
 
-    const Ref<Animation> &a(anim);
-    ERR_FAIL_COND(!a);
+    ERR_FAIL_COND(!anim);
 
-    for (int j = 0; j < a->get_track_count(); j++) {
+    for (int j = 0; j < anim->get_track_count(); j++) {
 
-        String path(a->track_get_path(j));
+        String path(anim->track_get_path(j));
 
         if (!keep.contains(path)) {
-            a->remove_track(j);
+            anim->remove_track(j);
             j--;
         }
     }
@@ -863,10 +863,11 @@ void ResourceImporterScene::_filter_tracks(Node *scene, StringView p_text) {
 
             } else if (valid_for_this) {
 
-                Ref<Animation> a = anim->get_animation(StringName(name));
-                if (not a) continue;
+                const HAnimation &a = anim->get_animation(StringName(name));
+                if (not a)
+                    continue;
 
-                for (int j = 0; j < a->get_track_count(); j++) {
+                for (size_t j = 0; j < a->get_track_count(); j++) {
 
                     String path(a->track_get_path(j));
 
@@ -915,7 +916,7 @@ void ResourceImporterScene::_optimize_animations(
     Vector<StringName> anim_names(anim->get_animation_list());
     for (const StringName &E : anim_names) {
 
-        Ref<Animation> a = anim->get_animation(E);
+        const HAnimation & a = anim->get_animation(E);
         a->optimize(p_max_lin_error, p_max_ang_error, Math::deg2rad(p_max_angle));
     }
 }
@@ -968,8 +969,9 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_base_path, bool p_make_animations,
         bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text,
         bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text,
-        Map<Ref<Animation>, Ref<Animation>> &p_animations, Map<Ref<Material>, Ref<Material>> &p_materials,
-        Map<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes) {
+        HashMap<HAnimation, HAnimation> &p_animations,
+        HashMap<Ref<Material>, Ref<Material>> &p_materials,
+        HashMap<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes) {
 
     Vector<PropertyInfo> pi;
 
@@ -980,7 +982,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
             Vector<StringName> anims(ap->get_animation_list());
             for (const StringName &E : anims) {
 
-                Ref<Animation> anim = ap->get_animation(E);
+                HAnimation anim = ap->get_animation(E);
                 ERR_CONTINUE(not anim);
 
                 if (!p_animations.contains(anim)) {
@@ -989,16 +991,16 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
                     for (int i = 0; i < anim->get_track_count(); i++) {
                         anim->track_set_imported(i, true);
                     }
-                    String ext_name;
+                    ResourcePath ext_name(p_base_path);
 
                     if (p_animations_as_text) {
-                        ext_name = PathUtils::plus_file(p_base_path, _make_extname(E) + ".tres");
+                        ext_name.cd(_make_extname(E) + ".tres");
                     } else {
-                        ext_name = PathUtils::plus_file(p_base_path, _make_extname(E) + ".anim");
+                        ext_name.cd(_make_extname(E) + ".anim");
                     }
                     if (FileAccess::exists(ext_name) && p_keep_animations) {
                         // try to keep custom animation tracks
-                        Ref<Animation> old_anim = ResourceLoader::load<Animation>(ext_name, String("Animation"), true);
+                        HAnimation old_anim = gResourceManager().load<Animation>(ext_name, se::ResourceLoadFlag::Default|se::ResourceLoadFlag::SkipCache);
                         if (old_anim) {
                             // meergeee
                             for (int i = 0; i < old_anim->get_track_count(); i++) {
@@ -1011,6 +1013,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
                     }
 
                     anim->set_path(ext_name, true); // if not set, then its never saved externally
+                    gResourceManager().save(anim,ext_name);
                     ResourceSaver::save(ext_name, anim, ResourceSaver::FLAG_CHANGE_PATH);
                     p_animations[anim] = anim;
                 }
@@ -1513,9 +1516,9 @@ Error ResourceImporterScene::import(StringView p_source_file, StringView p_save_
     }
 
     if (external_animations || external_materials || external_meshes) {
-        Map<Ref<Animation>, Ref<Animation>> anim_map;
-        Map<Ref<Material>, Ref<Material>> mat_map;
-        Map<Ref<ArrayMesh>, Ref<ArrayMesh>> mesh_map;
+        HashMap<HAnimation, HAnimation> anim_map;
+        HashMap<Ref<Material>, Ref<Material>> mat_map;
+        HashMap<Ref<ArrayMesh>, Ref<ArrayMesh>> mesh_map;
 
         bool keep_materials = bool(p_options.at("materials/keep_on_reimport"));
 
@@ -1610,6 +1613,7 @@ uint32_t EditorSceneImporterESCN::get_import_flags() const {
 void EditorSceneImporterESCN::get_extensions(Vector<String> &r_extensions) const {
     r_extensions.push_back("escn");
 }
+#if 0
 Node *EditorSceneImporterESCN::import_scene(StringView p_path, uint32_t /*p_flags*/, int /*p_bake_fps*/,
         Vector<String> * /*r_missing_deps*/, Error * /*r_err*/) {
 
@@ -1623,6 +1627,7 @@ Node *EditorSceneImporterESCN::import_scene(StringView p_path, uint32_t /*p_flag
 
     return scene;
 }
+#endif
 Ref<Animation> EditorSceneImporterESCN::import_animation(StringView p_path, uint32_t p_flags, int p_bake_fps) {
     ERR_FAIL_V(Ref<Animation>());
 }

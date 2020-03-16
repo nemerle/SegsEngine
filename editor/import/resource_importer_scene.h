@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource_importer.h"
+#include "core/hash_map.h"
 #include "editor/plugin_interfaces/EditorSceneImporterInterface.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
@@ -130,12 +131,15 @@ public:
 
     void _find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes);
 
-    void _make_external_resources(Node *p_node, StringView p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes);
+void _make_external_resources(Node *p_node, StringView p_base_path, bool p_make_animations, bool p_animations_as_text,
+        bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials,
+        bool p_make_meshes, bool p_meshes_as_text, HashMap<HAnimation, HAnimation> &p_animations,
+        HashMap<Ref<Material>, Ref<Material>> &p_materials, HashMap<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes);
 
     Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape>>> &collision_map, LightBakeMode p_light_bake_mode);
 
     void _create_clips(Node *scene, const Array &p_clips, bool p_bake_all);
-    void _filter_anim_tracks(const Ref<Animation>& anim, Set<String> &keep);
+    void _filter_anim_tracks(const HAnimation &anim, Set<String> &keep);
     void _filter_tracks(Node *scene, StringView p_text);
     void _optimize_animations(Node *scene, float p_max_lin_error, float p_max_ang_error, float p_max_angle);
 

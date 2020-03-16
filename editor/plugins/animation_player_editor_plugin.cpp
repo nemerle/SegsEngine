@@ -85,7 +85,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
                     StringName animname(player->get_assigned_animation());
 
                     if (player->has_animation(animname)) {
-                        Ref<Animation> anim = player->get_animation(animname);
+                        const auto &anim = player->get_animation(animname);
                         if (anim) {
 
                             frame->set_max(anim->get_length());
@@ -297,7 +297,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
         player->set_assigned_animation(current);
 
-        Ref<Animation> anim = player->get_animation(current);
+        const auto &anim = player->get_animation(current);
         {
 
             track_editor->set_animation(anim);
@@ -748,8 +748,8 @@ void AnimationPlayerEditor::_dialog_action(StringView p_file) {
             ERR_FAIL_COND(!player);
             HAnimation res = gResourceManager().load<Animation>(p_file);
             //Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
-            ERR_FAIL_COND_MSG(not res, "Cannot load Animation from file '" + String(p_file) + "'."); 
-            ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + String(p_file) + "' is not Animation."); 
+            ERR_FAIL_COND_MSG(not res, "Cannot load Animation from file '" + String(p_file) + "'.");
+            ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + String(p_file) + "' is not Animation.");
             if (StringUtils::contains(p_file,'/')) {
 
                 p_file = StringUtils::substr(p_file,StringUtils::find_last(p_file,'/') + 1, p_file.length());

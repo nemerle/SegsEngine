@@ -2752,7 +2752,7 @@ float Animation::get_step() const {
     return step;
 }
 
-void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
+void Animation::copy_track(int p_track, const HAnimation &p_to_animation) {
     ERR_FAIL_COND(not p_to_animation);
     ERR_FAIL_INDEX(p_track, get_track_count());
     int dst_track = p_to_animation->get_track_count();

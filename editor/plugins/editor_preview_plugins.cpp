@@ -835,7 +835,7 @@ bool EditorFontPreviewPlugin::handles(StringView p_type) const {
 
 }
 
-Ref<Texture> EditorFontPreviewPlugin::generate_from_path(StringView p_path, const Size2 &p_size) const {
+Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const ResourcePath &p_path, const Size2 &p_size) const {
 
     RES res = ResourceLoader::load(p_path);
     Ref<DynamicFont> sampled_font;
@@ -897,7 +897,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(StringView p_path, cons
 
 Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 
-    String path = p_from->get_path();
+    const ResourcePath &path = p_from->get_path();
     if (!FileAccess::exists(path)) {
         return Ref<Texture>();
     }

@@ -79,6 +79,10 @@ enum class ResourceLoadFlag
      * use up extra memory. Normally you want to keep this enabled if you plan on saving the resource to disk.
      */
     KeepSourceData = 1 << 2,
+    /**
+     * Determines if the load 'request' should skip cached resource
+     */
+    SkipCache = 1 << 3,
     /** Default set of flags used for resource loading. */
     Default = LoadDependencies | KeepInternalRef
 };

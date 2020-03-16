@@ -194,7 +194,7 @@ private:
         String name;
         StringName next;
         Vector<TrackNodeCache *> node_cache;
-        Ref<Animation> animation;
+        HAnimation animation;
     };
 
     Map<StringName, AnimationData> animation_set;
@@ -273,8 +273,8 @@ private:
 
     // bind helpers
     void _animation_changed();
-    void _ref_anim(const Ref<Animation> &p_anim);
-    void _unref_anim(const Ref<Animation> &p_anim);
+    void _ref_anim(const HAnimation &p_anim);
+    void _unref_anim(const HAnimation &p_anim);
 
     void _set_process(bool p_process, bool p_force = false);
 
@@ -296,7 +296,7 @@ public:
     void remove_animation(const StringName &p_name);
     void rename_animation(const StringName &p_name, const StringName &p_new_name);
     bool has_animation(const StringName &p_name) const;
-    Ref<Animation> get_animation(const StringName &p_name) const;
+    const HAnimation & get_animation(const StringName &p_name) const;
     Vector<StringName> get_animation_list() const;
 
     void set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time);

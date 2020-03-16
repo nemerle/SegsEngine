@@ -121,7 +121,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
     Error poll_handle_ext_resource();
 
 public:
-    void set_local_path(StringView p_local_path) override;
+    void set_local_path(const ResourcePath &p_local_path) override;
     Ref<Resource> get_resource() override;
     Error poll() override;
     int get_stage() const override;
@@ -141,13 +141,13 @@ public:
 class ResourceFormatLoaderText : public ResourceFormatLoader {
 public:
     static ResourceFormatLoaderText *singleton;
-    Ref<ResourceInteractiveLoader> load_interactive(StringView p_path, StringView p_original_path = {}, Error *r_error = nullptr) override;
+    Ref<ResourceInteractiveLoader> load_interactive(const ResourcePath & p_path, StringView p_original_path = {}, Error *r_error = nullptr) override;
     void get_recognized_extensions_for_type(StringView p_type, Vector<String> &p_extensions) const override;
     void get_recognized_extensions(Vector<String> &p_extensions) const override;
     bool handles_type(StringView p_type) const override;
-    String get_resource_type(StringView p_path) const override;
-    void get_dependencies(StringView p_path, Vector<String> &p_dependencies, bool p_add_types = false) override;
-    Error rename_dependencies(StringView p_path, const HashMap<String, String> &p_map) override;
+    String get_resource_type(const ResourcePath & p_path) const override;
+    void get_dependencies(const ResourcePath & p_path, Vector<String> &p_dependencies, bool p_add_types = false) override;
+    //Error rename_dependencies(const ResourcePath & p_path, const HashMap<String, String> &p_map) override;
 
     static Error convert_file_to_binary(StringView p_src_path, StringView p_dst_path);
 

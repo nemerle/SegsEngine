@@ -44,7 +44,7 @@
 class AnimationTimelineEdit : public Range {
     GDCLASS(AnimationTimelineEdit,Range)
 
-    Ref<Animation> animation;
+    HAnimation animation;
     int name_limit;
     Range *zoom;
     Range *h_scroll;
@@ -92,7 +92,7 @@ public:
     float get_zoom_scale() const;
 
     Size2 get_minimum_size() const override;
-    void set_animation(const Ref<Animation> &p_animation);
+    void set_animation(HAnimation &&p_animation);
     void set_zoom(Range *p_zoom);
     Range *get_zoom() const { return zoom; }
     void set_undo_redo(UndoRedo *p_undo_redo);
@@ -139,7 +139,7 @@ class AnimationTrackEdit : public Control {
     float play_position_pos;
     NodePath node_path;
 
-    Ref<Animation> animation;
+    HAnimation animation;
     int track;
 
     Rect2 check_rect;
@@ -206,12 +206,12 @@ public:
     void draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled = true);
 
     int get_track() const;
-    Ref<Animation> get_animation() const;
+    const HAnimation &get_animation() const;
     AnimationTimelineEdit *get_timeline() const { return timeline; }
     AnimationTrackEditor *get_editor() const { return editor; }
     UndoRedo *get_undo_redo() const { return undo_redo; }
     NodePath get_path() const;
-    void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
+    void set_animation_and_track(const HAnimation &p_animation, int p_track);
     Size2 get_minimum_size() const override;
 
     void set_undo_redo(UndoRedo *p_undo_redo);
@@ -287,7 +287,7 @@ class AnimationTrackEditor : public VBoxContainer {
         EDIT_CLEAN_UP_ANIMATION_CONFIRM
     };
 
-    Ref<Animation> animation;
+    HAnimation animation;
     Node *root;
 
     MenuButton *edit;
@@ -382,8 +382,8 @@ class AnimationTrackEditor : public VBoxContainer {
     void _add_method_key(const StringName &p_method);
 
     void _clear_selection(bool p_update = false);
-    void _clear_selection_for_anim(const Ref<Animation> &p_anim);
-    void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
+    void _clear_selection_for_anim(const HAnimation &p_anim);
+    void _select_at_anim(const HAnimation &p_anim, int p_track, float p_pos);
 
     //selection
 
@@ -491,8 +491,8 @@ public:
     void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
     void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 
-    void set_animation(const Ref<Animation> &p_anim);
-    Ref<Animation> get_current_animation() const;
+    void set_animation(HAnimation &&p_anim);
+    const HAnimation &get_current_animation() const;
     void set_root(Node *p_root);
     Node *get_root() const;
     void update_keying();

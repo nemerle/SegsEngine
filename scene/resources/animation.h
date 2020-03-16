@@ -319,7 +319,7 @@ public:
     const Vector<Variant> &method_track_get_params(int p_track, int p_key_idx) const;
     StringName method_track_get_name(int p_track, int p_key_idx) const;
 
-    void copy_track(int p_track, Ref<Animation> p_to_animation);
+    void copy_track(int p_track, const HAnimation &p_to_animation);
 
     void track_get_key_indices_in_range(int p_track, float p_time, float p_delta, DefList<int> *p_indices) const;
 

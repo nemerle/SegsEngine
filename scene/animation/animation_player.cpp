@@ -115,7 +115,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
     } else if (StringUtils::begins_with(name,"anims/")) {
 
         StringView which = StringUtils::get_slice(name,'/', 1);
-        r_ret = Variant(get_animation(StringName(which)).get_ref_ptr());
+        r_ret = Variant(Ref<Animation>(get_animation(StringName(which)).get()));
 
     } else if (StringUtils::begins_with(name,"next/")) {
 
@@ -131,7 +131,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
         }
 
         Array array;
-        for (int i = 0; i < keys.size(); i++) {
+        for (size_t i = 0; i < keys.size(); i++) {
 
             array.push_back(keys[i].from);
             array.push_back(keys[i].to);
@@ -720,7 +720,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
                     if (anim_name == "[stop]" || !player->has_animation(anim_name))
                         continue;
 
-                    Ref<Animation> anim = player->get_animation(anim_name);
+                    const HAnimation &anim = player->get_animation(anim_name);
 
                     float at_anim_pos;
 
@@ -965,7 +965,7 @@ void AnimationPlayer::_animation_process(float p_delta) {
         _set_process(false);
     }
 }
-
+#if 0
 Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
 
 #ifdef DEBUG_ENABLED
@@ -1005,15 +1005,15 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
     clear_caches();
     Object_change_notify(this);
 }
+#endif
+void AnimationPlayer::_ref_anim(const HAnimation &p_anim) {
 
-void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
-
-    Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed", varray(), ObjectNS::CONNECT_REFERENCE_COUNTED);
+    p_anim->connect(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed", varray(), ObjectNS::CONNECT_REFERENCE_COUNTED);
 }
 
-void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
+void AnimationPlayer::_unref_anim(const HAnimation &p_anim) {
 
-    Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed");
+    p_anim->disconnect(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed");
 }
 
 void AnimationPlayer::rename_animation(const StringName &p_name, const StringName &p_new_name) {
@@ -1072,9 +1072,10 @@ bool AnimationPlayer::has_animation(const StringName &p_name) const {
 
     return animation_set.contains(p_name);
 }
-Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
+const HAnimation &AnimationPlayer::get_animation(const StringName &p_name) const {
 
-    ERR_FAIL_COND_V(!animation_set.contains(p_name), Ref<Animation>());
+    //TODO: assert instead ?
+    ERR_FAIL_COND_V(!animation_set.contains(p_name), HAnimation());
 
     const AnimationData &data = animation_set.at(p_name);
 
@@ -1099,7 +1100,7 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
     BlendKey bk;
     bk.from = p_animation1;
     bk.to = p_animation2;
-    if (p_time == 0)
+    if (p_time == 0.0f)
         blend_times.erase(bk);
     else
         blend_times[bk] = p_time;
@@ -1426,7 +1427,7 @@ bool AnimationPlayer::is_active() const {
 
     return active;
 }
-
+#if 0
 StringName AnimationPlayer::find_animation(const Ref<Animation> &p_animation) const {
 
     for (const eastl::pair<const StringName,AnimationData> &E : animation_set) {
@@ -1437,7 +1438,7 @@ StringName AnimationPlayer::find_animation(const Ref<Animation> &p_animation) co
 
     return "";
 }
-
+#endif
 void AnimationPlayer::set_autoplay(StringView p_name) {
     if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
         WARN_PRINT("Setting autoplay after the node has been added to the scene has no effect.");

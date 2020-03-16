@@ -67,6 +67,7 @@ public:
     void add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
 
     void add_undo_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
+    void add_undo_method(eastl::function<void()> func);
 
     void add_do_property(Object *p_object, StringView p_property, const Variant &p_value);
     void add_undo_property(Object *p_object, StringView p_property, const Variant &p_value);

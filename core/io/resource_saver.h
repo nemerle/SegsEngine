@@ -67,6 +67,7 @@ public:
         FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
     };
 
+    static Error save(const ResourcePath &p_path, const HResource &p_resource, uint32_t p_flags = 0);
     static Error save(StringView p_path, const RES &p_resource, uint32_t p_flags = 0);
     static void get_recognized_extensions(const RES &p_resource, Vector<String> &p_extensions);
     static void add_resource_format_saver(const Ref<ResourceFormatSaver>& p_format_saver, bool p_at_front = false);

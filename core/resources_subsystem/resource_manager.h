@@ -36,11 +36,17 @@ public:
      * @see		release(ResourceHandleBase&), unloadAllUnused()
      */
     INVOCABLE HResource load(StringView sv, se::ResourceLoadFlags loadFlags = se::ResourceLoadFlag::Default);
-    /** @copydoc load(const Path&, ResourceLoadFlags) */
+    /** @copydoc load(StringView, se::ResourceLoadFlags) */
     template <class T>
     se::ResourceHandle<T> load(StringView filePath, se::ResourceLoadFlags loadFlags = se::ResourceLoadFlag::Default)
     {
         return se::static_resource_cast<T>(load(filePath, loadFlags));
+    }
+    /** @copydoc load(const ResourcePath&, ResourceLoadFlags) */
+    template <class T>
+    se::ResourceHandle<T> load(const ResourcePath &path, se::ResourceLoadFlags loadFlags = se::ResourceLoadFlag::Default)
+    {
+        return se::static_resource_cast<T>(load(path, loadFlags));
     }
 
     /** @copydoc load(const WeakResourceHandle<Resource>&, ResourceLoadFlags) */

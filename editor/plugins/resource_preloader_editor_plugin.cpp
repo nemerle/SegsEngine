@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
 #include "core/translation_helpers.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "EASTL/sort.h"
@@ -61,12 +62,11 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 
 void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths) {
 
-    for (int i = 0; i < p_paths.size(); i++) {
+    for (size_t i = 0; i < p_paths.size(); i++) {
 
         StringView path = p_paths[i];
 
-        RES resource;
-        resource = ResourceLoader::load(path);
+        HResource resource = gResourceManager().load(path);
 
         if (not resource) {
             dialog->set_text(TTR("ERROR: Couldn't load resource!"));
@@ -86,7 +86,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths)
         }
 
         undo_redo->create_action_ui(TTR("Add Resource"));
-        undo_redo->add_do_method(preloader, "add_resource", name, resource);
+        undo_redo->add_do_method(preloader, "add_resource", name, RES(resource.get()));
         undo_redo->add_undo_method(preloader, "remove_resource", name);
         undo_redo->add_do_method(this, "_update_library");
         undo_redo->add_undo_method(this, "_update_library");
@@ -164,7 +164,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 
     String name(r->get_name());
     if (name.empty())
-        name = PathUtils::get_file(r->get_path());
+        name = PathUtils::get_file(r->get_path().leaf());
     if (name.empty())
         name = r->get_class();
 
@@ -211,9 +211,9 @@ void ResourcePreloaderEditor::_update_library() {
 
         StringName type(r->get_class());
         ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
-        ti->set_tooltip(0, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + type);
+        ti->set_tooltip(0, TTR("Instance:") + " " + r->get_path().to_string() + "\n" + TTR("Type:") + " " + type);
 
-        ti->set_text_utf8(1, r->get_path());
+        ti->set_text_utf8(1, r->get_path().to_string());
         ti->set_editable(1, false);
         ti->set_selectable(1, false);
 
@@ -318,7 +318,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
             if (!r->get_name().empty()) {
                 basename = r->get_name();
             } else if (PathUtils::is_resource_file(r->get_path())) {
-                basename = PathUtils::get_basename(r->get_path());
+                basename = PathUtils::get_basename(r->get_path().leaf());
             } else {
                 basename = "Resource";
             }

@@ -1678,8 +1678,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
     }
 }
 
-void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
-    animation = p_animation;
+void AnimationTimelineEdit::set_animation(HAnimation &&p_animation) {
+    animation = eastl::move(p_animation);
     if (animation) {
         len_hb->show();
         add_track->show();
@@ -2392,11 +2392,11 @@ int AnimationTrackEdit::get_track() const {
     return track;
 }
 
-Ref<Animation> AnimationTrackEdit::get_animation() const {
+const HAnimation & AnimationTrackEdit::get_animation() const {
     return animation;
 }
 
-void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track) {
+void AnimationTrackEdit::set_animation_and_track(const HAnimation &p_animation, int p_track) {
 
     animation = p_animation;
     track = p_track;
@@ -2630,7 +2630,7 @@ StringName AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
                     RES stream(animation->audio_track_get_key_stream(track, key_idx));
                     if (stream) {
                         if (PathUtils::is_resource_file(stream->get_path())) {
-                            stream_name = PathUtils::get_file(stream->get_path());
+                            stream_name = PathUtils::get_file(stream->get_path().leaf());
                         } else if (!stream->get_name().empty()) {
                             stream_name = stream->get_name();
                         } else {
@@ -3262,7 +3262,7 @@ void AnimationTrackEditor::remove_track_edit_plugin(const Ref<AnimationTrackEdit
     track_edit_plugins.erase_first(p_plugin);
 }
 
-void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
+void AnimationTrackEditor::set_animation(HAnimation &&p_anim) {
 
     if (animation != p_anim && _get_track_selected() >= 0) {
         track_edits[_get_track_selected()]->release_focus();
@@ -3272,7 +3272,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
         _clear_selection();
     }
     animation = p_anim;
-    timeline->set_animation(p_anim);
+    timeline->set_animation(eastl::move(p_anim));
 
     _cancel_bezier_edit();
     _update_tracks();
@@ -3310,7 +3310,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
     }
 }
 
-Ref<Animation> AnimationTrackEditor::get_current_animation() const {
+const HAnimation &AnimationTrackEditor::get_current_animation() const {
 
     return animation;
 }
@@ -3390,7 +3390,7 @@ void AnimationTrackEditor::set_state(const Dictionary &p_state) {
 }
 
 void AnimationTrackEditor::cleanup() {
-    set_animation(Ref<Animation>());
+    set_animation(HAnimation());
 }
 
 void AnimationTrackEditor::_name_limit_changed() {
@@ -4675,7 +4675,11 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
             undo_redo->create_action_ui(TTR("Add Track Key"));
             undo_redo->add_do_method(animation.get(), "track_insert_key", p_track, p_ofs, value);
-            undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+            ObjectID self_id=this->get_instance_id();
+            HAnimation current_anim = animation;
+            undo_redo->add_undo_method([this,self_id,current_anim]() {
+                if(ObjectDB::get_instance(self_id)==this)
+                _clear_selection_for_anim(current_anim); });
             undo_redo->add_undo_method(animation.get(), "track_remove_key_at_position", p_track, p_ofs);
             undo_redo->commit_action();
 
@@ -4934,7 +4938,7 @@ void AnimationTrackEditor::_update_key_edit() {
     }
 }
 
-void AnimationTrackEditor::_clear_selection_for_anim(const Ref<Animation> &p_anim) {
+void AnimationTrackEditor::_clear_selection_for_anim(const HAnimation &p_anim) {
 
     if (animation != p_anim)
         return;
@@ -4942,7 +4946,7 @@ void AnimationTrackEditor::_clear_selection_for_anim(const Ref<Animation> &p_ani
     _clear_selection();
 }
 
-void AnimationTrackEditor::_select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos) {
+void AnimationTrackEditor::_select_at_anim(const HAnimation &p_anim, int p_track, float p_pos) {
 
     if (animation != p_anim)
         return;

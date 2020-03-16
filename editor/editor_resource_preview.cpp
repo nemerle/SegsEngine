@@ -63,7 +63,7 @@ Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from, const S
     ERR_FAIL_V_MSG(Ref<Texture>(), "EditorResourcePreviewGenerator::generate needs to be overridden.");
 }
 
-Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(StringView p_path, const Size2 &p_size) const {
+Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const ResourcePath &p_path, const Size2 &p_size) const {
 
     if (get_script_instance() && get_script_instance()->has_method("generate_from_path")) {
         return refFromRefPtr<Texture>(get_script_instance()->call("generate_from_path", p_path, p_size));
