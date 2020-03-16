@@ -297,10 +297,10 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
         player->set_assigned_animation(current);
 
-        const auto &anim = player->get_animation(current);
+        HAnimation anim = player->get_animation(current); // copied here to allow it to be moved into set_animation
         {
 
-            track_editor->set_animation(anim);
+            track_editor->set_animation(eastl::move(anim));
             Node *root = player->get_node(player->get_root());
             if (root) {
                 track_editor->set_root(root);
@@ -309,7 +309,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
         frame->set_max(anim->get_length());
 
     } else {
-        track_editor->set_animation(Ref<Animation>());
+        track_editor->set_animation(HAnimation());
         track_editor->set_root(nullptr);
     }
 
@@ -452,7 +452,7 @@ void AnimationPlayerEditor::_animation_remove() {
 void AnimationPlayerEditor::_animation_remove_confirmed() {
 
     StringName current(animation->get_item_text_utf8(animation->get_selected()));
-    Ref<Animation> anim = player->get_animation(current);
+    const HAnimation &anim = player->get_animation(current);
 
     undo_redo->create_action_ui(TTR("Remove Animation"));
     if (player->get_autoplay() == current) {
@@ -462,7 +462,8 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
         undo_redo->add_do_method(this, "_animation_player_changed", Variant(player));
     }
     undo_redo->add_do_method(player, "remove_animation", current);
-    undo_redo->add_undo_method(player, "add_animation", current, anim);
+    Ref<AnimationPlayer> plr(player);
+    undo_redo->add_undo_method([plr {eastl::move(plr)},current,anim ]() { plr->add_animation(current, anim); });
     undo_redo->add_do_method(this, "_animation_player_changed", Variant(player));
     undo_redo->add_undo_method(this, "_animation_player_changed", Variant(player));
     if (animation->get_item_count() == 1) {
@@ -496,10 +497,10 @@ double AnimationPlayerEditor::_get_editor_step() const {
     // Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
     if (track_editor->is_snap_enabled()) {
         const StringName & current = player->get_assigned_animation();
-        const Ref<Animation> anim = player->get_animation(StringName(current));
-        ERR_FAIL_COND_V(not anim, 0.0);
+        const HAnimation & anim = player->get_animation(StringName(current));
+        ERR_FAIL_COND_V(not anim, 0.0f);
         // Use more precise snapping when holding Shift
-        return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+        return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25f : anim->get_step();
     }
 
     return 0.0;
@@ -529,7 +530,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
     if (renaming) {
         String current = animation->get_item_text_utf8(animation->get_selected());
-        Ref<Animation> anim = player->get_animation(StringName(current));
+        const HAnimation &anim = player->get_animation(StringName(current));
 
         undo_redo->create_action_ui(TTR("Rename Animation"));
         undo_redo->add_do_method(player, "rename_animation", current, new_name);

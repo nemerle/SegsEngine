@@ -211,6 +211,9 @@ protected:
 /** @copydoc ResourceHandleBase */
 template <typename T, bool WeakHandle>
 class ResourceHandleT : public ResourceHandleBaseT<WeakHandle> {
+    template<class _Ty1, bool _Weak1, class _Ty2, bool _Weak2>
+    friend bool operator==(const ResourceHandleT<_Ty1, _Weak1>& _Left, const ResourceHandleT<_Ty2, _Weak2>& _Right);
+
 public:
     ResourceHandleT() = default;
 

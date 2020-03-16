@@ -292,7 +292,7 @@ protected:
 public:
     StringName find_animation(const Ref<Animation> &p_animation) const;
 
-    Error add_animation(const StringName &p_name, const Ref<Animation> &p_animation);
+    Error add_animation(const StringName &p_name, const HAnimation &p_animation);
     void remove_animation(const StringName &p_name);
     void rename_animation(const StringName &p_name, const StringName &p_new_name);
     bool has_animation(const StringName &p_name) const;
