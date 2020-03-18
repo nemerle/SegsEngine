@@ -57,7 +57,7 @@ public:
         MENU_MAX
 
     };
-
+    jl::Signal<const String &> text_entered;
 private:
     Align align;
 

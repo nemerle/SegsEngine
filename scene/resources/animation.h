@@ -336,6 +336,7 @@ public:
 
     void optimize(float p_allowed_linear_err = 0.05f, float p_allowed_angular_err = 0.01f, float p_max_optimizable_angle = Math_PI * 0.125f);
 
+    static HAnimation create();
     Animation();
     ~Animation() override;
 };

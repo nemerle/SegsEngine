@@ -320,7 +320,7 @@ static String get_base_class_name(StringView p_base_class_name, StringView p_cla
     return base_class;
 }
 
-Ref<Script> CSharpLanguage::get_template(StringView p_class_name, StringView p_base_class_name) const {
+HScript CSharpLanguage::get_template(StringView p_class_name, StringView p_base_class_name) const {
 
     String script_template = "using " BINDINGS_NAMESPACE ";\n"
                              "using System;\n"
@@ -348,7 +348,7 @@ Ref<Script> CSharpLanguage::get_template(StringView p_class_name, StringView p_b
     script_template = script_template.replaced("%BASE%", base_class_name)
                               .replaced("%CLASS%", p_class_name);
 
-    Ref<CSharpScript> script=make_ref_counted<CSharpScript>();
+    auto script=CSharpScript::create();
     script->set_source_code(script_template);
     script->set_name(p_class_name);
 
@@ -360,7 +360,7 @@ bool CSharpLanguage::is_using_templates() {
     return true;
 }
 
-void CSharpLanguage::make_template(StringView p_class_name, StringView p_base_class_name, const Ref<Script> &p_script) {
+void CSharpLanguage::make_template(StringView p_class_name, StringView p_base_class_name, const HScript &p_script) {
 
     String src(p_script->get_source_code());
     String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
@@ -371,7 +371,7 @@ void CSharpLanguage::make_template(StringView p_class_name, StringView p_base_cl
 }
 /* TODO */
 bool CSharpLanguage::validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error,
-        StringView p_path, Vector<String> *r_functions, Vector<ScriptLanguage::Warning> *r_warnings,
+        const ResourcePath &p_path, Vector<String> *r_functions, Vector<ScriptLanguage::Warning> *r_warnings,
         Set<int> *r_safe_lines) const {
     return true;
 }
@@ -1830,7 +1830,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
     // Search the constructor first, to fail with an error if it's not found before allocating anything else.
     GDMonoMethod *ctor = script->script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
     ERR_FAIL_NULL_V_MSG(ctor, nullptr,
-            "Cannot create script instance because the class does not define a parameterless constructor: '" + script->get_path() + "'.");
+            "Cannot create script instance because the class does not define a parameterless constructor: '" + script->get_path().to_string() + "'.");
 
     CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
 
@@ -2323,7 +2323,7 @@ bool CSharpScript::_update_exports() {
         GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
 
         ERR_FAIL_NULL_V_MSG(ctor, NULL,
-                "Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
+                "Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path().to_string() + "'.");
 
         MonoException *ctor_exc = nullptr;
         ctor->invoke(tmp_object, nullptr, &ctor_exc);
@@ -3301,15 +3301,15 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
     return -1;
 }
 
-Error CSharpScript::load_source_code(StringView p_path) {
+Error CSharpScript::load_source_code(const ResourcePath &p_path) {
 
     Error ferr = read_all_file_utf8(p_path, source);
 
     ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
             ferr == ERR_INVALID_DATA ?
-                    "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
+                    "Script '" + p_path.to_string() + "' contains invalid unicode (UTF-8), so it was not loaded."
                                           " Please ensure that scripts are saved in valid UTF-8 unicode." :
-                    "Failed to read file: '" + p_path + "'.");
+                    "Failed to read file: '" + p_path.to_string() + "'.");
 
 #ifdef TOOLS_ENABLED
     source_changed_cache = true;
@@ -3356,7 +3356,7 @@ CSharpScript::~CSharpScript() {
 
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderCSharpScript::load(StringView p_path, StringView p_original_path, Error *r_error) {
+RES ResourceFormatLoaderCSharpScript::load(const ResourcePath &p_path, StringView p_original_path, Error *r_error) {
 
     if (r_error)
         *r_error = ERR_FILE_CANT_OPEN;
@@ -3369,10 +3369,10 @@ RES ResourceFormatLoaderCSharpScript::load(StringView p_path, StringView p_origi
 
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
     Error err = script->load_source_code(p_path);
-    ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load C# script file '" + p_path + "'.");
+    ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load C# script file '" + p_path.to_string() + "'.");
 #endif
 
-    script->set_path(p_original_path);
+    script->set_path(ResourcePath(p_original_path));
 
     script->reload();
 
@@ -3392,9 +3392,9 @@ bool ResourceFormatLoaderCSharpScript::handles_type(StringView p_type) const {
     return p_type == StringView("Script") || p_type == StringView(CSharpLanguage::get_singleton()->get_type());
 }
 
-String ResourceFormatLoaderCSharpScript::get_resource_type(StringView p_path) const {
+String ResourceFormatLoaderCSharpScript::get_resource_type(const ResourcePath &p_path) const {
 
-    return StringUtils::to_lower(PathUtils::get_extension(p_path)) == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
+    return StringUtils::to_lower(PathUtils::get_extension(p_path.leaf())) == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
 Error ResourceFormatSaverCSharpScript::save(StringView p_path, const RES &p_resource, uint32_t p_flags) {

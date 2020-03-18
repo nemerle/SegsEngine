@@ -33,6 +33,7 @@
 #include "core/os/file_access.h"
 #include "core/string.h"
 #include "core/array.h"
+#include "core/resources_subsystem/resource_path.h"
 
 #include "EASTL/vector_set.h"
 #include <stdio.h>
@@ -173,7 +174,14 @@ String escape_csharp_keyword(StringView p_name) {
     return is_csharp_keyword(p_name) ? String("@") + p_name : String(p_name);
 }
 #endif
+Error read_all_file_utf8(const ResourcePath &p_path, String &r_content) {
+    Error err;
+    String res = FileAccess::get_file_as_string(p_path,&err);
+    ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path.to_string() + "'.");
 
+    r_content = res;
+    return OK;
+}
 Error read_all_file_utf8(StringView p_path, String &r_content) {
 
     Error err;

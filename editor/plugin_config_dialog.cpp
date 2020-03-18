@@ -32,6 +32,7 @@
 #include "core/io/config_file.h"
 #include "core/method_bind.h"
 #include "core/os/dir_access.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/project_settings_editor.h"
@@ -52,11 +53,11 @@ void PluginConfigDialog::_clear_fields() {
 
 void PluginConfigDialog::_on_confirmed() {
 
-    String path = String("res://addons/") + StringUtils::to_utf8(subfolder_edit->get_text_ui()).data();
+    ResourcePath path = ResourcePath("res://addons/").cd(StringUtils::to_utf8(subfolder_edit->get_text_ui()).data());
 
     if (!_edit_mode) {
         DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-        if (!d || d->make_dir_recursive(path) != OK)
+        if (!d || d->make_dir_recursive(path.to_string()) != OK)
             return;
     }
 
@@ -67,20 +68,20 @@ void PluginConfigDialog::_on_confirmed() {
     cf->set_value("plugin", "version", version_edit->get_text());
     cf->set_value("plugin", "script", script_edit->get_text());
 
-    cf->save(PathUtils::plus_file(path,"plugin.cfg"));
+    cf->save(ResourcePath(path).cd("plugin.cfg").to_string());
 
     if (!_edit_mode) {
         int lang_idx = script_option_edit->get_selected();
         StringName lang_name = ScriptServer::get_language(lang_idx)->get_name();
 
-        Ref<Script> script;
+        HScript script;
 
         // TODO Use script templates. Right now, this code won't add the 'tool' annotation to other languages.
         // TODO Better support script languages with named classes (has_named_classes).
 
         if (lang_name == GDScriptLanguage::get_singleton()->get_name()) {
             // Hard-coded GDScript template to keep usability until we use script templates.
-            Ref<GDScript> gdscript(make_ref_counted<GDScript>());
+            HGDScript gdscript(GDScript::create());
             gdscript->set_source_code(
                     "tool\n"
                     "extends EditorPlugin\n"
@@ -92,20 +93,21 @@ void PluginConfigDialog::_on_confirmed() {
                     "\n"
                     "func _exit_tree()%VOID_RETURN%:\n"
                     "%TS%pass\n");
-            GDScriptLanguage::get_singleton()->make_template("", "", gdscript);
-            String script_path(PathUtils::plus_file(path,script_edit->get_text()));
+            GDScriptLanguage::get_singleton()->make_template("", "", se::static_resource_cast<Script>(gdscript));
+            ResourcePath script_path(ResourcePath(path).cd(script_edit->get_text()));
             gdscript->set_path(script_path);
-            ResourceSaver::save(script_path, gdscript);
+            gResourceManager().save(gdscript,script_path,true);
+            //ResourceSaver::save(script_path, gdscript);
             script = gdscript;
         } else {
-            String script_path(PathUtils::plus_file(path,script_edit->get_text()));
-            StringView class_name(PathUtils::get_basename(PathUtils::get_file(script_path)));
+            ResourcePath script_path(ResourcePath(path).cd(script_edit->get_text()));
+            StringView class_name(PathUtils::get_basename(PathUtils::get_file(script_path.leaf())));
             script = ScriptServer::get_language(lang_idx)->get_template(class_name, "EditorPlugin");
             script->set_path(script_path);
-            ResourceSaver::save(script_path, script);
+            gResourceManager().save(script,script_path,true);
         }
 
-        emit_signal("plugin_ready", Variant(script), active_edit->is_pressed() ? subfolder_edit->get_text() : StringView());
+        emit_signal("plugin_ready", Variant(Ref<Script>(script.get())), active_edit->is_pressed() ? subfolder_edit->get_text() : StringView());
     } else {
         EditorNode::get_singleton()->get_project_settings()->update_plugins();
     }

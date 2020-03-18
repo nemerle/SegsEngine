@@ -34,6 +34,7 @@
 #include "core/method_bind.h"
 #include "core/object_tooling.h"
 #include "core/os/keyboard.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/project_settings.h"
 #include "core/translation_helpers.h"
 #include "core/string_formatter.h"
@@ -785,7 +786,7 @@ String VisualScriptTypeCast::get_text() const {
 
     StringView sc(base_type);
     if (!script.empty())
-        sc = PathUtils::get_file(script);
+        sc = PathUtils::get_file(script.leaf());
     return FormatVE("Is %.*s?",sc.size(),sc.data());
 }
 
@@ -804,7 +805,7 @@ StringName VisualScriptTypeCast::get_base_type() const {
     return base_type;
 }
 
-void VisualScriptTypeCast::set_base_script(StringView p_path) {
+void VisualScriptTypeCast::set_base_script(const ResourcePath &p_path) {
 
     if (script == p_path)
         return;
@@ -813,7 +814,7 @@ void VisualScriptTypeCast::set_base_script(StringView p_path) {
     Object_change_notify(this);
     ports_changed_notify();
 }
-const String &VisualScriptTypeCast::get_base_script() const {
+const ResourcePath &VisualScriptTypeCast::get_base_script() const {
 
     return script;
 }
@@ -823,7 +824,7 @@ VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGues
     TypeGuess tg;
     tg.type = VariantType::OBJECT;
     if (!script.empty()) {
-        tg.script = ResourceLoader::load<Script>(script);
+        tg.script = gResourceManager().load<Script>(script);
     }
     //if (not tg.script) {
     //	tg.gdclass = base_type;

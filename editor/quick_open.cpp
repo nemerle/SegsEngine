@@ -168,7 +168,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
     }
     for (int i = 0; i < efsd->get_file_count(); i++) {
 
-        String file = efsd->get_file_path(i);
+        String file = efsd->get_file_path(i).to_string();
         file = StringUtils::substr(file,6, file.length());
 
         if (ClassDB::is_parent_class(efsd->get_file_type(i), base_type) && StringUtils::is_subsequence_of(search_text,file,StringUtils::CaseInsensitive)) {

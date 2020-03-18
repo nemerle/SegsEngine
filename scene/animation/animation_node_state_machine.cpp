@@ -553,14 +553,14 @@ Variant AnimationNodeStateMachine::get_parameter_default_value(const StringName 
     }
 }
 
-void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
+void AnimationNodeStateMachine::add_node(const StringName &p_name, const HAnimationNode &p_node, const Vector2 &p_position) {
 
     ERR_FAIL_COND(states.contains(p_name));
     ERR_FAIL_COND(not p_node);
     ERR_FAIL_COND(StringUtils::contains(p_name,'/'));
 
     State state;
-    state.node = dynamic_ref_cast<AnimationRootNode>(p_node);
+    state.node = se::dynamic_resource_cast<AnimationRootNode>(p_node);
     state.position = p_position;
 
     states[p_name] = state;
@@ -571,16 +571,16 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
     p_node->connect("tree_changed", this, "_tree_changed", varray(), ObjectNS::CONNECT_REFERENCE_COUNTED);
 }
 
-Ref<AnimationNode> AnimationNodeStateMachine::get_node(const StringName &p_name) const {
+HAnimationNode AnimationNodeStateMachine::get_node(const StringName &p_name) const {
 
-    ERR_FAIL_COND_V(!states.contains(p_name), Ref<AnimationNode>());
+    ERR_FAIL_COND_V(!states.contains(p_name), HAnimationNode());
 
     return states.at(p_name).node;
 }
 
 StringName AnimationNodeStateMachine::get_node_name(const Ref<AnimationNode> &p_node) const {
     for (const eastl::pair<const StringName,State> &E : states) {
-        if (Ref<AnimationNode>(E.second.node) == p_node) {
+        if (E.second.node.get() == p_node.get()) {
             return E.first;
         }
     }
@@ -613,7 +613,7 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
     ERR_FAIL_COND(!states.contains(p_name));
 
     {
-        Ref<AnimationNode> node = states[p_name].node;
+        const HAnimationNode &node = states[p_name].node;
 
         ERR_FAIL_COND(not node);
 
@@ -819,7 +819,7 @@ StringView AnimationNodeStateMachine::get_caption() const {
 void AnimationNodeStateMachine::_notification(int p_what) {
 }
 
-Ref<AnimationNode> AnimationNodeStateMachine::get_child_by_name(const StringName &p_name) {
+HAnimationNode AnimationNodeStateMachine::get_child_by_name(const StringName &p_name) {
     return get_node(p_name);
 }
 

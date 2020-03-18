@@ -41,7 +41,7 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 
     struct BlendPoint {
         StringName name;
-        Ref<AnimationRootNode> node;
+        HAnimationRootNode node;
         float position;
     };
 
@@ -56,7 +56,7 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
     String value_label;
     StringName blend_position;
 public:
-    void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
+    void _add_blend_point(int p_index, const HAnimationRootNode &p_node);
     void _tree_changed();
 protected:
     void _validate_property(PropertyInfo &property) const override;
@@ -68,12 +68,13 @@ public:
 
     void get_child_nodes(ListOld<ChildNode> *r_child_nodes) override;
 
-    void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
+    void add_blend_point(const HAnimationRootNode &p_node, float p_position, int p_at_index = -1);
     void set_blend_point_position(int p_point, float p_position);
-    void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
+    void set_blend_point_node(int p_point, const HAnimationRootNode &p_node);
 
     float get_blend_point_position(int p_point) const;
-    Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
+    HAnimationRootNode get_blend_point_node(int p_point) const;
+    HAnimationRootNode get_blend_point_node_h(int p_point) const;
     void remove_blend_point(int p_point);
     int get_blend_point_count() const;
 
@@ -92,7 +93,7 @@ public:
     float process(float p_time, bool p_seek) override;
     StringView get_caption() const override;
 
-    Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+    HAnimationNode get_child_by_name(const StringName &p_name) override;
 
     AnimationNodeBlendSpace1D();
     ~AnimationNodeBlendSpace1D() override;

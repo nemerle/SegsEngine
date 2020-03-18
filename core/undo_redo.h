@@ -62,9 +62,10 @@ protected:
 
 public:
     void create_action(StringView p_name, MergeMode p_mode = MERGE_DISABLE);
-    void create_action_ui(const StringName &p_name, MergeMode p_mode = MERGE_DISABLE);
+    void create_action_pair(StringView p_name, eastl::function<void()> do_actions,eastl::function<void()> undo_actions,MergeMode p_mode = MERGE_DISABLE);
 
     void add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
+    void add_do_method(eastl::function<void()> func);
 
     void add_undo_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
     void add_undo_method(eastl::function<void()> func);

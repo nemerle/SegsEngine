@@ -892,7 +892,7 @@ AnimationNodeOutput::AnimationNodeOutput() {
 }
 
 ///////////////////////////////////////////////////////
-void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
+void AnimationNodeBlendTree::add_node(const StringName &p_name, HAnimationNode &&p_node, const Vector2 &p_position) {
 
     ERR_FAIL_COND(nodes.contains(p_name));
     ERR_FAIL_COND(not p_node);
@@ -900,7 +900,7 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
     ERR_FAIL_COND(StringUtils::contains(p_name,'/'));
 
     Node n;
-    n.node = p_node;
+    n.node = eastl::move(p_node);
     n.position = p_position;
     n.connections.resize(n.node->get_input_count());
     nodes[p_name] = n;
@@ -912,14 +912,14 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
     p_node->connect("changed", this, "_node_changed", varray(p_name), ObjectNS::CONNECT_REFERENCE_COUNTED);
 }
 
-Ref<AnimationNode> AnimationNodeBlendTree::get_node(const StringName &p_name) const {
+HAnimationNode AnimationNodeBlendTree::get_node(const StringName &p_name) const {
 
-    ERR_FAIL_COND_V(!nodes.contains(p_name), Ref<AnimationNode>());
+    ERR_FAIL_COND_V(!nodes.contains(p_name), HAnimationNode());
 
     return nodes.at(p_name).node;
 }
 
-StringName AnimationNodeBlendTree::get_node_name(const Ref<AnimationNode> &p_node) const {
+StringName AnimationNodeBlendTree::get_node_name(const HAnimationNode &p_node) const {
     for (eastl::pair<StringName,Node> E : nodes) {
         if (E.second.node == p_node) {
             return E.first;
@@ -970,7 +970,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
     ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output); //can't delete output
 
     {
-        Ref<AnimationNode> node = nodes[p_name].node;
+        const HAnimationNode &node = nodes[p_name].node;
         node->disconnect("tree_changed", this, "_tree_changed");
         node->disconnect("changed", this, "_node_changed");
     }
@@ -979,7 +979,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 
     //erase connections to name
     for (eastl::pair<const StringName,Node> &E : nodes) {
-        for (int i = 0; i < E.second.connections.size(); i++) {
+        for (size_t i = 0; i < E.second.connections.size(); i++) {
             if (E.second.connections[i] == p_name) {
                 E.second.connections[i] = {};
             }
@@ -1127,7 +1127,7 @@ Vector2 AnimationNodeBlendTree::get_graph_offset() const {
     return graph_offset;
 }
 
-Ref<AnimationNode> AnimationNodeBlendTree::get_child_by_name(const StringName &p_name) {
+HAnimationNode AnimationNodeBlendTree::get_child_by_name(const StringName &p_name) {
     return get_node(p_name);
 }
 

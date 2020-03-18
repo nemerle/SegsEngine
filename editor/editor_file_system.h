@@ -279,6 +279,7 @@ public:
 
     EditorFileSystemDirectory *get_filesystem_path(StringView p_path);
     String get_file_type(StringView p_file) const;
+    String get_file_type(const ResourcePath &p_file) const;
     EditorFileSystemDirectory *find_file(StringView p_file, int *r_index) const;
 
     void reimport_files(const Vector<ResourcePath> &p_files);

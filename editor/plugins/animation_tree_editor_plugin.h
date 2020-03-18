@@ -43,8 +43,8 @@ class AnimationTreeNodeEditorPlugin : public VBoxContainer {
     GDCLASS(AnimationTreeNodeEditorPlugin,VBoxContainer)
 
 public:
-    virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
-    virtual void edit(const Ref<AnimationNode> &p_node) = 0;
+    virtual bool can_edit(const HAnimationNode &p_node) = 0;
+    virtual void edit(const HAnimationNode &p_node) = 0;
 };
 
 class AnimationTreeEditor : public VBoxContainer {
@@ -82,7 +82,7 @@ public:
 
     String get_base_path();
 
-    bool can_edit(const Ref<AnimationNode> &p_node) const;
+    bool can_edit(const HAnimationNode &p_node) const;
 
     void edit_path(const Vector<String> &p_path);
     const Vector<String> &get_edited_path() const;

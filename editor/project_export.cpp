@@ -846,7 +846,7 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
         file->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
         file->set_text_utf8(0, p_dir->get_file(i));
 
-        String path = p_dir->get_file_path(i);
+        String path = p_dir->get_file_path(i).to_string();
 
         file->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
         file->set_editable(0, true);

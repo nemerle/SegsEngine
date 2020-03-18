@@ -2139,7 +2139,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
                 Ref<VisualScriptPreload> prnode(make_ref_counted<VisualScriptPreload>());
 
-                prnode->set_preload(res);
+                prnode->set_preload(Ref<Resource>(res.get()));
 
                 undo_redo->add_do_method(script.get(), "add_node", default_func, new_id, prnode, ofs);
                 undo_redo->add_undo_method(script.get(), "remove_node", default_func, new_id);
@@ -2438,7 +2438,7 @@ String VisualScriptEditor::get_name() {
 
     String name;
 
-    if (!StringUtils::contains(script->get_path(),"local://") && StringUtils::contains(script->get_path(),("::"))) {
+    if (script->get_path().mountpoint()!="local:" && StringUtils::contains(script->get_path(),"::")) {
         name = script->get_path().leaf();
         if (is_unsaved()) {
             name += ("(*)");

@@ -542,7 +542,7 @@ private:
     int error_column;
     bool check_types;
     bool dependencies_only;
-    ListOld<String> dependencies;
+    Vector<ResourcePath> dependencies;
 #ifdef DEBUG_ENABLED
     Set<int> *safe_lines;
 #endif // DEBUG_ENABLED
@@ -576,8 +576,8 @@ private:
 
     ListOld<IndentLevel> indent_level;
 
-    String base_path;
-    String self_path;
+    ResourcePath base_path;
+    ResourcePath self_path;
 
     ClassNode *current_class = nullptr;
     FunctionNode *current_function=nullptr;
@@ -656,7 +656,7 @@ private:
 #endif // DEBUG_ENABLED
     }
 
-    Error _parse(StringView p_base_path);
+    Error _parse(const ResourcePath &p_base_path);
 
 public:
     bool has_error() const;
@@ -666,8 +666,8 @@ public:
 #ifdef DEBUG_ENABLED
     const Dequeue<GDScriptWarning> &get_warnings() const { return warnings; }
 #endif // DEBUG_ENABLED
-    Error parse(StringView p_code, StringView p_base_path = {}, bool p_just_validate = false, StringView p_self_path = {}, bool p_for_completion = false, Set<int> *r_safe_lines = nullptr, bool p_dependencies_only = false);
-    Error parse_bytecode(const Vector<uint8_t> &p_bytecode, StringView p_base_path = {}, StringView p_self_path = {});
+    Error parse(StringView p_code, const ResourcePath &p_base_path = {}, bool p_just_validate = false, const ResourcePath &p_self_path = {}, bool p_for_completion = false, Set<int> *r_safe_lines = nullptr, bool p_dependencies_only = false);
+    Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const ResourcePath &p_base_path = {}, const ResourcePath &p_self_path = {});
 
     bool is_tool_script() const;
     const Node *get_parse_tree() const;
@@ -685,7 +685,7 @@ public:
     int get_completion_argument_index();
     int get_completion_identifier_is_function();
 
-    const ListOld<String> &get_dependencies() const { return dependencies; }
+    const Vector<ResourcePath> &get_dependencies() const { return dependencies; }
 
     void clear();
     GDScriptParser();

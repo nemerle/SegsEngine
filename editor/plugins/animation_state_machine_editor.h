@@ -166,7 +166,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
     String error_text;
 
     EditorFileDialog *open_file;
-    Ref<AnimationNode> file_loaded;
+    HAnimationNode file_loaded;
     void _file_opened(StringView p_file);
 
     enum {
@@ -181,7 +181,7 @@ protected:
 
 public:
     static AnimationNodeStateMachineEditor *get_singleton() { return singleton; }
-    bool can_edit(const Ref<AnimationNode> &p_node) override;
-    void edit(const Ref<AnimationNode> &p_node) override;
+    bool can_edit(const HAnimationNode &p_node) override;
+    void edit(const HAnimationNode &p_node) override;
     AnimationNodeStateMachineEditor();
 };

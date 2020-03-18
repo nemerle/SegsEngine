@@ -91,7 +91,7 @@ String GDScriptLanguage::_get_processed_template(StringView p_template, StringVi
     return processed_template;
 }
 
-Ref<Script> GDScriptLanguage::get_template(StringView p_class_name, StringView p_base_class_name) const {
+HScript GDScriptLanguage::get_template(StringView p_class_name, StringView p_base_class_name) const {
     String _template("extends %BASE%\n"
                        "\n"
                        "\n"
@@ -111,7 +111,7 @@ Ref<Script> GDScriptLanguage::get_template(StringView p_class_name, StringView p
 
     _template = _get_processed_template(_template, p_base_class_name);
 
-    Ref<GDScript> script(make_ref_counted<GDScript>());
+    HGDScript script(GDScript::create());
     script->set_source_code(_template);
 
     return script;
@@ -122,18 +122,18 @@ bool GDScriptLanguage::is_using_templates() {
     return true;
 }
 
-void GDScriptLanguage::make_template(StringView p_class_name, StringView p_base_class_name, const Ref<Script> &p_script) {
+void GDScriptLanguage::make_template(StringView p_class_name, StringView p_base_class_name, const HScript &p_script) {
 
     String _template(_get_processed_template(p_script->get_source_code(), p_base_class_name));
     p_script->set_source_code(_template);
 }
 
-bool GDScriptLanguage::validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error, StringView p_path, Vector<
+bool GDScriptLanguage::validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error, const ResourcePath & p_path, Vector<
         String> *r_functions, Vector<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 
     GDScriptParser parser;
 
-    Error err = parser.parse(p_script, PathUtils::get_base_dir(p_path), true, p_path, false, r_safe_lines);
+    Error err = parser.parse(p_script, ResourcePath(PathUtils::get_base_dir(p_path)), true, p_path, false, r_safe_lines);
 #ifdef DEBUG_ENABLED
     if (r_warnings) {
         for (const GDScriptWarning &warn : parser.get_warnings()) {
@@ -2532,13 +2532,13 @@ static void _find_call_arguments(GDScriptCompletionContext &p_context, const GDS
     r_forced = !r_result.empty();
 }
 
-Error GDScriptLanguage::complete_code(const String &p_code, StringView p_path, Object *p_owner, Vector<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const ResourcePath & p_path, Object *p_owner, Vector<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 
     const String quote_style(EDITOR_DEF(("text_editor/completion/use_single_quotes"), false) ? "'" : "\"");
 
     GDScriptParser parser;
 
-    parser.parse(p_code, PathUtils::get_base_dir(p_path), false, p_path, true);
+    parser.parse(p_code, ResourcePath(PathUtils::get_base_dir(p_path)), false, p_path, true);
     r_forced = false;
     Map<String, ScriptCodeCompletionOption> options;
     GDScriptCompletionContext context;
@@ -3249,7 +3249,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, St
     return ERR_CANT_RESOLVE;
 }
 
-Error GDScriptLanguage::lookup_code(StringView p_code, StringView p_symbol, StringView p_path, Object *p_owner, LookupResult &r_result) {
+Error GDScriptLanguage::lookup_code(StringView p_code, StringView p_symbol, const ResourcePath &p_path, Object *p_owner, LookupResult &r_result) {
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
     StringName symbol_name(p_symbol);
@@ -3294,7 +3294,7 @@ Error GDScriptLanguage::lookup_code(StringView p_code, StringView p_symbol, Stri
     }
 
     GDScriptParser parser;
-    parser.parse(p_code, PathUtils::get_base_dir(p_path), false, p_path, true);
+    parser.parse(p_code, ResourcePath(PathUtils::get_base_dir(p_path)), false, p_path, true);
 
     if (parser.get_completion_type() == GDScriptParser::COMPLETION_NONE) {
         return ERR_CANT_RESOLVE;

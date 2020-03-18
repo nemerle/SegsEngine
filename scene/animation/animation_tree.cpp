@@ -172,7 +172,7 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
         return 0;
     }
 
-    Ref<AnimationNode> node = blend_tree->get_node(node_name);
+    const HAnimationNode &node = blend_tree->get_node(node_name);
 
     //inputs.write[p_input].last_pass = state->last_pass;
     float activity = 0;
@@ -191,12 +191,12 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
     return ret;
 }
 
-float AnimationNode::blend_node(const StringName &p_sub_path, const Ref<AnimationNode>& p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
+float AnimationNode::blend_node(const StringName &p_sub_path, const HAnimationNode& p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
 
     return _blend_node(p_sub_path, {}, this, p_node, p_time, p_seek, p_blend, p_filter, p_optimize);
 }
 
-float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max) {
+float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, const HAnimationNode &p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max) {
 
     ERR_FAIL_COND_V(not p_node, 0);
     ERR_FAIL_COND_V(!state, 0);
@@ -223,7 +223,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
                 continue;
             }
             int idx = state->track_map[e.first];
-            blendw[idx] = 1.0; //filtered goes to one
+            blendw[idx] = 1.0f; //filtered goes to one
         }
 
         switch (p_filter) {
@@ -411,11 +411,11 @@ void AnimationNode::_validate_property(PropertyInfo &property) const {
     }
 }
 
-Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
+HAnimationNode AnimationNode::get_child_by_name(const StringName &p_name) {
     if (get_script_instance()) {
         return refFromRefPtr<AnimationNode>(get_script_instance()->call("get_child_by_name",p_name));
     }
-    return Ref<AnimationNode>();
+    return HAnimationNode();
 }
 
 void AnimationNode::_bind_methods() {
@@ -476,7 +476,7 @@ AnimationNode::AnimationNode() {
 
 ////////////////////
 
-void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
+void AnimationTree::set_tree_root(const HAnimationNode &p_root) {
 
     if (root) {
         root->disconnect("tree_changed", this, "_tree_changed");
@@ -493,7 +493,7 @@ void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
     update_configuration_warning();
 }
 
-Ref<AnimationNode> AnimationTree::get_tree_root() const {
+const HAnimationNode &AnimationTree::get_tree_root() const {
     return root;
 }
 
@@ -568,7 +568,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
     Vector<StringName> sname(player->get_animation_list());
 
     for (const StringName &E : sname) {
-        Ref<Animation> anim = player->get_animation(E);
+        const HAnimation &anim = player->get_animation(E);
         for (int i = 0; i < anim->get_track_count(); i++) {
             NodePath path = anim->track_get_path(i);
             Animation::TrackType track_type = anim->track_get_type(i);
@@ -1187,7 +1187,7 @@ void AnimationTree::_process_graph(float p_delta) {
                             if (anim_name == "[stop]" || !player2->has_animation(anim_name))
                                 continue;
 
-                            Ref<Animation> anim = player2->get_animation(anim_name);
+                            const HAnimation &anim = player2->get_animation(anim_name);
 
                             float at_anim_pos;
 
@@ -1409,7 +1409,7 @@ void AnimationTree::_tree_changed() {
     properties_dirty = true;
 }
 
-void AnimationTree::_update_properties_for_node(const StringName &p_base_path, Ref<AnimationNode> node) {
+void AnimationTree::_update_properties_for_node(const StringName &p_base_path, const HAnimationNode &node) {
 
     if (!property_parent_map.contains(p_base_path)) {
         property_parent_map[p_base_path] = {};

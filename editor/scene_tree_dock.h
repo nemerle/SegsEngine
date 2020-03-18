@@ -253,7 +253,7 @@ public:
     void instance_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
     void set_selected(Node *p_node, bool p_emit_selected = false);
     void fill_path_renames(Node *p_node, Node *p_new_parent, Vector<Pair<NodePath, NodePath> > &p_renames);
-    void perform_node_renames(Node *p_base, Vector<Pair<NodePath, NodePath> > &p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims = nullptr);
+    void perform_node_renames(Node *p_base, Vector<Pair<NodePath, NodePath> > &p_renames, Map<HAnimation, Set<int> > *r_rem_anims = nullptr);
     SceneTreeEditor *get_tree_editor() { return scene_tree; }
     EditorData *get_editor_data() { return editor_data; }
 

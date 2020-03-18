@@ -61,7 +61,7 @@ void AnimationNodeBlendSpace2D::get_child_nodes(ListOld<ChildNode> *r_child_node
     }
 }
 
-void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index) {
+void AnimationNodeBlendSpace2D::add_blend_point(const HAnimationRootNode &p_node, const Vector2 &p_position, int p_at_index) {
     ERR_FAIL_COND(blend_points_used >= MAX_BLEND_POINTS);
     ERR_FAIL_COND(not p_node);
     ERR_FAIL_COND(p_at_index < -1 || p_at_index > blend_points_used);
@@ -96,7 +96,7 @@ void AnimationNodeBlendSpace2D::set_blend_point_position(int p_point, const Vect
     blend_points[p_point].position = p_position;
     _queue_auto_triangles();
 }
-void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node) {
+void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const HAnimationRootNode &p_node) {
     ERR_FAIL_INDEX(p_point, blend_points_used);
     ERR_FAIL_COND(not p_node);
 
@@ -112,8 +112,8 @@ Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
     ERR_FAIL_INDEX_V(p_point, blend_points_used, Vector2());
     return blend_points[p_point].position;
 }
-Ref<AnimationRootNode> AnimationNodeBlendSpace2D::get_blend_point_node(int p_point) const {
-    ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
+HAnimationRootNode AnimationNodeBlendSpace2D::get_blend_point_node(int p_point) const {
+    ERR_FAIL_INDEX_V(p_point, blend_points_used, HAnimationRootNode());
     return blend_points[p_point].node;
 }
 void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
@@ -280,7 +280,7 @@ const String &AnimationNodeBlendSpace2D::get_y_label() const {
     return y_label;
 }
 
-void AnimationNodeBlendSpace2D::_add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node) {
+void AnimationNodeBlendSpace2D::_add_blend_point(int p_index, const HAnimationRootNode &p_node) {
     if (p_index == blend_points_used) {
         add_blend_point(p_node, Vector2());
     } else {
@@ -589,7 +589,7 @@ bool AnimationNodeBlendSpace2D::get_auto_triangles() const {
     return auto_triangles;
 }
 
-Ref<AnimationNode> AnimationNodeBlendSpace2D::get_child_by_name(const StringName &p_name) {
+HAnimationNode AnimationNodeBlendSpace2D::get_child_by_name(const StringName &p_name) {
     return get_blend_point_node(StringUtils::to_int(p_name));
 }
 

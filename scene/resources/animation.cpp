@@ -31,6 +31,7 @@
 #include "animation.h"
 #include "animation_enum_casters.h"
 
+#include "core/resources_subsystem/resource_manager.h"
 #include "scene/scene_string_names.h"
 #include "core/method_bind.h"
 #include "core/pool_vector.h"
@@ -3110,6 +3111,13 @@ void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err
         if (tracks[i]->type == TYPE_TRANSFORM)
             _transform_track_optimize(i, p_allowed_linear_err, p_allowed_angular_err, p_max_optimizable_angle);
     }
+}
+
+HAnimation Animation::create()
+{
+    Ref<Animation> animPtr = make_ref_counted<Animation>();
+
+    return se::static_resource_cast<Animation>(gResourceManager()._createResourceHandle(animPtr));
 }
 
 Animation::Animation() {

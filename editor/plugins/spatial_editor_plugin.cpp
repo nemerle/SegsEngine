@@ -2602,7 +2602,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
-            undo_redo->create_action_ui(TTR("Align Transform with View"));
+            undo_redo->create_action(TTR("Align Transform with View"));
 
             for (Node *E : selection) {
 
@@ -2639,7 +2639,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
-            undo_redo->create_action_ui(TTR("Align Rotation with View"));
+            undo_redo->create_action(TTR("Align Rotation with View"));
             for (Node *E : selection) {
 
                 Spatial *sp = object_cast<Spatial>(E);
@@ -3414,7 +3414,7 @@ void SpatialEditorViewport::_perform_drop_data() {
 
     Vector<String> error_files;
 
-    editor_data->get_undo_redo().create_action_ui(TTR("Create Node"));
+    editor_data->get_undo_redo().create_action(TTR("Create Node"));
 
     for (size_t i = 0; i < selected_files.size(); i++) {
         const String &path = selected_files[i];
@@ -4407,7 +4407,7 @@ void SpatialEditor::_xform_dialog_action() {
     t.basis.rotate(rotate);
     t.origin = translate;
 
-    undo_redo->create_action_ui(TTR("XForm Dialog"));
+    undo_redo->create_action(TTR("XForm Dialog"));
 
     const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -4661,7 +4661,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
             snap_selected_nodes_to_floor();
         } break;
         case MENU_LOCK_SELECTED: {
-            undo_redo->create_action_ui(TTR("Lock Selected"));
+            undo_redo->create_action(TTR("Lock Selected"));
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -4685,7 +4685,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
             undo_redo->commit_action();
         } break;
         case MENU_UNLOCK_SELECTED: {
-            undo_redo->create_action_ui(TTR("Unlock Selected"));
+            undo_redo->create_action(TTR("Unlock Selected"));
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -4709,7 +4709,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
             undo_redo->commit_action();
         } break;
         case MENU_GROUP_SELECTED: {
-            undo_redo->create_action_ui(TTR("Group Selected"));
+            undo_redo->create_action(TTR("Group Selected"));
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -4733,7 +4733,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
             undo_redo->commit_action();
         } break;
         case MENU_UNGROUP_SELECTED: {
-            undo_redo->create_action_ui(TTR("Ungroup Selected"));
+            undo_redo->create_action(TTR("Ungroup Selected"));
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
             for (Node * E : selection) {
@@ -5335,7 +5335,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
         }
 
         if (snapped_to_floor) {
-            undo_redo->create_action_ui(TTR("Snap Nodes To Floor"));
+            undo_redo->create_action(TTR("Snap Nodes To Floor"));
 
             // Perform snapping if at least one node can be snapped
             for (int i = 0; i < keys.size(); i++) {

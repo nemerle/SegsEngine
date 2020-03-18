@@ -700,10 +700,10 @@ public:
     bool is_addon_plugin_enabled(const StringName &p_addon) const;
 
     void edit_node(Node *p_node);
-    void edit_resource(const Ref<Resource> &p_resource);
+    void edit_resource(const HResource &p_resource);
     void open_resource(StringView p_type);
 
-    void save_resource_in_path(const Ref<Resource> &p_resource, StringView p_path);
+    void save_resource_in_path(const Ref<Resource> &p_resource, const ResourcePath &p_path);
     void save_resource(const Ref<Resource> &p_resource);
     void save_resource_as(const Ref<Resource> &p_resource, StringView p_at_path = StringView());
 

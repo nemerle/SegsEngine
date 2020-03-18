@@ -2178,7 +2178,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
     source = StringName(p_script->get_path().to_string());
 
     // The best fully qualified name for a base level script is its file path
-    p_script->fully_qualified_name = p_script->path;
+    p_script->fully_qualified_name = p_script->path.to_string();
 
     // Create scripts for subclasses beforehand so they can be referenced
     _make_scripts(p_script, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);

@@ -774,7 +774,7 @@ StringName EditorData::get_scene_title(int p_idx) const {
     return StringName(name);
 }
 
-void EditorData::set_scene_path(int p_idx, StringView p_path) {
+void EditorData::set_scene_path(int p_idx, const ResourcePath &p_path) {
 
     ERR_FAIL_INDEX(p_idx, edited_scene.size());
     edited_scene[p_idx].path = p_path;
@@ -784,15 +784,15 @@ void EditorData::set_scene_path(int p_idx, StringView p_path) {
     edited_scene[p_idx].root->set_filename(p_path);
 }
 
-String EditorData::get_scene_path(int p_idx) const {
+ResourcePath EditorData::get_scene_path(int p_idx) const {
 
-    ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
+    ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), ResourcePath());
 
     if (edited_scene[p_idx].root) {
         if (edited_scene[p_idx].root->get_filename().empty())
             edited_scene[p_idx].root->set_filename(edited_scene[p_idx].path);
         else
-            return String(edited_scene[p_idx].root->get_filename());
+            return ResourcePath(edited_scene[p_idx].root->get_filename());
     }
 
     return edited_scene[p_idx].path;

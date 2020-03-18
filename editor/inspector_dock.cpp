@@ -289,7 +289,7 @@ void InspectorDock::_resource_created() const {
     editor->push_item(c);
 }
 
-void InspectorDock::_resource_selected(const RES &p_res, const StringName &p_property) const {
+void InspectorDock::_resource_selected(const HResource &p_res, const StringName &p_property) const {
     if (not p_res)
         return;
 
@@ -376,7 +376,7 @@ void InspectorDock::_bind_methods() {
     ADD_SIGNAL(MethodInfo("request_help"));
 }
 
-void InspectorDock::edit_resource(const Ref<Resource> &p_resource) {
+void InspectorDock::edit_resource(const HResource &p_resource) {
     _resource_selected(p_resource, StringName());
 }
 

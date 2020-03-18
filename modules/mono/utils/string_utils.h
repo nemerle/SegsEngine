@@ -45,6 +45,7 @@ String escape_csharp_keyword(StringView p_name);
 #endif
 
 Error read_all_file_utf8(StringView p_path, String &r_content);
+Error read_all_file_utf8(const ResourcePath &p_path, String &r_content);
 
 #if defined(__GNUC__)
 #define _PRINTF_FORMAT_ATTRIBUTE_1_0 __attribute__((format(printf, 1, 0)))

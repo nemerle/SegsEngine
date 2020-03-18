@@ -2480,7 +2480,7 @@ void VisualScriptLanguage::make_template(StringView p_class_name, StringView p_b
     script->set_instance_base_type(StringName(p_base_class_name));
 }
 
-bool VisualScriptLanguage::validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error, StringView p_path, Vector<
+bool VisualScriptLanguage::validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error, const ResourcePath &p_path, Vector<
         String> *r_functions, Vector<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 
     return false;

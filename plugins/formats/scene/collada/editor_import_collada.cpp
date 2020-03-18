@@ -53,7 +53,7 @@ struct ColladaImport {
     Collada collada;
     Spatial *scene;
 
-    Vector<Ref<Animation> > animations;
+    Vector<HAnimation> animations;
 
     struct NodeMap {
         //String path;
@@ -1429,7 +1429,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 
 void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks) {
 
-    Ref<Animation> animation(make_ref_counted<Animation>());
+    HAnimation animation(Animation::create());
 
     if (p_clip == -1) {
         animation->set_name("default");
@@ -1783,7 +1783,7 @@ Node *EditorSceneImporterCollada::import_scene(StringView p_path, uint32_t p_fla
 
         if (r_missing_deps) {
 
-            for (int i = 0; i < state.missing_textures.size(); i++) {
+            for (size_t i = 0; i < state.missing_textures.size(); i++) {
                 //EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
                 r_missing_deps->push_back(state.missing_textures[i]);
             }
@@ -1832,7 +1832,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(StringView p_path, u
 
     if (state.animations.empty())
         return Ref<Animation>();
-    Ref<Animation> anim = state.animations[0];
+    HAnimation anim = state.animations[0];
     String base = StringUtils::to_lower(PathUtils::get_basename(p_path));
     if (p_flags & IMPORT_ANIMATION_DETECT_LOOP) {
 
@@ -1841,7 +1841,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(StringView p_path, u
         }
     }
 
-    return anim;
+    return Ref<Animation>(anim.get());
 }
 
 EditorSceneImporterCollada::EditorSceneImporterCollada() {

@@ -50,6 +50,7 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/reference.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/string.h"
 #include "core/script_language.h"
 #include "core/string_formatter.h"
@@ -58,6 +59,8 @@
 #include "EASTL/unordered_set.h"
 
 using namespace eastl;
+
+using HGDScript = se::ResourceHandle<GDScript>;
 
 template <class T>
 T *GDScriptParser::alloc_node() {
@@ -462,7 +465,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
                 tokenizer->advance();
             }
 
-            String path;
+            ResourcePath path;
             bool found_constant = false;
             bool valid = false;
             ConstantNode *cn;
@@ -488,7 +491,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
                 if (found_constant && cn->value.get_type() == VariantType::STRING) {
                     valid = true;
-                    path = cn->value.as<String>();
+                    path = ResourcePath(cn->value.as<String>());
                 }
             }
 
@@ -497,9 +500,9 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
                 return nullptr;
             }
 
-            if (!PathUtils::is_abs_path(path) && !base_path.empty())
-                path = PathUtils::plus_file(base_path,path);
-            path = PathUtils::simplify_path(StringUtils::replace(path,"///", "//"));
+            if (path.is_relative() && !base_path.empty())
+                path = ResourcePath(base_path).cd(path);
+            path.cleanup(); //PathUtils::simplify_path(StringUtils::replace(path,"///", "//"));
             if (path == self_path) {
 
                 _set_error("Can't preload itself (use 'get_script()').");
@@ -513,7 +516,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
                     //this can be too slow for just validating code
                     if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
-                        res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
+                        res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path.to_string());
                     } else if (!for_completion || FileAccess::exists(path)) {
                         assert(false);
                         //res = ResourceLoader::load(path);
@@ -521,14 +524,14 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
                 } else {
 
                     if (!FileAccess::exists(path)) {
-                        _set_error("Can't preload resource at path: " + path);
+                        _set_error("Can't preload resource at path: " + path.to_string());
                         return nullptr;
                     } else if (ScriptCodeCompletionCache::get_singleton()) {
-                        res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
+                        res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path.to_string());
                     }
                 }
                 if (not res) {
-                    _set_error("Can't preload resource at path: " + path);
+                    _set_error("Can't preload resource at path: " + path.to_string());
                     return nullptr;
                 }
             }
@@ -3475,11 +3478,11 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
         tokenizer->advance();
 
         // Add parent script as a dependency
-        String parent = constant;
-        if (PathUtils::is_rel_path(parent)) {
-            parent = PathUtils::simplify_path(PathUtils::plus_file(base_path,parent));
+        ResourcePath parent(constant.as<String>());
+        if (not parent.is_relative()) {
+            parent = ResourcePath(base_path).cd(parent).cleanup();
         }
-        dependencies.push_back(parent);
+        dependencies.emplace_back(eastl::move(parent));
 
         if (tokenizer->get_token() != GDScriptTokenizer::TK_PERIOD) {
             return;
@@ -3574,10 +3577,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
                     _set_error("\"class_name\" is only valid for the main class namespace.");
                     return;
                 }
-                if (StringUtils::begins_with(self_path,"res://") && StringUtils::find(self_path,"::") != String::npos) {
-                    _set_error("\"class_name\" isn't allowed in built-in scripts.");
-                    return;
-                }
+//                if (StringUtils::begins_with(self_path,"res://") && StringUtils::find(self_path,"::") != String::npos) {
+//                    _set_error("\"class_name\" isn't allowed in built-in scripts.");
+//                    return;
+//                }
                 if (tokenizer->get_token(1) != GDScriptTokenizer::TK_IDENTIFIER) {
 
                     _set_error(R"("class_name" syntax: "class_name <UniqueName>")");
@@ -3592,7 +3595,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
                 p_class->name = tokenizer->get_token_identifier(1);
 
-                if (!self_path.empty() && ScriptServer::is_global_class(p_class->name) && StringView(self_path) != ScriptServer::get_global_class_path(p_class->name)) {
+                if (!self_path.empty() && ScriptServer::is_global_class(p_class->name) && StringView(self_path.to_string()) != ScriptServer::get_global_class_path(p_class->name)) {
                     _set_error("Unique global class \"" + String(p_class->name.asCString()) + "\" already exists at path: " + ScriptServer::get_global_class_path(p_class->name));
                     return;
                 }
@@ -5265,7 +5268,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
         // Already determined
     } else if (p_class->extends_used) {
         //do inheritance
-        String path = p_class->extends_file.asCString();
+        ResourcePath path(p_class->extends_file.asCString());
 
         Ref<GDScript> script;
         StringName native;
@@ -5274,36 +5277,35 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
         if (!path.empty()) {
             //path (and optionally subclasses)
 
-            if (PathUtils::is_rel_path(path)) {
+            if (path.is_relative()) {
 
-                String base = base_path;
+                ResourcePath base = base_path;
 
-                if (base.empty() || PathUtils::is_rel_path(base)) {
-                    _set_error("Could not resolve relative path for parent class: " + path, p_class->line);
+                if (base.empty() || base.is_relative()) {
+                    _set_error("Could not resolve relative path for parent class: " + path.to_string(), p_class->line);
                     return;
                 }
-                path = PathUtils::simplify_path(PathUtils::plus_file(base,path));
+                path = ResourcePath(base).cd(path).cleanup();
             }
-            script = ResourceLoader::load<GDScript>(path);
+            script = Ref<GDScript>(gResourceManager().load<GDScript>(path).get());
             if (not script) {
-                _set_error("Couldn't load the base class: " + path, p_class->line);
+                _set_error("Couldn't load the base class: " + path.to_string(), p_class->line);
                 return;
             }
             if (!script->is_valid()) {
 
-                _set_error("Script isn't fully loaded (cyclic preload?): " + path, p_class->line);
+                _set_error("Script isn't fully loaded (cyclic preload?): " + path.to_string(), p_class->line);
                 return;
             }
 
             if (!p_class->extends_class.empty()) {
 
-                for (int i = 0; i < p_class->extends_class.size(); i++) {
+                for (size_t i = 0; i < p_class->extends_class.size(); i++) {
 
                     StringName sub = p_class->extends_class[i];
                     if (script->get_subclasses().contains(sub)) {
 
-                        Ref<Script> subclass = script->get_subclasses().at(sub); //avoid reference from disappearing
-                        script = dynamic_ref_cast<GDScript>(subclass);
+                        script = script->get_subclasses().at(sub);
                     } else {
 
                         _set_error("Couldn't find the subclass: " + String(sub), p_class->line);
@@ -5326,7 +5328,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
             Ref<GDScript> base_script;
 
             if (ScriptServer::is_global_class(base)) {
-                base_script = ResourceLoader::load<GDScript>(ScriptServer::get_global_class_path(base));
+                base_script = Ref<GDScript>(gResourceManager().load<GDScript>(ScriptServer::get_global_class_path(base)).get());
                 if (not base_script) {
                     _set_error("The class \"" + String(base) + "\" couldn't be fully loaded (script error or cyclic dependency).", p_class->line);
                     return;
@@ -5349,7 +5351,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
                         if (!StringUtils::begins_with(singleton_path,"res://")) {
                             singleton_path = "res://" + singleton_path;
                         }
-                        base_script = ResourceLoader::load<GDScript>(singleton_path);
+                        base_script = Ref<GDScript>(gResourceManager().load<GDScript>(singleton_path).get());
                         if (not base_script) {
                             _set_error("Class '" + String(base) + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
                             return;
@@ -5363,7 +5365,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 
                 bool found = false;
 
-                for (int i = 0; i < p->subclasses.size(); i++) {
+                for (size_t i = 0; i < p->subclasses.size(); i++) {
                     if (p->subclasses[i]->name == base) {
                         ClassNode *test = p->subclasses[i];
                         while (test) {
@@ -5412,7 +5414,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
             if (base_script) {
 
                 String ident(base);
-                Ref<GDScript> find_subclass = base_script;
+                Ref<GDScript> find_subclass(base_script.get());
 
                 for (int i = extend_iter; i < p_class->extends_class.size(); i++) {
 
@@ -5683,7 +5685,7 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
         if (name_part == 0) {
             if (ScriptServer::is_global_class(id)) {
                 StringView script_path = ScriptServer::get_global_class_path(id);
-                if (script_path == StringView(self_path)) {
+                if (script_path == StringView(self_path.to_string())) {
                     result.kind = DataType::CLASS;
                     result.class_type = static_cast<ClassNode *>(head);
                 } else {
@@ -6196,7 +6198,7 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
             if (p_container.is_meta_type) {
                 return ClassDB::is_parent_class(expr_native, GDScript::get_class_static_name());
             }
-            if (expr_class == head && p_container.script_type->get_path().to_string() == self_path) {
+            if (expr_class == head && p_container.script_type->get_path() == self_path) {
                 // Special case: container is self script and expression is self
                 return true;
             }
@@ -6212,7 +6214,7 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
             if (p_container.is_meta_type) {
                 return ClassDB::is_parent_class(expr_native, GDScript::get_class_static_name());
             }
-            if (p_container.class_type == head && expr_script && expr_script->get_path().to_string() == self_path) {
+            if (p_container.class_type == head && expr_script && expr_script->get_path() == self_path) {
                 // Special case: container is self and expression is self script
                 return true;
             }
@@ -8346,7 +8348,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
                         if (cf->body_else) {
                             _mark_line_as_safe(cf->body_else->line);
                         }
-                        for (int i = 0; i < cf->arguments.size(); i++) {
+                        for (size_t i = 0; i < cf->arguments.size(); i++) {
                             _reduce_node_type(cf->arguments[i]);
                         }
                     } break;
@@ -8406,7 +8408,7 @@ void GDScriptParser::_set_error(StringView p_error, int p_line, int p_column) {
 #ifdef DEBUG_ENABLED
 
 void GDScriptParser::_add_warning(int p_code, int p_line, const std::initializer_list<StringView> &p_symbols) {
-    if (StringUtils::begins_with(base_path,"res://addons/") && GLOBAL_GET("debug/gdscript/warnings/exclude_addons").booleanize()) {
+    if (PathUtils::is_addon_path(base_path) && GLOBAL_GET("debug/gdscript/warnings/exclude_addons").booleanize()) {
         return;
     }
     if (tokenizer->is_ignoring_warnings() || !GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
@@ -8447,7 +8449,7 @@ int GDScriptParser::get_error_column() const {
 bool GDScriptParser::has_error() const {
     return error_set;
 }
-Error GDScriptParser::_parse(StringView p_base_path) {
+Error GDScriptParser::_parse(const ResourcePath &p_base_path) {
 
     base_path = p_base_path;
 
@@ -8535,7 +8537,7 @@ Error GDScriptParser::_parse(StringView p_base_path) {
     return OK;
 }
 
-Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, StringView p_base_path, StringView p_self_path) {
+Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, const ResourcePath &p_base_path, const ResourcePath &p_self_path) {
 
     clear();
 
@@ -8549,7 +8551,7 @@ Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, StringVi
     return ret;
 }
 
-Error GDScriptParser::parse(StringView p_code, StringView p_base_path, bool p_just_validate, StringView p_self_path, bool p_for_completion, Set<int> *r_safe_lines, bool p_dependencies_only) {
+Error GDScriptParser::parse(StringView p_code, const ResourcePath &p_base_path, bool p_just_validate, const ResourcePath &p_self_path, bool p_for_completion, Set<int> *r_safe_lines, bool p_dependencies_only) {
 
     clear();
 

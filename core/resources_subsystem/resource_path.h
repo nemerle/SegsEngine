@@ -46,6 +46,12 @@ public:
             m_path_components.emplace_back(component);
         return *this;
     }
+    ResourcePath &cd(const ResourcePath &path);
+
+    /**
+     * @brief cleanup resolves all instances of '.' and '..' that are a part of the path
+     */
+    ResourcePath &cleanup();
     const Vector<String> &components() const { return m_path_components; }
     [[nodiscard]] ResourcePath meta_path() const;
     [[nodiscard]] ResourcePath import_path() const;

@@ -273,11 +273,11 @@ public:
     virtual void get_reserved_words(Vector<String> *p_words) const = 0;
     virtual void get_comment_delimiters(Vector<String> *p_delimiters) const = 0;
     virtual void get_string_delimiters(Vector<String> *p_delimiters) const = 0;
-    virtual Ref<Script> get_template(StringView p_class_name, StringView p_base_class_name) const = 0;
-    virtual void make_template(StringView /*p_class_name*/, StringView /*p_base_class_name*/, const Ref<Script> & /*p_script*/) {}
+    virtual HScript get_template(StringView p_class_name, StringView p_base_class_name) const = 0;
+    virtual void make_template(StringView /*p_class_name*/, StringView /*p_base_class_name*/, const HScript & /*p_script*/) {}
     virtual bool is_using_templates() { return false; }
     virtual bool validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error,
-            StringView p_path = {}, Vector<String> *r_functions = nullptr,
+            const ResourcePath & p_path = {}, Vector<String> *r_functions = nullptr,
             Vector<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
     virtual String validate_path(StringView /*p_path*/) const { return String(); }
     virtual Script *create_script() const = 0;
@@ -289,7 +289,7 @@ public:
     virtual Error open_in_external_editor(const Ref<Script> & /*p_script*/, int /*p_line*/, int /*p_col*/) { return ERR_UNAVAILABLE; }
     virtual bool overrides_external_editor() { return false; }
 
-    virtual Error complete_code(const String &/*p_code*/, StringView /*p_path*/, Object * /*p_owner*/,
+    virtual Error complete_code(const String &/*p_code*/, const ResourcePath &/*p_path*/, Object * /*p_owner*/,
             Vector<ScriptCodeCompletionOption> *, bool &/*r_force*/, String &/*r_call_hint*/) {
         return ERR_UNAVAILABLE;
     }
@@ -311,7 +311,7 @@ public:
         int location;
     };
 
-    virtual Error lookup_code(StringView /*p_code*/, StringView /*p_symbol*/, StringView /*p_path*/,
+    virtual Error lookup_code(StringView /*p_code*/, StringView /*p_symbol*/, const ResourcePath &/*p_path*/,
             Object * /*p_owner*/, LookupResult & /*r_result*/) {
         return ERR_UNAVAILABLE;
     }

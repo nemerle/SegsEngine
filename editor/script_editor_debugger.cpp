@@ -508,49 +508,61 @@ Size2 ScriptEditorDebugger::get_minimum_size() const {
     return ms;
 }
 
+void ScriptEditorDebugger::handle_debug_enter(const Array &p_data)
+{
+    Array msg;
+    msg.push_back("get_stack_dump");
+    ppeer->put_var(msg);
+    ERR_FAIL_COND(p_data.size() != 2);
+    bool can_continue = p_data[0];
+    StringName error = p_data[1];
+    step->set_disabled(!can_continue);
+    next->set_disabled(!can_continue);
+    _set_reason_text(error, MESSAGE_ERROR);
+    copy->set_disabled(false);
+    breaked = true;
+    dobreak->set_disabled(true);
+    docontinue->set_disabled(false);
+    emit_signal("breaked", true, can_continue);
+    OS::get_singleton()->move_window_to_foreground();
+    if (!error.empty()) {
+        tabs->set_current_tab(0);
+    }
+    profiler->set_enabled(false);
+    EditorNode::get_singleton()->get_pause_button()->set_pressed(true);
+    EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+    _clear_remote_objects();
+}
+
+void ScriptEditorDebugger::handle_debug_exit(const Array &p_data)
+{
+    breaked = false;
+    _clear_execution();
+    copy->set_disabled(true);
+    step->set_disabled(true);
+    next->set_disabled(true);
+    reason->set_text("");
+    reason->set_tooltip_utf8("");
+    back->set_disabled(true);
+    forward->set_disabled(true);
+    dobreak->set_disabled(false);
+    docontinue->set_disabled(true);
+    emit_signal("breaked", false, false, Variant());
+    profiler->set_enabled(true);
+    profiler->disable_seeking();
+    EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+}
+
 void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_data) {
 
     if (p_msg == "debug_enter") {
-        Array msg;
-        msg.push_back("get_stack_dump");
-        ppeer->put_var(msg);
-        ERR_FAIL_COND(p_data.size() != 2);
-        bool can_continue = p_data[0];
-        StringName error = p_data[1];
-        step->set_disabled(!can_continue);
-        next->set_disabled(!can_continue);
-        _set_reason_text(error, MESSAGE_ERROR);
-        copy->set_disabled(false);
-        breaked = true;
-        dobreak->set_disabled(true);
-        docontinue->set_disabled(false);
-        emit_signal("breaked", true, can_continue);
-        OS::get_singleton()->move_window_to_foreground();
-        if (!error.empty()) {
-            tabs->set_current_tab(0);
-        }
-        profiler->set_enabled(false);
-        EditorNode::get_singleton()->get_pause_button()->set_pressed(true);
-        EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
-        _clear_remote_objects();
+
+        handle_debug_enter(p_data);
 
     } else if (p_msg == "debug_exit") {
 
-        breaked = false;
-        _clear_execution();
-        copy->set_disabled(true);
-        step->set_disabled(true);
-        next->set_disabled(true);
-        reason->set_text("");
-        reason->set_tooltip_utf8("");
-        back->set_disabled(true);
-        forward->set_disabled(true);
-        dobreak->set_disabled(false);
-        docontinue->set_disabled(true);
-        emit_signal("breaked", false, false, Variant());
-        profiler->set_enabled(true);
-        profiler->disable_seeking();
-        EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+        handle_debug_exit(p_data);
+
     } else if (p_msg == "message:click_ctrl") {
 
         clicked_ctrl->set_text_uistring(p_data[0]);
@@ -613,7 +625,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
                     String path = var;
                     if (path.contains("::")) {
                         // built-in resource
-                        StringView base_path = StringUtils::get_slice(path,"::", 0);
+                        ResourcePath base_path(StringUtils::get_slice(path,"::", 0));
                         if (ResourceLoader::get_resource_type(base_path) == "PackedScene") {
                             if (!EditorNode::get_singleton()->is_scene_open(base_path)) {
                                 EditorNode::get_singleton()->load_scene(base_path);
@@ -1661,7 +1673,7 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
     return last_path_id;
 }
 
-int ScriptEditorDebugger::_get_res_path_cache(StringView p_path) {
+int ScriptEditorDebugger::_get_res_path_cache(const ResourcePath &p_path) {
 
     Map<String, int>::iterator E = res_path_cache.find_as(p_path);
 
@@ -1670,10 +1682,10 @@ int ScriptEditorDebugger::_get_res_path_cache(StringView p_path) {
 
     last_path_id++;
 
-    res_path_cache[String(p_path)] = last_path_id;
+    res_path_cache[p_path.to_string()] = last_path_id;
     Array msg;
     msg.push_back("live_res_path");
-    msg.push_back(p_path);
+    msg.push_back(p_path.to_string());
     msg.push_back(last_path_id);
     ppeer->put_var(msg);
 
@@ -1717,7 +1729,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
     if (res && !res->get_path().empty()) {
 
-        String respath = res->get_path();
+        const ResourcePath & respath = res->get_path();
         int pathid = _get_res_path_cache(respath);
 
         Array msg;
@@ -1774,7 +1786,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
     if (res && !res->get_path().empty()) {
 
-        String respath = res->get_path();
+        const ResourcePath &respath = res->get_path();
         int pathid = _get_res_path_cache(respath);
 
         if (p_value.is_ref()) {
@@ -1785,7 +1797,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
                 msg.push_back("live_res_prop_res");
                 msg.push_back(pathid);
                 msg.push_back(p_property);
-                msg.push_back(res2->get_path());
+                msg.push_back(res2->get_path().to_string());
                 ppeer->put_var(msg);
             }
         } else {

@@ -244,6 +244,12 @@ struct UndoRedo::PrivateData
         }
         actions[current_action + 1].do_ops.push_back(do_op);
     }
+    void add_do_method(eastl::function<void()> f) {
+        Operation do_op;
+        do_op.type = Operation::TYPE_METHOD;
+        do_op.m_func = f;
+        actions[current_action + 1].do_ops.push_back(do_op);
+    }
     void add_undo_method(eastl::function<void()> f) {
 
         // No undo if the merge mode is MERGE_ENDS
@@ -366,11 +372,17 @@ struct UndoRedo::PrivateData
     }
 };
 
-void UndoRedo::create_action_ui(const StringName &p_name, MergeMode p_mode) {
-    pimpl->create_action(p_name,p_mode);
-}
 void UndoRedo::create_action(StringView p_name, MergeMode p_mode) {
     pimpl->create_action(p_name,p_mode);
+}
+void UndoRedo::create_action_pair(StringView p_name, eastl::function<void()> do_actions,eastl::function<void()> undo_actions,MergeMode p_mode) {
+    pimpl->create_action(p_name,p_mode);
+    ERR_FAIL_COND(pimpl->action_level <= 0);
+    ERR_FAIL_COND(size_t(pimpl->current_action + 1) >= pimpl->actions.size());
+    pimpl->add_do_method(do_actions);
+    ERR_FAIL_COND(size_t(pimpl->current_action + 1) >= pimpl->actions.size());
+    pimpl->add_undo_method(undo_actions);
+
 }
 void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
 
@@ -378,6 +390,12 @@ void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIA
     ERR_FAIL_COND(pimpl->action_level <= 0);
     ERR_FAIL_COND(size_t(pimpl->current_action + 1) >= pimpl->actions.size());
     pimpl->add_do_method(p_object,p_method,VARIANT_ARG_PASS);
+}
+void UndoRedo::add_do_method(eastl::function<void()> func) {
+
+    ERR_FAIL_COND(pimpl->action_level <= 0);
+    ERR_FAIL_COND(size_t(pimpl->current_action + 1) >= pimpl->actions.size());
+    pimpl->add_do_method(func);
 }
 //void UndoRedo::add_do_method(Object *p_object, StringView p_method, VARIANT_ARG_DECLARE) {
 

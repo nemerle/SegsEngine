@@ -101,7 +101,7 @@ class InspectorDock : public VBoxContainer {
 
     void _warning_pressed();
     void _resource_created() const;
-    void _resource_selected(const RES &p_res, const StringName &p_property = StringName()) const;
+    void _resource_selected(const HResource &p_res, const StringName &p_property = StringName()) const;
     void _edit_forward();
     void _edit_back();
     void _menu_collapseall();
@@ -119,7 +119,7 @@ protected:
 public:
     void go_back();
     void update_keying();
-    void edit_resource(const Ref<Resource> &p_resource);
+    void edit_resource(const HResource &p_resource);
     void open_resource(StringView p_type);
     void clear();
     void set_warning(const StringName &p_message);

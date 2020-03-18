@@ -30,6 +30,7 @@
 
 #include "animation_blend_space_1d.h"
 #include "core/method_bind.h"
+#include "core/resources_subsystem/resource_manager.h"
 
 IMPL_GDCLASS(AnimationNodeBlendSpace1D)
 
@@ -40,7 +41,7 @@ Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName 
     return 0;
 }
 
-Ref<AnimationNode> AnimationNodeBlendSpace1D::get_child_by_name(const StringName &p_name) {
+HAnimationNode AnimationNodeBlendSpace1D::get_child_by_name(const StringName &p_name) {
     return get_blend_point_node(StringUtils::to_int(p_name));
 }
 
@@ -104,7 +105,7 @@ void AnimationNodeBlendSpace1D::get_child_nodes(ListOld<ChildNode> *r_child_node
     }
 }
 
-void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index) {
+void AnimationNodeBlendSpace1D::add_blend_point(const HAnimationRootNode &p_node, float p_position, int p_at_index) {
     ERR_FAIL_COND(blend_points_used >= MAX_BLEND_POINTS);
     ERR_FAIL_COND(not p_node);
 
@@ -133,7 +134,7 @@ void AnimationNodeBlendSpace1D::set_blend_point_position(int p_point, float p_po
     blend_points[p_point].position = p_position;
 }
 
-void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node) {
+void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const HAnimationRootNode &p_node) {
     ERR_FAIL_INDEX(p_point, blend_points_used);
     ERR_FAIL_COND(not p_node);
 
@@ -152,8 +153,14 @@ float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
     return blend_points[p_point].position;
 }
 
-Ref<AnimationRootNode> AnimationNodeBlendSpace1D::get_blend_point_node(int p_point) const {
-    ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
+HAnimationRootNode AnimationNodeBlendSpace1D::get_blend_point_node(int p_point) const {
+    ERR_FAIL_INDEX_V(p_point, blend_points_used, HAnimationRootNode());
+    return blend_points[p_point].node;
+}
+
+HAnimationRootNode AnimationNodeBlendSpace1D::get_blend_point_node_h(int p_point) const
+{
+    ERR_FAIL_INDEX_V(p_point, blend_points_used, HAnimationRootNode());
     return blend_points[p_point].node;
 }
 
@@ -217,7 +224,7 @@ const String & AnimationNodeBlendSpace1D::get_value_label() const {
     return value_label;
 }
 
-void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node) {
+void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const HAnimationRootNode &p_node) {
     if (p_index == blend_points_used) {
         add_blend_point(p_node, 0);
     } else {

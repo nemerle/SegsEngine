@@ -36,6 +36,12 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
+namespace se {
+template <typename T, bool WeakHandle>
+class ResourceHandleT;
+template <typename T>
+using ResourceHandle = ResourceHandleT<T, false>;
+}
 struct Frustum;
 
 template <bool C, typename T = void>
@@ -235,6 +241,24 @@ MAKE_TYPE_INFO(IP_Address, VariantType::STRING)
 class BSP_Tree;
 MAKE_TYPE_INFO(BSP_Tree, VariantType::DICTIONARY)
 
+template <typename T>
+struct GetTypeInfo<se::ResourceHandle<T>> {
+    constexpr static const VariantType VARIANT_TYPE = VariantType::OBJECT;
+    constexpr static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+    constexpr static const TypePassBy PASS_BY = TypePassBy::Value;
+    constexpr static inline RawPropertyInfo get_class_info() {
+        return RawPropertyInfo{ nullptr,"HResource","HResource",int8_t(VariantType::OBJECT), PropertyHint::ResourceType };
+    }
+};
+template <typename T>
+struct GetTypeInfo<const se::ResourceHandle<T> &> {
+    constexpr static const VariantType VARIANT_TYPE = VariantType::OBJECT;
+    constexpr static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+    constexpr static const TypePassBy PASS_BY = TypePassBy::Reference;
+    constexpr static inline RawPropertyInfo get_class_info() {
+        return RawPropertyInfo{ nullptr,"HResource","HResource",int8_t(VariantType::OBJECT), PropertyHint::ResourceType };
+    }
+};
 //for RefPtr
 template <>
 struct GetTypeInfo<RefPtr> {

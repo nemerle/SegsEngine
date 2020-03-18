@@ -37,6 +37,7 @@
 #include "core/string_formatter.h"
 #include "core/script_language.h"
 #include "core/string_builder.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -288,15 +289,15 @@ void ScriptCreateDialog::_create_new() {
         cname_param = PathUtils::get_basename(PathUtils::get_file(ProjectSettings::get_singleton()->localize_path(file_path->get_text())));
     }
 
-    Ref<Script> scr;
+    HScript scr;
     if (!script_template.empty()) {
-        scr = ResourceLoader::load<Script>(script_template);
+        scr = gResourceManager().load<Script>(script_template);
         if (not scr) {
             alert->set_text(FormatSN(TTR("Error loading template '%s'").asCString(), script_template.c_str()));
             alert->popup_centered();
             return;
         }
-        scr = dynamic_ref_cast<Script>(scr->duplicate());
+        scr = gResourceManager()._createResourceHandle(dynamic_ref_cast<Script>(scr->duplicate()));
         ScriptServer::get_language(language_menu->get_selected())->make_template(cname_param, parent_name->get_text(), scr);
     } else {
         scr = ScriptServer::get_language(language_menu->get_selected())->get_template(cname_param, parent_name->get_text());
@@ -309,9 +310,10 @@ void ScriptCreateDialog::_create_new() {
     }
 
     if (!is_built_in) {
-        String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
+        ResourcePath lpath(ProjectSettings::get_singleton()->localize_path(file_path->get_text()));
         scr->set_path(lpath);
-        Error err = ResourceSaver::save(lpath, scr, ResourceSaver::FLAG_CHANGE_PATH);
+
+        Error err = gResourceManager().save(scr,lpath,true);//ResourceSaver::save(lpath, scr, ResourceSaver::FLAG_CHANGE_PATH);
         if (err != OK) {
             alert->set_text(TTR("Error - Could not create script in filesystem."));
             alert->popup_centered();
@@ -319,21 +321,21 @@ void ScriptCreateDialog::_create_new() {
         }
     }
 
-    emit_signal("script_created", scr);
+    emit_signal("script_created", Ref<Resource>(scr.get()));
     hide();
 }
 
 void ScriptCreateDialog::_load_exist() {
 
     String path = file_path->get_text();
-    RES p_script(ResourceLoader::load(path, "Script"));
+    HScript p_script(gResourceManager().load(path)); //"Script"
     if (not p_script) {
         alert->set_text(FormatSN(TTR("Error loading script from %s").asCString(), path.c_str()));
         alert->popup_centered();
         return;
     }
 
-    emit_signal("script_created", Variant(p_script));
+    emit_signal("script_created", Variant(Ref<Script>(p_script.get())));
     hide();
 }
 

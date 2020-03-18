@@ -131,9 +131,9 @@ public:
 
     void _find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes);
 
-void _make_external_resources(Node *p_node, StringView p_base_path, bool p_make_animations, bool p_animations_as_text,
+    void _make_external_resources(Node *p_node, StringView p_base_path, bool p_make_animations, bool p_animations_as_text,
         bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials,
-        bool p_make_meshes, bool p_meshes_as_text, HashMap<HAnimation, HAnimation> &p_animations,
+        bool p_make_meshes, bool p_meshes_as_text, HashSet<const Animation *> &p_animations,
         HashMap<Ref<Material>, Ref<Material>> &p_materials, HashMap<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes);
 
     Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape>>> &collision_map, LightBakeMode p_light_bake_mode);

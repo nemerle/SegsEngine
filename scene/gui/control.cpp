@@ -632,6 +632,7 @@ void Control::_notification(int p_notification) {
         case NOTIFICATION_FOCUS_EXIT: {
 
             emit_signal(SceneStringNames::get_singleton()->focus_exited);
+            this->focus_exited();
             update();
 
         } break;

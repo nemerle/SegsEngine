@@ -938,7 +938,7 @@ void CanvasItemEditor::_restore_canvas_item_state(const Vector<CanvasItem *> &, 
 }
 
 void CanvasItemEditor::_commit_canvas_item_state(const Vector<CanvasItem *> &p_canvas_items, const StringName& action_name, bool commit_bones) {
-    undo_redo->create_action_ui(action_name);
+    undo_redo->create_action(action_name);
     for (CanvasItem *canvas_item : p_canvas_items) {
 
         CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
@@ -1112,7 +1112,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
                 // Adds a new vertical guide
                 if (dragged_guide_index >= 0) {
                     vguides[dragged_guide_index] = edited.x;
-                    undo_redo->create_action_ui(TTR("Move Vertical Guide"));
+                    undo_redo->create_action(TTR("Move Vertical Guide"));
                     undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
                             "_edit_vertical_guides_", vguides);
                     undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
@@ -1121,7 +1121,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
                     undo_redo->commit_action();
                 } else {
                     vguides.push_back(edited.x);
-                    undo_redo->create_action_ui(TTR("Create Vertical Guide"));
+                    undo_redo->create_action(TTR("Create Vertical Guide"));
                     undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
                             "_edit_vertical_guides_", vguides);
                     undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
@@ -1132,7 +1132,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
             } else {
                 if (dragged_guide_index >= 0) {
                     vguides.remove(dragged_guide_index);
-                    undo_redo->create_action_ui(TTR("Remove Vertical Guide"));
+                    undo_redo->create_action(TTR("Remove Vertical Guide"));
                     if (vguides.empty()) {
                         undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta",
                                 "_edit_vertical_guides_");
@@ -1152,7 +1152,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
                 // Adds a new horizontal guide
                 if (dragged_guide_index >= 0) {
                     hguides[dragged_guide_index] = edited.y;
-                    undo_redo->create_action_ui(TTR("Move Horizontal Guide"));
+                    undo_redo->create_action(TTR("Move Horizontal Guide"));
                     undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
                             "_edit_horizontal_guides_", hguides);
                     undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
@@ -1161,7 +1161,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
                     undo_redo->commit_action();
                 } else {
                     hguides.push_back(edited.y);
-                    undo_redo->create_action_ui(TTR("Create Horizontal Guide"));
+                    undo_redo->create_action(TTR("Create Horizontal Guide"));
                     undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
                             "_edit_horizontal_guides_", hguides);
                     undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
@@ -1172,7 +1172,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
             } else {
                 if (dragged_guide_index >= 0) {
                     hguides.remove(dragged_guide_index);
-                    undo_redo->create_action_ui(TTR("Remove Horizontal Guide"));
+                    undo_redo->create_action(TTR("Remove Horizontal Guide"));
                     if (hguides.empty()) {
                         undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta",
                                 "_edit_horizontal_guides_");
@@ -1193,7 +1193,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
                 // Adds a new horizontal guide a new vertical guide
                 vguides.push_back(edited.x);
                 hguides.push_back(edited.y);
-                undo_redo->create_action_ui(TTR("Create Horizontal and Vertical Guides"));
+                undo_redo->create_action(TTR("Create Horizontal and Vertical Guides"));
                 undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
                         "_edit_vertical_guides_", vguides);
                 undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta",
@@ -4178,7 +4178,7 @@ void CanvasItemEditor::_update_scroll(float) {
 void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_preset) {
     const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
-    undo_redo->create_action_ui(TTR("Change Anchors and Margins"));
+    undo_redo->create_action(TTR("Change Anchors and Margins"));
 
     for (Node * E : selection) {
 
@@ -4220,7 +4220,7 @@ void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_p
 void CanvasItemEditor::_set_anchors_and_margins_to_keep_ratio() {
     const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
-    undo_redo->create_action_ui(TTR("Change Anchors and Margins"));
+    undo_redo->create_action(TTR("Change Anchors and Margins"));
 
     for (Node *E : selection) {
 
@@ -4249,7 +4249,7 @@ void CanvasItemEditor::_set_anchors_and_margins_to_keep_ratio() {
 void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
     const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
-    undo_redo->create_action_ui(TTR("Change Anchors"));
+    undo_redo->create_action(TTR("Change Anchors"));
     for (Node * E : selection) {
 
         Control *control = object_cast<Control>(E);
@@ -4542,7 +4542,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
             viewport->update();
         } break;
         case LOCK_SELECTED: {
-            undo_redo->create_action_ui(TTR("Lock Selected"));
+            undo_redo->create_action(TTR("Lock Selected"));
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
             for (Node * E : selection) {
@@ -4562,7 +4562,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
             undo_redo->commit_action();
         } break;
         case UNLOCK_SELECTED: {
-            undo_redo->create_action_ui(TTR("Unlock Selected"));
+            undo_redo->create_action(TTR("Unlock Selected"));
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
             for (Node *E : selection) {
@@ -4582,7 +4582,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
             undo_redo->commit_action();
         } break;
         case GROUP_SELECTED: {
-            undo_redo->create_action_ui(TTR("Group Selected"));
+            undo_redo->create_action(TTR("Group Selected"));
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
             for (Node *E : selection) {
@@ -4602,7 +4602,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
             undo_redo->commit_action();
         } break;
         case UNGROUP_SELECTED: {
-            undo_redo->create_action_ui(TTR("Ungroup Selected"));
+            undo_redo->create_action(TTR("Ungroup Selected"));
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
             for (Node * E : selection) {
@@ -4775,7 +4775,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
             if (pose_clipboard.empty())
                 break;
 
-            undo_redo->create_action_ui(TTR("Paste Pose"));
+            undo_redo->create_action(TTR("Paste Pose"));
             for (const PoseClipboard &E : pose_clipboard) {
 
                 Node2D *n2d = object_cast<Node2D>(ObjectDB::get_instance(E.id));
@@ -4868,7 +4868,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
             HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
-            undo_redo->create_action_ui(TTR("Create Custom Bone(s) from Node(s)"));
+            undo_redo->create_action(TTR("Create Custom Bone(s) from Node(s)"));
             for (const eastl::pair<Node *,Object *> E : selection) {
 
                 Node2D *n2d = object_cast<Node2D>(E.first);
@@ -4895,7 +4895,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
             HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
-            undo_redo->create_action_ui(TTR("Clear Bones"));
+            undo_redo->create_action(TTR("Clear Bones"));
             for (const eastl::pair<Node *,Object *> E : selection) {
 
                 Node2D *n2d = object_cast<Node2D>(E.first);
@@ -4920,7 +4920,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
             const Vector<Node *> &selection = editor_selection->get_selected_node_list();
 
-            undo_redo->create_action_ui(TTR("Make IK Chain"));
+            undo_redo->create_action(TTR("Make IK Chain"));
             for (Node *E : selection) {
 
                 CanvasItem *canvas_item = object_cast<CanvasItem>(E);
@@ -4943,7 +4943,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
             HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
-            undo_redo->create_action_ui(TTR("Clear IK Chain"));
+            undo_redo->create_action(TTR("Clear IK Chain"));
             for (const eastl::pair<Node *,Object *> E : selection) {
 
                 CanvasItem *n2d = object_cast<CanvasItem>(E.first);

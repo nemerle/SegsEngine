@@ -44,6 +44,7 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/string_formatter.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "editor/array_property_edit.h"
 #include "editor/create_dialog.h"
 #include "editor/dictionary_property_edit.h"
@@ -266,7 +267,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
                 case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
                     RES r(v);
                     FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
-                    file_system_dock->navigate_to_path(r->get_path());
+                    file_system_dock->navigate_to_path(r->get_path().to_string());
                     // Ensure that the FileSystem dock is visible.
                     TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
                     tab_container->set_current_tab(file_system_dock->get_position_in_parent());
@@ -1102,14 +1103,14 @@ void CustomPropertyEditor::_file_selected(StringView p_file) {
         case VariantType::OBJECT: {
 
             StringName type = hint == PropertyHint::ResourceType ? StringName(hint_text) : StringName();
-
-            RES res(ResourceLoader::load(p_file, type));
+            HResource res=gResourceManager().load(ResourcePath(p_file));
+            //RES res(ResourceLoader::load(p_file, type));
             if (not res) {
                 error->set_text(TTR("Error loading file: Not a resource!"));
                 error->popup_centered_minsize();
                 break;
             }
-            v = Variant(res);
+            v = Variant(Ref<Resource>(res.get()));
             emit_signal("variant_changed");
             hide();
         } break;

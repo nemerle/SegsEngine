@@ -86,12 +86,25 @@ public:
      * @param[in]	overwrite	If true, any existing resource at the specified location will be overwritten.
      * @param[in]	compress	Should the resource be compressed before saving. Some resources have data that is
      *							already	compressed and this option will be ignored for such resources.
-     *
+     * @return      Error depending on the type of failure.
      * @note
      * Thread safe if you guarantee the resource isn't being written to from another thread.
      */
-    INVOCABLE void save(const HResource& resource, const ResourcePath& file_path, bool overwrite, bool compress = false);
+    INVOCABLE Error save(const HResource& resource, const ResourcePath& file_path, bool overwrite, bool compress = false);
+public:
+    /**
+     * Creates a new resource handle from a resource pointer.
+     *
+     * @note	Internal method used primarily be resource factory methods.
+     */
+    HResource _createResourceHandle(const Ref<Resource>& obj);
 
+    /**
+     * Creates a new resource handle from a resource pointer, with a user defined UUID.
+     *
+     * @note	Internal method used primarily be resource factory methods.
+     */
+    HResource _createResourceHandle(const Ref<Resource>& obj, const se::UUID& UUID);
 private:
     Vector<SPtr<ResourceManifest>> m_resource_manifests;
     SPtr<ResourceManifest> mDefaultResourceManifest;

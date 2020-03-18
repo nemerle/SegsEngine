@@ -115,8 +115,6 @@ Error ResourceSaver::save(StringView p_path, const RES &p_resource, uint32_t p_f
 
     StringView extension = PathUtils::get_extension(p_path);
     Error err = ERR_FILE_UNRECOGNIZED;
-    assert(false);
-#if 0
     for (const Ref<ResourceFormatSaver> & s : saver) {
 
         if (!s->recognize(p_resource))
@@ -124,6 +122,8 @@ Error ResourceSaver::save(StringView p_path, const RES &p_resource, uint32_t p_f
 
         Vector<String> extensions;
         bool recognized = false;
+        assert(false);
+#if 0
         s->get_recognized_extensions(p_resource, extensions);
 
         for (auto & ext : extensions) {
@@ -163,8 +163,8 @@ Error ResourceSaver::save(StringView p_path, const RES &p_resource, uint32_t p_f
 
             return OK;
         }
-    }
 #endif
+    }
     return err;
 }
 

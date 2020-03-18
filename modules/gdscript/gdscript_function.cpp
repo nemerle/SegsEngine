@@ -1573,9 +1573,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
         // function, file, line, error, explanation
         String err_file;
         if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && not p_instance->script->path.empty())
-            err_file = p_instance->script->path;
+            err_file = p_instance->script->path.to_string();
         else if (script)
-            err_file = script->path;
+            err_file = script->path.to_string();
         if (err_file.empty())
             err_file = "<built-in>";
         String err_func(name.asCString());

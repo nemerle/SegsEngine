@@ -195,7 +195,7 @@ private:
 
     int _get_node_path_cache(const NodePath &p_path);
 
-    int _get_res_path_cache(StringView p_path);
+    int _get_res_path_cache(const ResourcePath &p_path);
 
     void _live_edit_set();
     void _live_edit_clear();
@@ -227,6 +227,10 @@ private:
     void _export_csv();
 
     void _clear_execution();
+
+    void handle_debug_enter(const Array &p_data);
+
+    void handle_debug_exit(const Array &p_data);
 
 protected:
     void _notification(int p_what);

@@ -75,6 +75,14 @@ public:
         Connection c = { Delegate(fpFunction), nullptr };
         JL_CHECKED_CALL( m_oConnections.Add( c ) );
     }
+    void ConnectL(SignalObserver *observer, eastl::function<void(Types...)> fpFunction)
+    {
+        JL_SIGNAL_DOUBLE_CONNECTED_FUNCTION_ASSERT( fpFunction );
+        JL_SIGNAL_LOG( "Signal %p connection to non-instance function %p", this, BruteForceCast<void*>(fpFunction) );
+
+        Connection c = { Delegate(fpFunction), observer };
+        JL_CHECKED_CALL( m_oConnections.Add( c ) );
+    }
     // Connects instance methods. Class X should be equal to Y, or an ancestor type.
     template< class X, class Y >
     void Connect( Y* pObject, void (X::*const fpMethod)(Types...) )

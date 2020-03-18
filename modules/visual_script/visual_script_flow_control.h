@@ -264,8 +264,8 @@ public:
     void set_base_type(const StringName &p_type);
     StringName get_base_type() const;
 
-    void set_base_script(StringView p_path);
-    const String &get_base_script() const;
+    void set_base_script(const ResourcePath &p_path);
+    const ResourcePath &get_base_script() const;
 
     TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const override;
 

@@ -38,7 +38,6 @@
 #include "editor/editor_node.h"
 #include "scene/resources/texture.h"
 
-#if 0
 StringName LayeredTextureImpl::get_importer_name() const {
 
     return is_3d ? StringName("texture_3d") : StringName("texture_array");
@@ -69,6 +68,7 @@ bool LayeredTextureImpl::get_option_visibility(const StringName & /*p_option*/, 
 int LayeredTextureImpl::get_preset_count() const {
     return 3;
 }
+#if 0
 StringName LayeredTextureImpl::get_preset_name(int p_idx) const {
 
     static const char *preset_names[] = {
@@ -356,7 +356,7 @@ String LayeredTextureImpl::get_import_settings_string() const {
     return s;
 }
 
-bool LayeredTextureImpl::are_import_settings_valid(StringView p_path) const {
+bool LayeredTextureImpl::are_import_settings_valid(const ResourcePath & p_path) const {
 
     //will become invalid if formats are missing to import
     Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
@@ -392,10 +392,10 @@ bool LayeredTextureImpl::are_import_settings_valid(StringView p_path) const {
 
     return valid;
 }
+#endif
 
 LayeredTextureImpl::LayeredTextureImpl() {
 
     is_3d = true;
 }
 
-#endif

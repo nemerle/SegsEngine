@@ -502,7 +502,7 @@ void GridMapEditor::_delete_selection() {
     if (!selection.active)
         return;
 
-    undo_redo->create_action_ui(TTR("GridMap Delete Selection"));
+    undo_redo->create_action(TTR("GridMap Delete Selection"));
     for (int i = selection.begin.x; i <= selection.end.x; i++) {
 
         for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -524,7 +524,7 @@ void GridMapEditor::_fill_selection() {
     if (!selection.active)
         return;
 
-    undo_redo->create_action_ui(TTR("GridMap Fill Selection"));
+    undo_redo->create_action(TTR("GridMap Fill Selection"));
     for (int i = selection.begin.x; i <= selection.end.x; i++) {
 
         for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -629,7 +629,7 @@ void GridMapEditor::_do_paste() {
     rot.set_orthogonal_index(paste_indicator.orientation);
 
     Vector3 ofs = paste_indicator.current - paste_indicator.click;
-    undo_redo->create_action_ui(TTR("GridMap Paste Selection"));
+    undo_redo->create_action(TTR("GridMap Paste Selection"));
 
     for (ListOld<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
 
@@ -718,7 +718,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
             if ((mb->get_button_index() == BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
 
                 if (!set_items.empty()) {
-                    undo_redo->create_action_ui(TTR("GridMap Paint"));
+                    undo_redo->create_action(TTR("GridMap Paint"));
                     for (ListOld<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
 
                         const SetItem &si = E->deref();

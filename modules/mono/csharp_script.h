@@ -192,10 +192,10 @@ public:
     bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
 #endif
 
-    Error load_source_code(StringView p_path);
+    Error load_source_code(const ResourcePath &p_path);
 
     StringName get_script_name() const;
-
+    static se::ResourceHandle<CSharpScript> create();
     CSharpScript();
     ~CSharpScript() override;
 };
@@ -398,11 +398,11 @@ public:
     void get_reserved_words(Vector<String> *p_words) const override;
     void get_comment_delimiters(Vector<String> *p_delimiters) const override;
     void get_string_delimiters(Vector<String> *p_delimiters) const override;
-    Ref<Script> get_template(StringView p_class_name, StringView p_base_class_name) const override;
+    HScript get_template(StringView p_class_name, StringView p_base_class_name) const override;
     bool is_using_templates() override;
-    void make_template(StringView p_class_name, StringView p_base_class_name, const Ref<Script> &p_script) override;
+    void make_template(StringView p_class_name, StringView p_base_class_name, const HScript &p_script) override;
     bool validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error,
-            StringView p_path = {}, Vector<String> *r_functions = nullptr,
+            const ResourcePath &p_path = {}, Vector<String> *r_functions = nullptr,
             Vector<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override;
     String validate_path(StringView p_path) const override;
     Script *create_script() const override;
@@ -477,10 +477,10 @@ public:
 
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
 public:
-    RES load(StringView p_path, StringView p_original_path = "", Error *r_error = nullptr) override;
+    RES load(const ResourcePath &p_path, StringView p_original_path = "", Error *r_error = nullptr) override;
     void get_recognized_extensions(Vector<String> &p_extensions) const override;
     bool handles_type(StringView p_type) const override;
-    String get_resource_type(StringView p_path) const override;
+    String get_resource_type(const ResourcePath &p_path) const override;
 };
 
 class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {

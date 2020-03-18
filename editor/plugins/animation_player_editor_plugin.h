@@ -176,8 +176,8 @@ class AnimationPlayerEditor : public VBoxContainer {
     void _animation_load();
 
     void _animation_save_in_path(const Ref<Resource> &p_resource, StringView p_path);
-    void _animation_save(const Ref<Resource> &p_resource);
-    void _animation_save_as(const Ref<Resource> &p_resource);
+    void _animation_save(const HResource &p_resource);
+    void _animation_save_as(const HResource &p_resource);
 
     void _animation_remove();
     void _animation_remove_confirmed();

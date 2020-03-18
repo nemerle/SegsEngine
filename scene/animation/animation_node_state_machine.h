@@ -140,7 +140,7 @@ private:
     friend class AnimationNodeStateMachinePlayback;
 
     struct State {
-        Ref<AnimationRootNode> node;
+        HAnimationRootNode node;
         Vector2 position;
     };
 
@@ -176,8 +176,8 @@ public:
     void get_parameter_list(Vector<PropertyInfo> *r_list) const override;
     Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-    void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());
-    Ref<AnimationNode> get_node(const StringName &p_name) const;
+    void add_node(const StringName &p_name, const HAnimationNode &p_node, const Vector2 &p_position = Vector2());
+    HAnimationNode get_node(const StringName &p_name) const;
     void remove_node(const StringName &p_name);
     void rename_node(const StringName &p_name, const StringName &p_new_name);
     bool has_node(const StringName &p_name) const;
@@ -211,7 +211,7 @@ public:
     float process(float p_time, bool p_seek) override;
     StringView get_caption() const override;
 
-    Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+    HAnimationNode get_child_by_name(const StringName &p_name) override;
 
     AnimationNodeStateMachine();
 };

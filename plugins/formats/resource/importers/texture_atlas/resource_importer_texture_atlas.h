@@ -68,6 +68,6 @@ public:
 public:
     float get_priority() const override {return 10.0f;}
     int get_import_order() const override {return 0;}
-    bool are_import_settings_valid(StringView /*p_path*/) const override { return true; }
+    bool are_import_settings_valid(const ResourcePath & /*p_path*/) const override { return true; }
     String get_import_settings_string() const override { return String(); }
 };

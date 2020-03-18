@@ -41,6 +41,7 @@ namespace std {
 class recursive_mutex;
 }
 using Mutex = std::recursive_mutex;
+using HGDScript = se::ResourceHandle<class GDScript>;
 
 class GDScriptNativeClass : public RefCounted {
 
@@ -116,14 +117,14 @@ class GDScript : public Script {
     HashSet<Object *> instances;
     //exported members
     String source;
-    String path;
+    ResourcePath path;
     StringName name;
     String fully_qualified_name;
     SelfList<GDScript> script_list;
 
     GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
 
-    void _set_subclass_path(Ref<GDScript> &p_sc, StringView p_path);
+    void _set_subclass_path(Ref<GDScript> &p_sc, const ResourcePath &p_path);
 
 #ifdef TOOLS_ENABLED
     HashSet<PlaceHolderScriptInstance *> placeholders;
@@ -192,9 +193,9 @@ public:
 
     Error reload(bool p_keep_state = false) override;
 
-    void set_script_path(StringView p_path) { path = p_path; } //because subclasses need a path too...
-    Error load_source_code(StringView p_path);
-    Error load_byte_code(StringView p_path);
+    void set_script_path(const ResourcePath &p_path) { path = p_path; } //because subclasses need a path too...
+    Error load_source_code(const ResourcePath &p_path);
+    Error load_byte_code(const ResourcePath &p_path);
 
     Vector<uint8_t> get_as_byte_code() const;
 
@@ -223,7 +224,7 @@ public:
 #ifdef TOOLS_ENABLED
     bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
 #endif
-
+    static HGDScript create();
     GDScript();
     ~GDScript() override;
 };
@@ -463,10 +464,10 @@ public:
     void get_comment_delimiters(Vector<String> *p_delimiters) const override;
     void get_string_delimiters(Vector<String> *p_delimiters) const override;
     virtual String _get_processed_template(StringView p_template, StringView p_base_class_name) const;
-    Ref<Script> get_template(StringView p_class_name, StringView p_base_class_name) const override;
+    HScript get_template(StringView p_class_name, StringView p_base_class_name) const override;
     bool is_using_templates() override;
-    void make_template(StringView p_class_name, StringView p_base_class_name, const Ref<Script> &p_script) override;
-    bool validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error, StringView p_path = {}, Vector
+    void make_template(StringView p_class_name, StringView p_base_class_name, const HScript &p_script) override;
+    bool validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error, const ResourcePath &p_path = {}, Vector
             <String> *r_functions = nullptr, Vector<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override;
     Script *create_script() const override;
     bool has_named_classes() const override;
@@ -474,9 +475,9 @@ public:
     bool can_inherit_from_file() override { return true; }
     int find_function(StringView p_function, StringView p_code) const override;
     String make_function(const String &p_class, const StringName &p_name, const PoolVector<String> &p_args) const override;
-    Error complete_code(const String &p_code, StringView p_path, Object *p_owner, Vector<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
+    Error complete_code(const String &p_code, const ResourcePath &p_path, Object *p_owner, Vector<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
 #ifdef TOOLS_ENABLED
-    Error lookup_code(StringView p_code, StringView p_symbol, StringView p_path, Object *p_owner, LookupResult &r_result) override;
+    Error lookup_code(StringView p_code, StringView p_symbol, const ResourcePath &p_path, Object *p_owner, LookupResult &r_result) override;
 #endif
     virtual const char *_get_indentation() const;
     void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override;

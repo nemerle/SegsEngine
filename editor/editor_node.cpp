@@ -761,10 +761,10 @@ void EditorNode::edit_node(Node *p_node) {
     push_item(p_node);
 }
 
-void EditorNode::edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); }
+void EditorNode::edit_resource(const HResource &p_resource) { inspector_dock->edit_resource(p_resource); }
 
 void EditorNode::open_resource(StringView p_type) { inspector_dock->open_resource(p_type); }
-
+#if 0
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, StringView p_path) {
 
     editor_data.apply_changes_in_editors();
@@ -788,7 +788,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, StringVi
     emit_signal("resource_saved", p_resource);
     editor_data.notify_resource_saved(p_resource);
 }
-
+#endif
 void EditorNode::save_resource(const Ref<Resource> &p_resource) {
 
     if (PathUtils::is_resource_file(p_resource->get_path())) {
@@ -801,7 +801,7 @@ void EditorNode::save_resource(const Ref<Resource> &p_resource) {
 void EditorNode::save_resource_as(const Ref<Resource> &p_resource, StringView p_at_path) {
 
     {
-        String path = p_resource->get_path();
+        const ResourcePath &path = p_resource->get_path();
         auto srpos = StringUtils::find(path, "::");
         if (srpos != String::npos) {
             StringView base = StringUtils::substr(path, 0, srpos);
@@ -849,9 +849,9 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, StringView p_
         }
     } else if (!p_resource->get_path().empty()) {
 
-        file->set_current_path(p_resource->get_path());
+        file->set_current_path(p_resource->get_path().to_string());
         if (!extensions.empty()) {
-            String ext = StringUtils::to_lower(PathUtils::get_extension(p_resource->get_path()));
+            String ext = StringUtils::to_lower(PathUtils::get_extension(p_resource->get_path().leaf()));
             if (not extensions.contains(ext)) {
                 file->set_current_path(StringUtils::replacen(p_resource->get_path(), "." + ext, "." + extensions[0]));
             }
@@ -5041,7 +5041,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 
     uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
 
-    editor_data.get_undo_redo().create_action_ui(TTR("Switch Scene Tab"));
+    editor_data.get_undo_redo().create_action(TTR("Switch Scene Tab"));
     editor_data.get_undo_redo().add_do_method(this, "set_current_version", unsaved ? saved_version : 0);
     editor_data.get_undo_redo().add_do_method(this, "set_current_scene", p_tab);
     editor_data.get_undo_redo().add_do_method(this, "set_current_version",

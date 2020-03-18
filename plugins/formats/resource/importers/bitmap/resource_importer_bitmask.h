@@ -60,12 +60,12 @@ public:
     float get_priority() const override {return 0.9f;}
     int get_import_order() const override {return 0;}
     StringName get_option_group_file() const override { return StringName(); }
-    Error import_group_file(StringView /*p_group_file*/,
+    Error import_group_file(const ResourcePath& /*p_group_file*/,
                             const Map<String, HashMap<StringName, Variant>> &/*p_source_file_options*/,
                             const Map<String, String> &/*p_base_paths*/) override {
         return ERR_UNAVAILABLE;
     }
-    bool are_import_settings_valid(StringView /*p_path*/) const override { return true; }
+    bool are_import_settings_valid(const ResourcePath& /*p_path*/) const override { return true; }
     String get_import_settings_string() const override { return String(); }
 
 public:

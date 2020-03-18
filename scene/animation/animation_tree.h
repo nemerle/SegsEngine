@@ -100,10 +100,10 @@ public:
     Array _get_filters() const;
     void _set_filters(const Array &p_filters);
     friend class AnimationNodeBlendTree;
-    float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = nullptr);
+    float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, const HAnimationNode &p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = nullptr);
 public:
     void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
-    float blend_node(const StringName &p_sub_path, const Ref<AnimationNode>& p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+    float blend_node(const StringName &p_sub_path, const HAnimationNode &p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
     float blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
     void make_invalid(const String &p_reason);
 
@@ -123,7 +123,7 @@ public:
 
     struct ChildNode {
         StringName name;
-        Ref<AnimationNode> node;
+        HAnimationNode node;
     };
 
     virtual void get_child_nodes(ListOld<ChildNode> *r_child_nodes);
@@ -146,11 +146,10 @@ public:
 
     virtual bool has_filter() const;
 
-    virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
+    virtual HAnimationNode get_child_by_name(const StringName &p_name);
 
     AnimationNode();
 };
-
 
 //root node does not allow inputs
 class AnimationRootNode : public AnimationNode {
@@ -159,6 +158,7 @@ class AnimationRootNode : public AnimationNode {
 public:
     AnimationRootNode() {}
 };
+using HAnimationRootNode = se::ResourceHandle<AnimationRootNode>;
 
 class AnimationTree : public Node {
     GDCLASS(AnimationTree,Node)
@@ -256,7 +256,7 @@ private:
     HashMap<NodePath, TrackCache *> track_cache;
     HashSet<TrackCache *> playing_caches;
 
-    Ref<AnimationNode> root;
+    HAnimationNode root;
 
     AnimationProcessMode process_mode;
     bool active;
@@ -295,7 +295,7 @@ private:
     HashMap<StringName, Vector<Activity> > input_activity_map;
     HashMap<StringName, Vector<Activity> *> input_activity_map_get;
 
-    void _update_properties_for_node(const StringName &p_base_path, Ref<AnimationNode> node);
+    void _update_properties_for_node(const StringName &p_base_path, const HAnimationNode &node);
 
     ObjectID last_animation_player;
 
@@ -308,8 +308,8 @@ protected:
     static void _bind_methods();
 
 public:
-    void set_tree_root(const Ref<AnimationNode> &p_root);
-    Ref<AnimationNode> get_tree_root() const;
+    void set_tree_root(const HAnimationNode &p_root);
+    const HAnimationNode &get_tree_root() const;
 
     void set_active(bool p_active);
     bool is_active() const;

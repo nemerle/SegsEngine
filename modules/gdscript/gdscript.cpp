@@ -403,13 +403,13 @@ bool GDScript::_update_exports() {
         source_changed_cache = false;
         changed = true;
 
-        String basedir = path;
+        ResourcePath basedir = path;
 
         if (basedir.empty())
-            basedir = get_path().to_string();
+            basedir = get_path();
 
         if (!basedir.empty())
-            basedir = PathUtils::get_base_dir(basedir);
+            basedir = ResourcePath(PathUtils::get_base_dir(basedir));
 
         GDScriptParser parser;
         Error err = parser.parse(source, basedir, true, path);
@@ -533,7 +533,7 @@ void GDScript::update_exports() {
 #endif
 }
 
-void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, StringView p_path) {
+void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const ResourcePath &p_path) {
 
     p_sc->path = p_path;
     for (eastl::pair<const StringName,Ref<GDScript> > &E : p_sc->subclasses) {
@@ -550,13 +550,13 @@ Error GDScript::reload(bool p_keep_state) {
 
     ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
 
-    String basedir = path;
+    ResourcePath basedir = path;
 
     if (basedir.empty())
-        basedir = get_path().to_string();
+        basedir = get_path();
 
     if (!basedir.empty())
-        basedir = PathUtils::get_base_dir(basedir);
+        basedir = ResourcePath(PathUtils::get_base_dir(basedir));
 
     if (StringUtils::contains(source,"%BASE%") ) {
         //loading a template, don't parse
@@ -570,7 +570,7 @@ Error GDScript::reload(bool p_keep_state) {
         if (ScriptDebugger::get_singleton()) {
             GDScriptLanguage::get_singleton()->debug_break_parse(get_path().to_string(), parser.get_error_line(), "Parser Error: " + parser.get_error());
         }
-        _err_print_error("GDScript::reload", path.empty() ? "built-in" : path.c_str(),
+        _err_print_error("GDScript::reload", path.empty() ? "built-in" : path.to_string().c_str(),
                          parser.get_error_line(), ("Parse Error: " + parser.get_error()), {},ERR_HANDLER_SCRIPT);
         ERR_FAIL_V(ERR_PARSE_ERROR);
     }
@@ -586,7 +586,7 @@ Error GDScript::reload(bool p_keep_state) {
             if (ScriptDebugger::get_singleton()) {
                 GDScriptLanguage::get_singleton()->debug_break_parse(get_path().to_string(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
             }
-            _err_print_error("GDScript::reload", path.empty() ? "built-in" : path.c_str(), compiler.get_error_line(),
+            _err_print_error("GDScript::reload", path.empty() ? "built-in" : path.to_string().c_str(), compiler.get_error_line(),
                              ("Compile Error: " + compiler.get_error()), {},ERR_HANDLER_SCRIPT);
             ERR_FAIL_V(ERR_COMPILATION_FAILED);
         } else {
@@ -719,11 +719,11 @@ Vector<uint8_t> GDScript::get_as_byte_code() const {
     return GDScriptTokenizerBuffer::parse_code_string(source);
 };
 
-Error GDScript::load_byte_code(StringView p_path) {
+Error GDScript::load_byte_code(const ResourcePath &p_path) {
 
     Vector<uint8_t> bytecode;
 
-    if (StringUtils::ends_with(p_path,"gde")) {
+    if (StringUtils::ends_with(p_path.leaf(),"gde")) {
 
         FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
         ERR_FAIL_COND_V(!fa, ERR_CANT_OPEN);
@@ -759,19 +759,19 @@ Error GDScript::load_byte_code(StringView p_path) {
     ERR_FAIL_COND_V(bytecode.empty(), ERR_PARSE_ERROR);
     path = p_path;
 
-    String basedir = path;
+    ResourcePath basedir = path;
 
     if (basedir.empty())
-        basedir = get_path().to_string();
+        basedir = get_path();
 
     if (!basedir.empty())
-        basedir = PathUtils::get_base_dir(basedir);
+        basedir = ResourcePath(PathUtils::get_base_dir(basedir));
 
     valid = false;
     GDScriptParser parser;
-    Error err = parser.parse_bytecode(bytecode, basedir, get_path().to_string());
+    Error err = parser.parse_bytecode(bytecode, basedir, get_path());
     if (err) {
-        _err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : path.c_str(), parser.get_error_line(),
+        _err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : path.to_string().c_str(), parser.get_error_line(),
                 ("Parse Error: " + parser.get_error()), {},ERR_HANDLER_SCRIPT);
         ERR_FAIL_V(ERR_PARSE_ERROR);
     }
@@ -780,7 +780,7 @@ Error GDScript::load_byte_code(StringView p_path) {
     err = compiler.compile(&parser, this);
 
     if (err) {
-        _err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : path.c_str(),
+        _err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : path.to_string().c_str(),
                 compiler.get_error_line(), ("Compile Error: " + compiler.get_error()), {},ERR_HANDLER_SCRIPT);
         ERR_FAIL_V(ERR_COMPILATION_FAILED);
     }
@@ -795,7 +795,7 @@ Error GDScript::load_byte_code(StringView p_path) {
     return OK;
 }
 
-Error GDScript::load_source_code(StringView p_path) {
+Error GDScript::load_source_code(const ResourcePath &p_path) {
 
     Vector<uint8_t> sourcef;
     Error err;
@@ -816,7 +816,7 @@ Error GDScript::load_source_code(StringView p_path) {
     StringView s((const char *)sourcef.data(),len+1);
     if (s.empty()) {
 
-        ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + String(p_path) + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
+        ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path.to_string() + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
     }
 
     source = s;
@@ -867,7 +867,7 @@ void GDScript::get_script_signal_list(Vector<MethodInfo> *r_signals) const {
 
         MethodInfo mi;
         mi.name = E.first;
-        for (int i = 0; i < E.second.size(); i++) {
+        for (size_t i = 0; i < E.second.size(); i++) {
             PropertyInfo arg;
             arg.name = E.second[i];
             mi.arguments.push_back(arg);
@@ -1616,7 +1616,7 @@ void GDScriptLanguage::reload_all_scripts() {
     for (Ref<GDScript> &E : scripts) {
 
         print_verbose("GDScript: Reloading: " + E->get_path().to_string());
-        E->load_source_code(E->get_path().to_string());
+        E->load_source_code(E->get_path());
         E->reload(true);
     }
 #endif
@@ -1881,7 +1881,7 @@ StringName GDScriptLanguage::get_global_class_name(const ResourcePath &p_path, S
     String source(f->get_as_utf8_string());
 
     GDScriptParser parser;
-    parser.parse(source, PathUtils::get_base_dir(p_path), true, p_path.to_string(), false, nullptr, true);
+    parser.parse(source, ResourcePath(PathUtils::get_base_dir(p_path)), true, p_path, false, nullptr, true);
 
     if (parser.get_parse_tree() && parser.get_parse_tree()->type == GDScriptParser::Node::TYPE_CLASS) {
 
@@ -1921,7 +1921,7 @@ StringName GDScriptLanguage::get_global_class_name(const ResourcePath &p_path, S
                                 subpath = PathUtils::simplify_path(PathUtils::plus_file(PathUtils::get_base_dir(path),subpath));
                             }
 
-                            if (OK != subparser.parse(subsource, PathUtils::get_base_dir(subpath), true, subpath, false, nullptr, true)) {
+                            if (OK != subparser.parse(subsource, ResourcePath(PathUtils::get_base_dir(subpath)), true, ResourcePath(subpath), false, nullptr, true)) {
                                 break;
                             }
                             path = subpath;
@@ -2219,7 +2219,7 @@ RES ResourceFormatLoaderGDScript::load(const ResourcePath &p_path, StringView p_
 
     if (StringUtils::ends_with(p_path.leaf(),".gde") || StringUtils::ends_with(p_path.leaf(),".gdc")) {
 
-        script->set_script_path(p_original_path); // script needs this.
+        script->set_script_path(ResourcePath(p_original_path)); // script needs this.
         script->set_path(ResourcePath(p_original_path));
         Error err = script->load_byte_code(p_path);
         ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load byte code from file '" + p_path.to_string() + "'.");
@@ -2228,7 +2228,7 @@ RES ResourceFormatLoaderGDScript::load(const ResourcePath &p_path, StringView p_
         Error err = script->load_source_code(p_path);
         ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load source code from file '" + p_path.to_string() + "'.");
 
-        script->set_script_path(p_original_path); // script needs this.
+        script->set_script_path(ResourcePath(p_original_path)); // script needs this.
         script->set_path(ResourcePath(p_original_path));
 
         script->reload();
@@ -2253,7 +2253,7 @@ bool ResourceFormatLoaderGDScript::handles_type(StringView p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const ResourcePath &p_path) const {
 
-    String el = StringUtils::to_lower(PathUtils::get_extension(p_path));
+    String el = StringUtils::to_lower(PathUtils::get_extension(p_path.leaf()));
     if (el == "gd" || el == "gdc" || el == "gde")
         return "GDScript";
     return {};
@@ -2262,7 +2262,7 @@ String ResourceFormatLoaderGDScript::get_resource_type(const ResourcePath &p_pat
 void ResourceFormatLoaderGDScript::get_dependencies(const ResourcePath &p_path, Vector<String> &p_dependencies, bool p_add_types) {
 
     FileAccessRef file = FileAccess::open(p_path, FileAccess::READ);
-    ERR_FAIL_COND_MSG(!file, "Cannot open file '" + String(p_path) + "'.");
+    ERR_FAIL_COND_MSG(!file, "Cannot open file '" + p_path.to_string() + "'.");
 
     String source(file->get_as_utf8_string());
     if (source.empty()) {
@@ -2270,12 +2270,12 @@ void ResourceFormatLoaderGDScript::get_dependencies(const ResourcePath &p_path, 
     }
 
     GDScriptParser parser;
-    if (OK != parser.parse(source, PathUtils::get_base_dir(p_path), true, p_path, false, nullptr, true)) {
+    if (OK != parser.parse(source, ResourcePath(PathUtils::get_base_dir(p_path)), true, p_path, false, nullptr, true)) {
         return;
     }
 
-    for (const ListOld<String>::Element *E = parser.get_dependencies().front(); E; E = E->next()) {
-        p_dependencies.push_back(E->deref());
+    for (const ResourcePath &E : parser.get_dependencies()) {
+        p_dependencies.push_back(E.to_string());
     }
 }
 

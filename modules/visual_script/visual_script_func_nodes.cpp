@@ -323,7 +323,7 @@ StringName VisualScriptFunctionCall::get_base_type() const {
     return base_type;
 }
 
-void VisualScriptFunctionCall::set_base_script(StringView p_path) {
+void VisualScriptFunctionCall::set_base_script(const ResourcePath &p_path) {
 
     if (base_script == p_path)
         return;
@@ -333,7 +333,7 @@ void VisualScriptFunctionCall::set_base_script(StringView p_path) {
     ports_changed_notify();
 }
 
-const String & VisualScriptFunctionCall::get_base_script() const {
+const ResourcePath & VisualScriptFunctionCall::get_base_script() const {
 
     return base_script;
 }
@@ -616,7 +616,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
             if (!base_script.empty()) {
                 if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
 
-                    ScriptServer::edit_request_func(base_script); //make sure it's loaded
+                    ScriptServer::edit_request_func(base_script.to_string()); //make sure it's loaded
                 }
 
                 if (ResourceCache::has(base_script)) {

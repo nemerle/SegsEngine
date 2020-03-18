@@ -98,7 +98,7 @@ public:
 
         VariantType type;
         StringName gdclass;
-        Ref<Script> script;
+        HScript script;
 
         TypeGuess() {
             type = VariantType::NIL;
@@ -590,7 +590,7 @@ public:
     bool is_using_templates() override;
     void make_template(StringView p_class_name, StringView p_base_class_name, const Ref<Script> &p_script) override;
     bool validate(StringView p_script, int &r_line_error, int &r_col_error, String &r_test_error,
-            StringView p_path = {}, Vector<String> *r_functions = nullptr,
+            const ResourcePath &p_path = {}, Vector<String> *r_functions = nullptr,
             Vector<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override;
     Script *create_script() const override;
     bool has_named_classes() const override;

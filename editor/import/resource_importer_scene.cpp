@@ -695,7 +695,7 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
         bool loop = p_clips[i + 3];
         if (from >= to) continue;
 
-        Ref<Animation> new_anim(make_ref_counted<Animation>());
+        HAnimation new_anim(Animation::create());
 
         for (int j = 0; j < default_anim->get_track_count(); j++) {
 
@@ -969,7 +969,7 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_base_path, bool p_make_animations,
         bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text,
         bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text,
-        HashMap<HAnimation, HAnimation> &p_animations,
+        HashSet<const Animation *> &p_animations,
         HashMap<Ref<Material>, Ref<Material>> &p_materials,
         HashMap<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes) {
 
@@ -982,10 +982,10 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
             Vector<StringName> anims(ap->get_animation_list());
             for (const StringName &E : anims) {
 
-                HAnimation anim = ap->get_animation(E);
+                const HAnimation &anim = ap->get_animation(E);
                 ERR_CONTINUE(not anim);
 
-                if (!p_animations.contains(anim)) {
+                if (!p_animations.contains(anim.get())) {
 
                     // mark what comes from the file first, this helps eventually keep user data
                     for (int i = 0; i < anim->get_track_count(); i++) {
@@ -1013,9 +1013,9 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, StringView p_
                     }
 
                     anim->set_path(ext_name, true); // if not set, then its never saved externally
-                    gResourceManager().save(anim,ext_name);
+
                     ResourceSaver::save(ext_name, anim, ResourceSaver::FLAG_CHANGE_PATH);
-                    p_animations[anim] = anim;
+                    p_animations.insert(anim.get());
                 }
             }
         }
@@ -1516,7 +1516,7 @@ Error ResourceImporterScene::import(StringView p_source_file, StringView p_save_
     }
 
     if (external_animations || external_materials || external_meshes) {
-        HashMap<HAnimation, HAnimation> anim_map;
+        HashSet<const Animation *> anim_map;
         HashMap<Ref<Material>, Ref<Material>> mat_map;
         HashMap<Ref<ArrayMesh>, Ref<ArrayMesh>> mesh_map;
 

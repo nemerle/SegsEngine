@@ -87,7 +87,7 @@ private:
     HashMap<StringName, VariantContainer> props;
     int last_order;
 
-    Ref<Resource> clipboard;
+    HResource clipboard;
     Map<String, Ref<ShortCut> > shortcuts;
 
     String resource_path;
@@ -151,8 +151,8 @@ public:
     Variant property_get_revert(const StringName &p_setting);
     void add_property_hint(const PropertyInfo &p_hint);
 
-    void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
-    Ref<Resource> get_resource_clipboard() const { return clipboard; }
+    void set_resource_clipboard(const HResource &p_resource) { clipboard = p_resource; }
+    const HResource &get_resource_clipboard() const { return clipboard; }
 
     const String &get_data_dir() const;
     String get_templates_dir() const;

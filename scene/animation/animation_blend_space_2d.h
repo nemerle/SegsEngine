@@ -50,7 +50,7 @@ protected:
 
     struct BlendPoint {
         StringName name;
-        Ref<AnimationRootNode> node;
+        HAnimationRootNode node;
         Vector2 position;
     };
 
@@ -76,7 +76,7 @@ protected:
     bool trianges_dirty;
 
 public:
-    void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
+    void _add_blend_point(int p_index, const HAnimationRootNode &p_node);
     void _set_triangles(const Vector<int> &p_triangles);
     Vector<int> _get_triangles() const;
     void _blend_triangle(const Vector2 &p_pos, const Vector2 *p_points, float *r_weights);
@@ -94,11 +94,11 @@ public:
 
     void get_child_nodes(ListOld<ChildNode> *r_child_nodes) override;
 
-    void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
+    void add_blend_point(const HAnimationRootNode &p_node, const Vector2 &p_position, int p_at_index = -1);
     void set_blend_point_position(int p_point, const Vector2 &p_position);
-    void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
+    void set_blend_point_node(int p_point, const HAnimationRootNode &p_node);
     Vector2 get_blend_point_position(int p_point) const;
-    Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
+    HAnimationRootNode get_blend_point_node(int p_point) const;
     void remove_blend_point(int p_point);
     int get_blend_point_count() const;
 
@@ -134,7 +134,7 @@ public:
     void set_blend_mode(BlendMode p_blend_mode);
     BlendMode get_blend_mode() const;
 
-    Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+    HAnimationNode get_child_by_name(const StringName &p_name) override;
 
     AnimationNodeBlendSpace2D();
     ~AnimationNodeBlendSpace2D() override;

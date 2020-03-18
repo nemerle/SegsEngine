@@ -39,6 +39,7 @@
 #include "core/string.h"
 #include "core/string_utils.h"
 #include "core/string_utils.inl"
+#include "core/resources_subsystem/resource_path.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { nullptr, nullptr };
 
@@ -526,12 +527,16 @@ void FileAccess::store_buffer(const uint8_t *p_src, int p_length) {
 
 Vector<uint8_t> FileAccess::get_file_as_array(StringView p_path, Error *r_error) {
 
+    return get_file_as_array(ResourcePath(p_path),r_error);
+}
+Vector<uint8_t> FileAccess::get_file_as_array(const ResourcePath &p_path, Error *r_error) {
+
     FileAccess *f = FileAccess::open(p_path, READ, r_error);
     if (!f) {
         if (r_error) { // if error requested, do not throw error
             return Vector<uint8_t>();
         }
-        ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_path) + "'.");
+        ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + p_path.to_string() + "'.");
     }
     Vector<uint8_t> data;
     data.resize(f->get_len());
@@ -539,15 +544,17 @@ Vector<uint8_t> FileAccess::get_file_as_array(StringView p_path, Error *r_error)
     memdelete(f);
     return data;
 }
-
 String FileAccess::get_file_as_string(StringView p_path, Error *r_error) {
+    return get_file_as_string(ResourcePath(p_path), r_error);
+}
+String FileAccess::get_file_as_string(const ResourcePath &p_path, Error *r_error) {
 
     FileAccess *f = FileAccess::open(p_path, READ, r_error);
     if (!f) {
         if (r_error) { // if error requested, do not throw error
             return String();
         }
-        ERR_FAIL_V_MSG(String(), "Can't open file from path '" + String(p_path) + "'.");
+        ERR_FAIL_V_MSG(String(), "Can't open file from path '" + p_path.to_string() + "'.");
     }
     String data;
     data.resize(f->get_len());
@@ -555,7 +562,6 @@ String FileAccess::get_file_as_string(StringView p_path, Error *r_error) {
     memdelete(f);
     return data;
 }
-
 String FileAccess::get_md5(StringView p_file) {
 
     FileAccess *f = FileAccess::open(p_file, READ);

@@ -317,7 +317,7 @@ Error GDScriptWorkspace::initialize() {
 Error GDScriptWorkspace::parse_script(StringView p_path, StringView p_content) {
 
     ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
-    Error err = parser->parse(p_content, p_path);
+    Error err = parser->parse(p_content, ResourcePath(p_path));
     auto last_parser = parse_results.find_as(p_path);
     auto last_script = scripts.find_as(p_path);
 
@@ -367,7 +367,7 @@ void GDScriptWorkspace::publish_diagnostics(StringView p_path) {
     if (ele!=parse_results.end()) {
         const Vector<lsp::Diagnostic> &list = ele->second->get_diagnostics();
         errors.resize(list.size());
-        for (int i = 0; i < list.size(); ++i) {
+        for (size_t i = 0; i < list.size(); ++i) {
             errors[i] = list[i].to_json();
         }
     }
@@ -384,7 +384,7 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, Vector
 
     if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
         String code = parser->get_text_for_completion(p_params.position);
-        GDScriptLanguage::get_singleton()->complete_code(code, path, nullptr, r_options, forced, call_hint);
+        GDScriptLanguage::get_singleton()->complete_code(code, ResourcePath(path), nullptr, r_options, forced, call_hint);
     }
 }
 
@@ -418,7 +418,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
             } else {
 
                 ScriptLanguage::LookupResult ret;
-                if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_requred), symbol_identifier, path, nullptr, ret)) {
+                if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_requred), symbol_identifier, ResourcePath(path), nullptr, ret)) {
 
                     if (ret.type == ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION) {
 

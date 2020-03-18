@@ -222,7 +222,15 @@ public:
     /**	Copy constructor. */
     ResourceHandleT(const ResourceHandleT& other)
     {
-        this->mData = other.getHandleData();
+        this->m_data = other.getHandleData();
+        this->addRef();
+    }
+    /**	Converting constructor. */
+    template<class U>
+    ResourceHandleT(const ResourceHandleT<U,WeakHandle> & other)
+    {
+        static_assert(eastl::is_convertible_v<U *,T *>);
+        this->m_data = other.getHandleData();
         this->addRef();
     }
     /** Move constructor. */
@@ -303,6 +311,9 @@ protected:
     friend ResourceHandleT<_Ty1, _Weak1> static_resource_cast(const ResourceHandleT<_Ty2, _Weak2>& other);
     template<class _Ty1, class _Ty2, bool _Weak2>
     friend ResourceHandleT<_Ty1, false> static_resource_cast(const ResourceHandleT<_Ty2, _Weak2>& other);
+    template<class _Ty1, class _Ty2, bool _Weak2>
+    friend ResourceHandleT<_Ty1, false> dynamic_resource_cast(const ResourceHandleT<_Ty2, _Weak2>& other);
+
     /**
      * Constructs a new valid handle for the provided resource with the provided UUID.
      *
@@ -362,7 +373,7 @@ template<class _Ty1, bool _Weak1, class _Ty2, bool _Weak2>
 bool operator==(const ResourceHandleT<_Ty1, _Weak1>& _Left, const ResourceHandleT<_Ty2, _Weak2>& _Right)
 {
     if (_Left.getHandleData() != nullptr && _Right.getHandleData() != nullptr)
-        return _Left.getHandleData()->mPtr == _Right.getHandleData()->mPtr;
+        return _Left.getHandleData()->m_ptr == _Right.getHandleData()->m_ptr;
 
     return _Left.getHandleData() == _Right.getHandleData();
 }
@@ -417,7 +428,17 @@ ResourceHandleT<_Ty1, false> static_resource_cast(const ResourceHandleT<_Ty2, _W
 
     return handle;
 }
+template<class _Ty1, class _Ty2, bool _Weak2>
+ResourceHandleT<_Ty1, false> dynamic_resource_cast(const ResourceHandleT<_Ty2, _Weak2>& other)
+{
+    ResourceHandleT<_Ty1, false> handle;
+    _Ty1 *oth=ObjectNS::cast_to<_Ty1>(other.get());
+    if(!oth)
+        return ResourceHandleT<_Ty1, false>();
+    handle.setHandleData(other.getHandleData());
 
+    return handle;
+}
 /** @} */
 
 } // end of se namespace
@@ -573,5 +594,6 @@ public:
 using HResource = se::ResourceHandle<Resource>;
 using HScript = se::ResourceHandle<class Script>;
 using HAnimation = se::ResourceHandle<class Animation>;
+using HAnimationNode = se::ResourceHandle<class AnimationNode>;
 using HTexture = se::ResourceHandle<class Texture>;
 using HPackedScene = se::ResourceHandle<class PackedScene>;

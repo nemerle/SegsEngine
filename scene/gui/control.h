@@ -35,6 +35,7 @@
 #include "core/string.h"
 #include "core/rid.h"
 #include "scene/2d/canvas_item.h"
+#include "core/jlsignal/Signal.h"
 
 class Viewport;
 class Label;
@@ -48,6 +49,7 @@ class GODOT_EXPORT Control : public CanvasItem {
 //    Q_CLASSINFO("Category","GUI Nodes")
 
     OBJ_CATEGORY("GUI Nodes")
+
 
 public:
     enum Anchor {
@@ -131,6 +133,7 @@ public:
         PRESET_MODE_KEEP_SIZE
     };
 
+    jl::Signal<> focus_exited;
 private:
     struct CComparator {
 

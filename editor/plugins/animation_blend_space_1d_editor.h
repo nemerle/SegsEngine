@@ -130,8 +130,8 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace1DEditor *get_singleton() { return singleton; }
-	bool can_edit(const Ref<AnimationNode> &p_node) override;
-	void edit(const Ref<AnimationNode> &p_node) override;
+    bool can_edit(const HAnimationNode &p_node) override;
+    void edit(const HAnimationNode &p_node) override;
 	AnimationNodeBlendSpace1DEditor();
 };
 

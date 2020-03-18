@@ -39,6 +39,7 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+#include "core/jlsignal/SignalBase.h"
 
 class ProgressBar;
 
@@ -58,11 +59,11 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
     HashMap<StringName, ProgressBar *> animations;
     Vector<EditorProperty *> visible_properties;
     Vector<AddOption> add_options;
-
+    jl::SignalObserver m_signal_observer;
     Vector2 popup_menu_position;
     Ref<AnimationNodeBlendTree> blend_tree;
-    Ref<AnimationNode> _filter_edit;
-    Ref<AnimationNode> file_loaded;
+    HAnimationNode _filter_edit;
+    HAnimationNode file_loaded;
     GraphEdit *graph;
     MenuButton *add_node;
     PanelContainer *error_panel;
@@ -84,8 +85,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
     static AnimationNodeBlendTreeEditor *singleton;
 
     void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, const StringName &p_which);
-    void _node_renamed(StringView p_text, const Ref<AnimationNode>& p_node);
-    void _node_renamed_focus_out(Node *le, const Ref<AnimationNode>& p_node);
+    void _node_renamed(StringView p_text, const HAnimationNode &p_node);
+    void _node_renamed_focus_out(Node *le, const HAnimationNode &p_node);
 
 
     void _connection_request(StringView p_from, int p_from_index, StringView p_to, int p_to_index);
@@ -99,7 +100,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
     void _delete_nodes_request();
     void _popup_request(const Vector2 &p_position);
 
-    bool _update_filters(const Ref<AnimationNode> &anode);
+    bool _update_filters(const HAnimationNode &anode);
     void _edit_filters(const StringName &p_which);
     void _filter_edited();
     void _filter_toggled();
@@ -127,8 +128,8 @@ public:
 
     Size2 get_minimum_size() const override;
 
-    bool can_edit(const Ref<AnimationNode> &p_node) override;
-    void edit(const Ref<AnimationNode> &p_node) override;
+    bool can_edit(const HAnimationNode &p_node) override;
+    void edit(const HAnimationNode &p_node) override;
 
     AnimationNodeBlendTreeEditor();
 };

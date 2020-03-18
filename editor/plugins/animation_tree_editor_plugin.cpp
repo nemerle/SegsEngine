@@ -108,7 +108,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 
     button_path.clear();
 
-    Ref<AnimationNode> node = tree->get_tree_root();
+    HAnimationNode node = tree->get_tree_root();
 
     if (!node) {
         current_root = 0;
@@ -119,9 +119,9 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 
     current_root = node->get_instance_id();
 
-    for (int i = 0; i < p_path.size(); i++) {
+    for (size_t i = 0; i < p_path.size(); i++) {
 
-        Ref<AnimationNode> child = node->get_child_by_name(StringName(p_path[i]));
+        HAnimationNode child = node->get_child_by_name(StringName(p_path[i]));
         ERR_BREAK(not child);
         node = child;
         button_path.push_back(p_path[i]);
@@ -134,7 +134,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
             editors[i]->edit(node);
             editors[i]->show();
         } else {
-            editors[i]->edit(Ref<AnimationNode>());
+            editors[i]->edit(HAnimationNode());
             editors[i]->hide();
         }
     }
@@ -202,7 +202,7 @@ String AnimationTreeEditor::get_base_path() {
     return path;
 }
 
-bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
+bool AnimationTreeEditor::can_edit(const HAnimationNode &p_node) const {
     for (int i = 0; i < editors.size(); i++) {
         if (editors[i]->can_edit(p_node)) {
             return true;

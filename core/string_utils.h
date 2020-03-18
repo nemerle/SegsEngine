@@ -312,7 +312,8 @@ namespace PathUtils
     [[nodiscard]] GODOT_EXPORT StringView get_file(StringView path);
     [[nodiscard]] GODOT_EXPORT String simplify_path(StringView str);
     //[[nodiscard]] GODOT_EXPORT String trim_trailing_slash(const String &path);
-
+    //! \returns true if mounted under 'res://' and addons as first directory
+    [[nodiscard]] GODOT_EXPORT bool is_addon_path(const ResourcePath &p);
 } // end o PathUtils namespace
 
 

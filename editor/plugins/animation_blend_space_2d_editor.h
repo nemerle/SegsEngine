@@ -125,7 +125,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	StringName get_blend_position_path() const;
 
 	EditorFileDialog *open_file;
-	Ref<AnimationNode> file_loaded;
+    HAnimationNode file_loaded;
     void _file_opened(StringView p_file);
 
 	enum {
@@ -142,7 +142,7 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace2DEditor *get_singleton() { return singleton; }
-	bool can_edit(const Ref<AnimationNode> &p_node) override;
-	void edit(const Ref<AnimationNode> &p_node) override;
+    bool can_edit(const HAnimationNode &p_node) override;
+    void edit(const HAnimationNode &p_node) override;
 	AnimationNodeBlendSpace2DEditor();
 };

@@ -26,14 +26,14 @@ public:
     unsigned CountSignalConnections() const { return m_oSignals.size(); }
 
     // Interface for child classes
-protected:
+//protected:
     // Disallow instances of this class
     explicit SignalObserver( ScopedAllocator* pAllocator ) { SetConnectionAllocator( pAllocator ); }
     SignalObserver() { SetConnectionAllocator( defaultAllocator() ); }
 
     // Hmm, a bit of a hack, but if a derived type caches pointers to signals,
     // we may need this
-    virtual void OnSignalDisconnectInternal(SignalBase *pSignal) { JL_UNUSED(pSignal); }
+    //virtual void OnSignalDisconnectInternal(SignalBase *pSignal) { JL_UNUSED(pSignal); }
 
     // Private interface (to SignalBase)
 private:
@@ -49,7 +49,7 @@ private:
     }
     void OnSignalDisconnect(SignalBase *pSignal)
     {
-        OnSignalDisconnectInternal( pSignal );
+      //  OnSignalDisconnectInternal( pSignal );
         for ( SignalList::iterator i = m_oSignals.begin(); i.isValid(); )
         {
             if ( *i == pSignal )

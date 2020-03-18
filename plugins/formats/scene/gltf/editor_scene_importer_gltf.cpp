@@ -35,6 +35,7 @@
 #include "core/io/json.h"
 #include "core/print_string.h"
 #include "core/io/resource_loader.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/math/disjoint_set.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
@@ -224,7 +225,7 @@ namespace {
         // A mapping from the joint indices (in the order of joints_original) to the
         // Godot Skeleton's bone_indices
         HashMap<int, int> joint_i_to_bone_i;
-        HashMap<int, StringName> joint_i_to_name;
+        HashMap<int, String> joint_i_to_name;
 
         // The Actual Skin that will be created as a mapping between the IBM's of this skin
         // to the generated skeleton for the mesh instances.
@@ -3001,7 +3002,7 @@ namespace {
             name = _gen_unique_name(state, "Animation");
         }
 
-        Ref<Animation> animation(make_ref_counted<Animation>());
+        HAnimation animation(Animation::create());
 
         animation->set_name(name);
         if (anim.loop) {
@@ -3128,7 +3129,7 @@ namespace {
                 }
             }
 
-            for (int i = 0; i < track.weight_tracks.size(); i++) {
+            for (size_t i = 0; i < track.weight_tracks.size(); i++) {
                 ERR_CONTINUE(node->mesh < 0 || node->mesh >= state.meshes.size());
                 const GLTFMesh& mesh = state.meshes[node->mesh];
                 const StringName prop = "blend_shapes/" + mesh.mesh->get_blend_shape_name(i);

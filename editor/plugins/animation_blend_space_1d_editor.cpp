@@ -32,6 +32,7 @@
 
 #include "core/method_bind.h"
 #include "core/os/keyboard.h"
+#include "core/resources_subsystem/resource_manager.h"
 #include "core/string_formatter.h"
 #include "core/translation_helpers.h"
 #include "editor/editor_scale.h"
@@ -96,7 +97,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
             menu->set_item_metadata(idx, E);
         }
 
-        Ref<AnimationNode> clipb = dynamic_ref_cast<AnimationNode>(EditorSettings::get_singleton()->get_resource_clipboard());
+        auto clipb = se::dynamic_resource_cast<AnimationNode>(EditorSettings::get_singleton()->get_resource_clipboard());
         if (clipb) {
             menu->add_separator();
             menu->add_item(TTR("Paste"), MENU_PASTE);
@@ -128,7 +129,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
             if (Math::abs(float(points[i] - mb->get_position().x)) < 10 * EDSCALE) {
                 selected_point = i;
 
-                Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
+                HAnimationNode node = blend_space->get_blend_point_node(i);
                 EditorNode::get_singleton()->push_item(node.get(), {}, true);
                 dragging_selected_attempt = true;
                 drag_from = mb->get_position();
@@ -150,7 +151,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
             }
 
             updating = true;
-            undo_redo->create_action_ui(TTR("Move Node Point"));
+            undo_redo->create_action(TTR("Move Node Point"));
             undo_redo->add_do_method(blend_space.get(), "set_blend_point_position", selected_point, point);
             undo_redo->add_undo_method(blend_space.get(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
             undo_redo->add_do_method(this, "_update_space");
@@ -333,7 +334,7 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
         return;
 
     updating = true;
-    undo_redo->create_action_ui(TTR("Change BlendSpace1D Limits"));
+    undo_redo->create_action(TTR("Change BlendSpace1D Limits"));
     undo_redo->add_do_method(blend_space.get(), "set_max_space", max_value->get_value());
     undo_redo->add_undo_method(blend_space.get(), "set_max_space", blend_space->get_max_space());
     undo_redo->add_do_method(blend_space.get(), "set_min_space", min_value->get_value());
@@ -353,7 +354,7 @@ void AnimationNodeBlendSpace1DEditor::_labels_changed(StringView) {
         return;
 
     updating = true;
-    undo_redo->create_action_ui(TTR("Change BlendSpace1D Labels"), UndoRedo::MERGE_ENDS);
+    undo_redo->create_action(TTR("Change BlendSpace1D Labels"), UndoRedo::MERGE_ENDS);
     undo_redo->add_do_method(blend_space.get(), "set_value_label", label_value->get_text());
     undo_redo->add_undo_method(blend_space.get(), "set_value_label", blend_space->get_value_label());
     undo_redo->add_do_method(this, "_update_space");
@@ -391,7 +392,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
         file_loaded.unref();
     } else if (p_index == MENU_PASTE) {
 
-        node = dynamic_ref_cast<AnimationRootNode>(EditorSettings::get_singleton()->get_resource_clipboard());
+        node = dynamic_ref_cast<AnimationRootNode>(Ref<Resource>(EditorSettings::get_singleton()->get_resource_clipboard().get()));
     } else {
         String type = menu->get_item_metadata(p_index);
 
@@ -409,7 +410,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
     }
 
     updating = true;
-    undo_redo->create_action_ui(TTR("Add Node Point"));
+    undo_redo->create_action(TTR("Add Node Point"));
     undo_redo->add_do_method(blend_space.get(), "add_blend_point", node, add_point_pos);
     undo_redo->add_undo_method(blend_space.get(), "remove_blend_point", blend_space->get_blend_point_count());
     undo_redo->add_do_method(this, "_update_space");
@@ -426,7 +427,7 @@ void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
     anim->set_animation(StringName(animations_to_add[p_index]));
 
     updating = true;
-    undo_redo->create_action_ui(TTR("Add Animation Point"));
+    undo_redo->create_action(TTR("Add Animation Point"));
     undo_redo->add_do_method(blend_space.get(), "add_blend_point", anim, add_point_pos);
     undo_redo->add_undo_method(blend_space.get(), "remove_blend_point", blend_space->get_blend_point_count());
     undo_redo->add_do_method(this, "_update_space");
@@ -478,7 +479,7 @@ void AnimationNodeBlendSpace1DEditor::_update_tool_erase() {
     tool_erase->set_disabled(!point_valid);
 
     if (point_valid) {
-        Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
+        HAnimationNode an = blend_space->get_blend_point_node_h(selected_point);
 
         if (AnimationTreeEditor::get_singleton()->can_edit(an)) {
             open_editor->show();
@@ -496,11 +497,18 @@ void AnimationNodeBlendSpace1DEditor::_erase_selected() {
     if (selected_point != -1) {
         updating = true;
 
-        undo_redo->create_action_ui(TTR("Remove BlendSpace1D Point"));
-        undo_redo->add_do_method(blend_space.get(), "remove_blend_point", selected_point);
-        undo_redo->add_undo_method(blend_space.get(), "add_blend_point", blend_space->get_blend_point_node(selected_point), blend_space->get_blend_point_position(selected_point), selected_point);
-        undo_redo->add_do_method(this, "_update_space");
-        undo_redo->add_undo_method(this, "_update_space");
+        Ref<AnimationNodeBlendSpace1D> bs(blend_space);
+        int sp = selected_point;
+        undo_redo->create_action_pair(TTR("Remove BlendSpace1D Point"),
+                [this,bs,sp](){
+                    bs->remove_blend_point(sp);
+                    _update_space();
+                },
+                [this,bs,sp](){
+                    bs->add_blend_point(bs->get_blend_point_node(sp), bs->get_blend_point_position(sp), sp);
+                    _update_space();
+                }
+        );
         undo_redo->commit_action();
 
         updating = false;
@@ -514,7 +522,7 @@ void AnimationNodeBlendSpace1DEditor::_edit_point_pos(double) {
         return;
 
     updating = true;
-    undo_redo->create_action_ui(TTR("Move BlendSpace1D Node Point"));
+    undo_redo->create_action(TTR("Move BlendSpace1D Node Point"));
     undo_redo->add_do_method(blend_space.get(), "set_blend_point_position", selected_point, edit_value->get_value());
     undo_redo->add_undo_method(blend_space.get(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
     undo_redo->add_do_method(this, "_update_space");
@@ -530,7 +538,7 @@ void AnimationNodeBlendSpace1DEditor::_edit_point_pos(double) {
 void AnimationNodeBlendSpace1DEditor::_open_editor() {
 
     if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
-        Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
+        HAnimationNode an = blend_space->get_blend_point_node(selected_point);
         ERR_FAIL_COND(not an);
         AnimationTreeEditor::get_singleton()->enter_editor(itos(selected_point));
     }
@@ -595,15 +603,15 @@ void AnimationNodeBlendSpace1DEditor::_bind_methods() {
     MethodBinder::bind_method("_file_opened", &AnimationNodeBlendSpace1DEditor::_file_opened);
 }
 
-bool AnimationNodeBlendSpace1DEditor::can_edit(const Ref<AnimationNode> &p_node) {
+bool AnimationNodeBlendSpace1DEditor::can_edit(const HAnimationNode &p_node) {
 
-    Ref<AnimationNodeBlendSpace1D> b1d = dynamic_ref_cast<AnimationNodeBlendSpace1D>(p_node);
-    return b1d;
+    auto b1d = se::dynamic_resource_cast<AnimationNodeBlendSpace1D>(p_node);
+    return b1d!=se::ResourceHandle<AnimationNodeBlendSpace1D>();
 }
 
-void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
+void AnimationNodeBlendSpace1DEditor::edit(const HAnimationNode &p_node) {
 
-    blend_space = dynamic_ref_cast<AnimationNodeBlendSpace1D>(p_node);
+    blend_space = object_cast<AnimationNodeBlendSpace1D>(p_node.get());
 
     if (blend_space) {
         _update_space();

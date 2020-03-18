@@ -173,7 +173,9 @@ public:
     static String get_multiple_md5(const Vector<String> &p_file);
 
     static Vector<uint8_t> get_file_as_array(StringView p_path, Error *r_error = nullptr);
+    static Vector<uint8_t> get_file_as_array(const ResourcePath &p_path, Error *r_error = nullptr);
     static String get_file_as_string(StringView p_path, Error *r_error = nullptr);
+    static String get_file_as_string(const ResourcePath &p_path, Error *r_error = nullptr);
 
     template <class T>
     static void make_default(AccessType p_access) {

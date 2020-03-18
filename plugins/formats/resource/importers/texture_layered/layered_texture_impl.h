@@ -46,7 +46,7 @@ public:
 
     void update_imports();
 
-    bool are_import_settings_valid(StringView p_path) const override;
+    bool are_import_settings_valid(const ResourcePath & p_path) const override;
     String get_import_settings_string() const override;
 
     void set_3d(bool p_3d) { is_3d = p_3d; }
@@ -56,7 +56,7 @@ public:
 public:
     int get_import_order() const override {return 0;}
     StringName get_option_group_file() const override { return StringName(); }
-    Error import_group_file(StringView /*p_group_file*/, const Map<String, HashMap<StringName, Variant> > & /*p_source_file_options*/, const Map<String, String> & /*p_base_paths*/) override {
+    Error import_group_file(const ResourcePath & /*p_group_file*/, const Map<String, HashMap<StringName, Variant> > & /*p_source_file_options*/, const Map<String, String> & /*p_base_paths*/) override {
         return ERR_UNAVAILABLE;
     }
 };

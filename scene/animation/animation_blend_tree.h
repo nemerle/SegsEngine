@@ -335,7 +335,7 @@ class AnimationNodeBlendTree : public AnimationRootNode {
     GDCLASS(AnimationNodeBlendTree,AnimationRootNode)
 
     struct Node {
-        Ref<AnimationNode> node;
+        HAnimationNode node;
         Vector2 position;
         Vector<StringName> connections;
     };
@@ -364,12 +364,12 @@ public:
         //no need to check for cycles due to tree topology
     };
 
-    void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());
-    Ref<AnimationNode> get_node(const StringName &p_name) const;
+    void add_node(const StringName &p_name, HAnimationNode &&p_node, const Vector2 &p_position = Vector2());
+    HAnimationNode get_node(const StringName &p_name) const;
     void remove_node(const StringName &p_name);
     void rename_node(const StringName &p_name, const StringName &p_new_name);
     bool has_node(const StringName &p_name) const;
-    StringName get_node_name(const Ref<AnimationNode> &p_node) const;
+    StringName get_node_name(const HAnimationNode &p_node) const;
     const Vector<StringName> &get_node_connection_array(const StringName &p_name) const;
 
     void set_node_position(const StringName &p_node, const Vector2 &p_position);
@@ -397,7 +397,7 @@ public:
     void set_graph_offset(const Vector2 &p_graph_offset);
     Vector2 get_graph_offset() const;
 
-    Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+    HAnimationNode get_child_by_name(const StringName &p_name) override;
 
     AnimationNodeBlendTree();
     ~AnimationNodeBlendTree() override;
