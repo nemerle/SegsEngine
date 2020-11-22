@@ -38,6 +38,7 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
+#include "core/map.h"
 
 #include "EASTL/deque.h"
 

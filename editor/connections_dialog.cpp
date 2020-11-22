@@ -47,6 +47,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/style_box.h"
+#include "editor/scene_tree_editor.h"
 
 #include "EASTL/sort.h"
 

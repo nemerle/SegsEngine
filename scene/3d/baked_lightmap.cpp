@@ -43,6 +43,7 @@
 #include "core/resource/resource_manager.h"
 #include "core/string_formatter.h"
 #include "core/translation_helpers.h"
+#include "scene/resources/texture.h"
 
 IMPL_GDCLASS(BakedLightmapData)
 IMPL_GDCLASS(BakedLightmap)
