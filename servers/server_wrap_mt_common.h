@@ -48,16 +48,15 @@
         m_type##_id_pool.clear();                                                          \
     }                                                                                      \
     RID m_type##_create() override {                                                       \
-        assert(Thread::get_caller_id() != server_thread); \
-        RID rid;                                                                       \
-        MutexLock lock(alloc_mutex);                                                   \
-        if (m_type##_id_pool.empty()) {                                                \
-            int ret;                                                                   \
-            command_queue.push_and_sync([this,&ret]() {                                \
-                for (int i = 0; i < pool_max_size; i++) {                              \
+        assert(Thread::get_caller_id() != server_thread);                                  \
+        RID rid;                                                                           \
+        MutexLock lock(alloc_mutex);                                                       \
+        if (m_type##_id_pool.empty()) {                                                    \
+            command_queue.push_and_sync([this]() {                                         \
+                for (int i = 0; i < pool_max_size; i++) {                                  \
                     m_type##_id_pool.emplace_back(submission_thread_singleton->m_type##_create()); \
-                }\
-            }); \
+                }                                                                          \
+            });                                                                            \
             SYNC_DEBUG                                                                 \
         }                                                                              \
         rid = m_type##_id_pool.back();                                                 \
@@ -74,16 +73,16 @@
         return ret;                                                         \
     }
 
-#define FUNC0(m_type)                                             \
-    void m_type() override {                                       \
+#define FUNC0(m_type)                                               \
+    void m_type() override {                                        \
         assert(Thread::get_caller_id() != server_thread);           \
-        command_queue.push( [this]() { submission_thread_singleton->m_type();});\
+        command_queue.push( []() { submission_thread_singleton->m_type();});\
     }
 
 #define FUNC0C(m_type)                                            \
     void m_type() const override {                                 \
         assert(Thread::get_caller_id() != server_thread);           \
-        command_queue.push( [this]() { submission_thread_singleton->m_type();});\
+        command_queue.push( []() { submission_thread_singleton->m_type();});\
     }
 
 ///////////////////////////////////////////////
@@ -123,7 +122,7 @@
     m_r m_type(m_arg1 p1, m_arg2 p2) override {                                          \
         assert(Thread::get_caller_id() != server_thread);                                 \
         m_r ret;                                                                    \
-        command_queue.push_and_sync( [this,p1,p2,&ret]() { ret=submission_thread_singleton->m_type(p1, p2); }); \
+        command_queue.push_and_sync( [p1,p2,&ret]() { ret=submission_thread_singleton->m_type(p1, p2); }); \
         SYNC_DEBUG                                                                  \
         return ret;                                                                 \
     }
@@ -154,7 +153,7 @@
 #define FUNC2(m_type, m_arg1, m_arg2)                                     \
     void m_type(m_arg1 p1, m_arg2 p2) override {						  \
         assert(Thread::get_caller_id() != server_thread);                   \
-        command_queue.push([this,p1,p2]() {submission_thread_singleton->m_type(p1, p2);}); \
+        command_queue.push([p1,p2]() {submission_thread_singleton->m_type(p1, p2);}); \
     }
 
 #define FUNC3R(m_r, m_type, m_arg1, m_arg2, m_arg3)                                         \

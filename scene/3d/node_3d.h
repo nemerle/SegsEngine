@@ -82,30 +82,29 @@ class GODOT_EXPORT Node3D : public Node {
         mutable Transform local_transform;
         mutable Vector3 rotation;
         mutable Vector3 scale;
-        mutable int dirty;
+        Vector<Node3D *> children;
+        Node3D *parent;
 
         Viewport *viewport;
-
-        int children_lock;
-        Node3D *parent;
-        Vector<Node3D *> children;
-
-        bool toplevel_active;
-        bool toplevel;
-        bool inside_world;
-
-        bool ignore_notification;
-        bool notify_local_transform;
-        bool notify_transform;
-
-        bool visible;
-        bool disable_scale;
-
 #ifdef TOOLS_ENABLED
         Ref<Node3DGizmo> gizmo;
-        bool gizmo_disabled;
-        bool gizmo_dirty;
+        uint8_t gizmo_disabled  : 1;
+        uint8_t gizmo_dirty : 1;
 #endif
+
+        int children_lock;
+        mutable uint8_t dirty;
+
+        uint8_t toplevel_active : 1;
+        uint8_t toplevel : 1;
+        uint8_t inside_world : 1;
+
+        uint8_t ignore_notification : 1;
+        uint8_t notify_local_transform : 1;
+        uint8_t notify_transform : 1;
+
+        uint8_t visible : 1;
+        uint8_t disable_scale : 1;
 
     } data;
 

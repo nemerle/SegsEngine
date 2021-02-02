@@ -188,7 +188,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
         }
         E->second.rc++;
         if (node)
-            E->second.shapes.insert(ShapePair(p_body_shape, p_area_shape));
+            E->second.shapes.emplace(p_body_shape, p_area_shape);
 
         if (E->second.in_tree) {
             emit_signal(SceneStringNames::body_shape_entered, Variant::from(objid), Variant(node), p_body_shape, p_area_shape);
@@ -201,7 +201,6 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
         if (node)
             E->second.shapes.erase(ShapePair(p_body_shape, p_area_shape));
 
-        bool eraseit = false;
         bool in_tree = E->second.in_tree;
         if (E->second.rc == 0) {
             body_map.erase(E);

@@ -263,8 +263,8 @@ extern CoreInterface *getCoreInterface() {
     return &impl;
 }
 
-Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :
-    name(p_name),
+Engine::Singleton::Singleton(StringName p_name, Object *p_ptr) :
+    name(eastl::move(p_name)),
     ptr(p_ptr) {
 #ifdef DEBUG_ENABLED
     RefCounted *ref = object_cast<RefCounted>(p_ptr);

@@ -146,11 +146,14 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 
 void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
     exceptions.insert(p_ignoreCollisionObject->get_self());
-    if (!bt_collision_object)
+    if (!bt_collision_object) {
         return;
+    }
     bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, true);
-    if (space)
-        space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+    if (space) {
+        space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(
+                bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+    }
 }
 
 void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
@@ -173,9 +176,7 @@ void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {
     }
 }
 
-bool CollisionObjectBullet::is_collisions_response_enabled() {
-    return collisionsEnabled;
-}
+
 
 void CollisionObjectBullet::notify_new_overlap(AreaBullet *p_area) {
     areasOverlapped.push_back(p_area);
@@ -225,8 +226,7 @@ void CollisionObjectBullet::notify_transform_changed() {
 }
 
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
-        CollisionObjectBullet(p_type),
-        mainShape(nullptr) {
+        CollisionObjectBullet(p_type) {
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
@@ -250,9 +250,7 @@ void RigidCollisionObjectBullet::set_shape(int p_index, ShapeBullet *p_shape) {
     reload_shapes();
 }
 
-int RigidCollisionObjectBullet::get_shape_count() const {
-    return shapes.size();
-}
+
 
 ShapeBullet *RigidCollisionObjectBullet::get_shape(int p_index) const {
     return shapes[p_index].shape;

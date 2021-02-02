@@ -103,8 +103,6 @@ protected:
 
     static void _bind_methods();
 
-    void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-
     bool _can_do_next_pass() const override;
 
     void _shader_changed();

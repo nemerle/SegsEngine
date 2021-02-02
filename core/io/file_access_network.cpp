@@ -173,8 +173,9 @@ void FileAccessNetworkClient::_thread_func() {
             }
         }
         auto iter=priv->accesses.find(id);
-        if (iter!=priv->accesses.end())
+        if (iter!=priv->accesses.end()) {
             fa = iter->second;
+        }
 
         switch (response) {
 
@@ -312,8 +313,9 @@ bool FileAccessNetworkClient::is_my_token_valid(int source_id, FileAccessNetwork
     using Priv = FileAccessNetworkClient_priv;
 
     auto iter=((Priv *)m_priv)->accesses.find(source_id);
-    if(((Priv *)m_priv)->accesses.end()==iter)
+    if(((Priv *)m_priv)->accesses.end()==iter) {
         return false;
+    }
     return iter->second==from;
 }
 
@@ -401,8 +403,9 @@ Error FileAccessNetwork::_open(StringView p_path, int p_mode_flags) {
 
 void FileAccessNetwork::close() {
 
-    if (!opened)
+    if (!opened) {
         return;
+    }
 
     FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 

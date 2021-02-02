@@ -86,54 +86,51 @@ struct Node::PrivData {
         StringName name;
         MultiplayerAPI_RPCMode mode;
     };
-    String *filename=nullptr;
+    HashMap<StringName, GroupData> grouped;
+    Vector<Node *> owned;
+    Vector<Node *> children; // list of children
+    Vector<NetData> rpc_methods;
+    Vector<NetData> rpc_properties;
     Ref<SceneState> instance_state;
     Ref<SceneState> inherited_state;
-
-    Node *parent;
-    Node *owner;
-    Vector<Node *> children; // list of children
-    int pos;
-    int depth;
-    StringName name;
 #ifdef TOOLS_ENABLED
     NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif
 
-
-    HashMap<StringName, GroupData> grouped;
+    String *filename=nullptr;
+    Node *parent;
+    Node *owner;
     Node *OW; // owned element
-    Vector<Node *> owned;
-
-    PauseMode pause_mode;
     Node *pause_owner;
+    mutable NodePath *path_cache;
+    StringName name;
 
+    int pos;
+    int depth;
     int network_master;
-    Vector<NetData> rpc_methods;
-    Vector<NetData> rpc_properties;
+    PauseMode pause_mode;
 
-
-    bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
-    bool ready_first;
+    //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
+    uint8_t ready_notified : 1;
+    uint8_t ready_first : 1;
     // variables used to properly sort the node when processing, ignored otherwise
     //should move all the stuff below to bits
-    bool physics_process;
-    bool idle_process;
+    uint8_t physics_process : 1;
+    uint8_t idle_process : 1;
 
-    bool physics_process_internal;
-    bool idle_process_internal;
+    uint8_t physics_process_internal: 1;
+    uint8_t idle_process_internal: 1;
 
-    bool input;
-    bool unhandled_input;
-    bool unhandled_key_input;
+    uint8_t input: 1;
+    uint8_t unhandled_input: 1;
+    uint8_t unhandled_key_input: 1;
 
-    bool in_constructor;
-    bool use_placeholder;
+    uint8_t in_constructor: 1;
+    uint8_t use_placeholder: 1;
 
-    bool display_folded;
-    bool editable_instance;
+    uint8_t display_folded: 1;
+    uint8_t editable_instance: 1;
 
-    mutable NodePath *path_cache;
     uint16_t get_node_rset_property_id(const StringName &p_property) const {
         for (int i = 0; i < rpc_properties.size(); i++) {
             if (rpc_properties[i].name == p_property) {
@@ -486,25 +483,11 @@ void Node::move_child(Node *p_child, int p_pos) {
 
 void Node::raise() {
 
-    if (!priv_data->parent)
+    if (!priv_data->parent) {
         return;
+    }
 
     priv_data->parent->move_child(this, priv_data->parent->priv_data->children.size() - 1);
-}
-
-void Node::add_child_notify(Node *p_child) {
-
-    // to be used when not wanted
-}
-
-void Node::remove_child_notify(Node *p_child) {
-
-    // to be used when not wanted
-}
-
-void Node::move_child_notify(Node *p_child) {
-
-    // to be used when not wanted
 }
 
 void Node::set_physics_process(bool p_process) {
@@ -856,10 +839,6 @@ Ref<MultiplayerAPI> Node::get_multiplayer() const {
     return get_tree()->get_multiplayer();
 }
 
-Ref<MultiplayerAPI> Node::get_custom_multiplayer() const {
-    return multiplayer;
-}
-
 void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 
     multiplayer = p_multiplayer;
@@ -931,19 +910,19 @@ bool Node::can_process() const {
 }
 
 float Node::get_physics_process_delta_time() const {
-
-    if (tree)
-        return tree->get_physics_process_time();
-    else
+    if (tree) {
+        return tree ? tree->get_physics_process_time() : 0;
+    } else {
         return 0;
+    }
 }
 
 float Node::get_process_delta_time() const {
-
-    if (tree)
+    if (tree) {
         return tree->get_idle_process_time();
-    else
+    } else {
         return 0;
+    }
 }
 
 void Node::set_process(bool p_idle_process) {
@@ -967,18 +946,18 @@ bool Node::is_processing() const {
 }
 
 void Node::set_process_internal(bool p_idle_process_internal) {
-
     if (priv_data->idle_process_internal == p_idle_process_internal)
         return;
 
     priv_data->idle_process_internal = p_idle_process_internal;
 
-    if (priv_data->idle_process_internal)
+    if (priv_data->idle_process_internal) {
         add_to_group("idle_process_internal", false);
-    else
+    } else {
         remove_from_group("idle_process_internal");
+    }
 
-    Object_change_notify(this,"idle_process_internal");
+    Object_change_notify(this, "idle_process_internal");
 }
 
 bool Node::is_processing_internal() const {
@@ -1009,11 +988,6 @@ void Node::set_process_priority(int p_priority) {
     if (is_physics_processing_internal()) {
         tree->make_group_changed(SceneStringNames::physics_process_internal);
     }
-}
-
-int Node::get_process_priority() const {
-
-    return process_priority;
 }
 
 void Node::set_process_input(bool p_enable) {
@@ -1458,6 +1432,11 @@ Node *Node::get_child(int p_index) const {
     return priv_data->children[p_index];
 }
 
+const Vector<Node *> &Node::children() const
+{
+    return priv_data->children;
+}
+
 Node *Node::_get_child_by_name(const StringName &p_name) const {
 
     int cc = priv_data->children.size();
@@ -1591,19 +1570,9 @@ bool Node::is_greater_than(const Node *p_node) const {
 
     ERR_FAIL_COND_V(priv_data->depth < 0, false);
     ERR_FAIL_COND_V(p_node->priv_data->depth < 0, false);
-#ifdef NO_ALLOCA
-
-    Vector<int> this_stack;
-    Vector<int> that_stack;
-    this_stack.resize(data->depth);
-    that_stack.resize(p_node->data->depth);
-
-#else
 
     int *this_stack = (int *)alloca(sizeof(int) * priv_data->depth);
     int *that_stack = (int *)alloca(sizeof(int) * p_node->priv_data->depth);
-
-#endif
 
     const Node *n = this;
 
@@ -1648,13 +1617,14 @@ bool Node::is_greater_than(const Node *p_node) const {
     return res;
 }
 
-void Node::get_owned_by(Node *p_by, Vector<Node *> *p_owned) {
+void Node::get_owned_by(Node *p_by, Vector<Node *> &p_owned) {
 
     if (priv_data->owner == p_by)
-        p_owned->push_back(this);
+        p_owned.emplace_back(this);
 
-    for (int i = 0; i < get_child_count(); i++)
-        get_child(i)->get_owned_by(p_by, p_owned);
+    for(Node * chld : priv_data->children) {
+        chld->get_owned_by(p_by, p_owned);
+    }
 }
 
 void Node::_set_owner_nocheck(Node *p_owner) {
@@ -1818,7 +1788,7 @@ bool Node::is_in_group(const StringName &p_identifier) const {
 
 void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 
-    ERR_FAIL_COND(!p_identifier.asString().length());
+    ERR_FAIL_COND(StringView(p_identifier).empty());
 
     if (priv_data->grouped.contains(p_identifier))
         return;
@@ -2096,9 +2066,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
     bool instanced = false;
 
-    if (object_cast<InstancePlaceholder>(this)) {
+    const InstancePlaceholder *ip = object_cast<const InstancePlaceholder>(this);
 
-        const InstancePlaceholder *ip = object_cast<const InstancePlaceholder>(this);
+    if (ip) {
         InstancePlaceholder *nip = memnew(InstancePlaceholder);
         nip->set_instance_path(ip->get_instance_path());
         node = nip;
@@ -2122,7 +2092,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
         Object *obj = ClassDB::instance(get_class_name());
         ERR_FAIL_COND_V(!obj, nullptr);
         node = object_cast<Node>(obj);
-        memdelete(obj);
+        if(!node) {
+            memdelete(obj);
+        }
         ERR_FAIL_COND_V(!node, nullptr);
     }
 
@@ -2134,7 +2106,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
     Dequeue<const Node *> hidden_roots;
     Dequeue<const Node *> node_tree;
-    node_tree.push_front(this);
+    node_tree.emplace_front(this);
 
     if (instanced) {
         // Since nodes in the instanced hierarchy won't be duplicated explicitly, we need to make an inventory
@@ -2148,11 +2120,11 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
                 // but remember non-instanced nodes that are hidden below instanced ones
                 if (descendant->priv_data->owner != this) {
                     if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->priv_data->owner == this && descendant->priv_data->owner != descendant->get_parent())
-                        hidden_roots.push_back(descendant);
+                        hidden_roots.emplace_back(descendant);
                     continue;
                 }
 
-                node_tree.push_back(descendant);
+                node_tree.emplace_back(descendant);
             }
         }
     }
@@ -2197,7 +2169,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
         }
     }
 
-    if (get_name() != StringName()) {
+    if (!get_name().empty()) {
         node->set_name(get_name());
     }
 
@@ -2215,17 +2187,18 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
             if ((p_flags & DUPLICATE_FROM_EDITOR) && !E.persistent)
                 continue;
 #endif
-
             node->add_to_group(E.name, E.persistent);
         }
     }
 
     for (int i = 0; i < get_child_count(); i++) {
 
-        if (get_child(i)->parent_owned)
+        if (get_child(i)->parent_owned) {
             continue;
-        if (instanced && get_child(i)->priv_data->owner == this)
+        }
+        if (instanced && get_child(i)->priv_data->owner == this) {
             continue; //part of instance
+        }
 
         Node *dup = get_child(i)->_duplicate(p_flags, r_duplimap);
         if (!dup) {
@@ -2260,7 +2233,6 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
         int pos = E->get_position_in_parent();
 
         if (pos < parent->get_child_count() - 1) {
-
             parent->move_child(dup, pos);
         }
     }
@@ -2282,7 +2254,9 @@ Node *Node::duplicate(int p_flags) const {
 #ifdef TOOLS_ENABLED
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const {
 
-    Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
+    Node *dupe = _duplicate(
+            DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR,
+            &r_duplimap);
 
     // Duplication of signals must happen after all the node descendants have been copied,
     // because re-targeting of connections from some descendant to another is not possible
@@ -2295,8 +2269,9 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) con
 
 void Node::_duplicate_and_reown(Node *p_new_parent, const HashMap<Node *, Node *> &p_reown_map) const {
 
-    if (get_owner() != get_parent()->get_owner())
+    if (get_owner() != get_parent()->get_owner()) {
         return;
+    }
 
     Node *node = nullptr;
 
@@ -2367,8 +2342,9 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const HashMap<Node *, Node *
 // if the emitter node comes later in tree order than the receiver
 void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 
-    if (this != p_original && (get_owner() != p_original && get_owner() != p_original->get_owner()))
+    if (this != p_original && (get_owner() != p_original && get_owner() != p_original->get_owner())) {
         return;
+    }
 
     Vector<Connection> conns;
     get_all_signal_connections(&conns);
@@ -2453,22 +2429,21 @@ Node *Node::duplicate_and_reown(const HashMap<Node *, Node *> &p_reown_map) cons
     return node;
 }
 
-static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
+static void find_owned_by(Node *p_by, Node *p_node, Vector<Node *> &p_owned) {
 
     if (p_node->get_owner() == p_by)
-        p_owned->push_back(p_node);
+        p_owned.push_back(p_node);
 
-    for (int i = 0; i < p_node->get_child_count(); i++) {
-
-        find_owned_by(p_by, p_node->get_child(i), p_owned);
+    for(Node *chld : p_node->children()) {
+        find_owned_by(p_by, chld, p_owned);
     }
 }
 
-struct _NodeReplaceByPair {
-
-    StringName name;
-    Variant value;
-};
+//TODO: replace data was never used, so it was commented out.
+//struct _NodeReplaceByPair {
+//    StringName name;
+//    Variant value;
+//};
 
 void Node::replace_by(Node *p_node, bool p_keep_data) {
 
@@ -2476,24 +2451,24 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
     ERR_FAIL_COND(p_node->priv_data->parent);
 
     Vector<Node *> owned(priv_data->owned);
-    List<Node *> owned_by_owner;
+    Vector<Node *> owned_by_owner;
     Node *owner = (priv_data->owner == this) ? p_node : priv_data->owner;
 
-    Vector<_NodeReplaceByPair> replace_data;
+    //Vector<_NodeReplaceByPair> replace_data;
 
     if (p_keep_data) {
 
-        Vector<PropertyInfo> plist;
-        get_property_list(&plist);
+//        Vector<PropertyInfo> plist;
+//        get_property_list(&plist);
 
-        for (const PropertyInfo &E : plist) {
+//        for (const PropertyInfo &E : plist) {
 
-            _NodeReplaceByPair rd;
-            if (!(E.usage & PROPERTY_USAGE_STORAGE))
-                continue;
-            rd.name = E.name;
-            rd.value = get(rd.name);
-        }
+//            _NodeReplaceByPair rd;
+//            if (!(E.usage & PROPERTY_USAGE_STORAGE))
+//                continue;
+//            rd.name = E.name;
+//            rd.value = get(rd.name);
+//        }
 
         Vector<GroupInfo> groups;
         get_groups(&groups);
@@ -2506,7 +2481,7 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 
     if (priv_data->owner) {
         for (int i = 0; i < get_child_count(); i++)
-            find_owned_by(priv_data->owner, get_child(i), &owned_by_owner);
+            find_owned_by(priv_data->owner, get_child(i), owned_by_owner);
     }
 
     Node *parent = priv_data->parent;
@@ -2530,18 +2505,20 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
     }
 
     p_node->set_owner(owner);
-    for (auto & e: owned)
-        e->set_owner(p_node);
 
-    for (Node * n: owned_by_owner)
+    for (auto & e: owned) {
+        e->set_owner(p_node);
+    }
+
+    for (Node * n: owned_by_owner) {
         n->set_owner(owner);
+    }
 
     p_node->set_filename(get_filename());
 
-    for (_NodeReplaceByPair & E : replace_data) {
-
-        p_node->set(E.name, E.value);
-    }
+//    for (_NodeReplaceByPair & E : replace_data) {
+//        p_node->set(E.name, E.value);
+//    }
 }
 
 void Node::_replace_connections_target(Node *p_new_target) {
@@ -2562,38 +2539,6 @@ void Node::_replace_connections_target(Node *p_new_target) {
         }
     }
 }
-
-//Vector<Variant> Node::make_binds(VARIANT_ARG_DECLARE) {
-
-//    Vector<Variant> ret;
-
-//    if (p_arg1.get_type() == VariantType::NIL)
-//        return ret;
-
-//    ret.emplace_back(p_arg1);
-
-//    if (p_arg2.get_type() == VariantType::NIL)
-//        return ret;
-
-//    ret.emplace_back(p_arg2);
-
-//    if (p_arg3.get_type() == VariantType::NIL)
-//        return ret;
-
-//    ret.emplace_back(p_arg3);
-
-//    if (p_arg4.get_type() == VariantType::NIL)
-//        return ret;
-
-//    ret.emplace_back(p_arg4);
-
-//    if (p_arg5.get_type() == VariantType::NIL)
-//        return ret;
-
-//    ret.emplace_back(p_arg5);
-
-//    return ret;
-//}
 
 bool Node::has_node_and_resource(const NodePath &p_path) const {
 
@@ -2633,8 +2578,9 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
     Node *node = get_node(p_path);
     r_res = RES();
     r_leftover_subpath = Vector<StringName>();
-    if (!node)
+    if (!node) {
         return nullptr;
+    }
 
     if (p_path.get_subname_count()==0) {
         return node;
@@ -2693,6 +2639,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 
     SceneTree *tree_changed_a = nullptr;
     SceneTree *tree_changed_b = nullptr;
+    //TODO: consider case where tree==p_tree
 
     //ERR_FAIL_COND(p_scene && data->parent && !data->parent->data->scene); //nobug if both are null
 
@@ -2716,7 +2663,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 
     if (tree_changed_a)
         tree_changed_a->tree_changed();
-    if (tree_changed_b)
+    if (tree_changed_a!=tree_changed_b && tree_changed_b)
         tree_changed_b->tree_changed();
 }
 
@@ -2790,33 +2737,6 @@ NodePath Node::get_import_path() const {
 #else
     return NodePath();
 #endif
-}
-
-static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
-
-#ifdef TOOLS_ENABLED
-    const char * quote_style(EDITOR_DEF_T<bool>("text_editor/completion/use_single_quotes", false) ? "'" : "\"");
-#else
-    const char * quote_style = "\"";
-#endif
-
-    if (p_node != p_base && !p_node->get_owner())
-        return;
-    String n(p_base->get_path_to(p_node).asString());
-    r_options->push_back(quote_style + n + quote_style);
-    for (int i = 0; i < p_node->get_child_count(); i++) {
-        _add_nodes_to_options(p_base, p_node->get_child(i), r_options);
-    }
-}
-
-void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-
-    StringName pf = p_function;
-    if ((pf == "has_node" || pf == "get_node") && p_idx == 0) {
-
-        _add_nodes_to_options(this, this, r_options);
-    }
-    Object::get_argument_options(p_function, p_idx, r_options);
 }
 
 void Node::clear_internal_tree_resource_paths() {

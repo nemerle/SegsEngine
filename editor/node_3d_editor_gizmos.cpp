@@ -1437,9 +1437,8 @@ void CameraSpatialGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
             float hsize = size * 0.5f;
             Vector3 right(hsize, 0, 0);
-            Vector3 up(0, hsize, 0);
-            Vector3 back(0, 0, -1.0);
-            Vector3 front(0, 0, 0);
+            const Vector3 up(0, hsize, 0);
+            const Vector3 back(0, 0, -1.0);
 
             ADD_QUAD(-up - right, -up + right, up + right, up - right)
             ADD_QUAD(-up - right + back, -up + right + back, up + right + back, up - right + back)

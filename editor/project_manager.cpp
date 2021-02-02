@@ -320,7 +320,7 @@ private:
         if (!sp.empty()) {
 
             // If the project name is empty or default, infer the project name from the selected folder name
-            if (project_name->get_text().empty() || project_name->get_text_ui() == TTR("New Game Project").asString()) {
+            if (project_name->get_text().empty() || project_name->get_text() == TTR("New Game Project")) {
                 sp = PathUtils::from_native_path(sp);
                 auto lidx = StringUtils::find_last(sp,'/');
 

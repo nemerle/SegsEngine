@@ -700,7 +700,7 @@ Error ExportTemplateManager::_extract_libs_from_apk(const String &p_target_name)
 
         String path(fpath);
         String base_dir = get_base_dir(path);
-        StringView file(get_file(path));
+        //StringView file(get_file(path));
 
         if (!begins_with(base_dir,"lib") || ends_with(path,'/')) {
             ret = unzGoToNextFile(pkg);

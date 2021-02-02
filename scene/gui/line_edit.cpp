@@ -1637,7 +1637,6 @@ void LineEdit::select(int p_from, int p_to) {
 }
 
 bool LineEdit::is_text_field() const {
-
     return true;
 }
 

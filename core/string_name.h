@@ -35,6 +35,7 @@
 #include "core/error_macros.h"
 #include <cstddef>
 
+#include "entt/core/hashed_string.hpp"
 #include "EASTL/string_view.h"
 
 using UIString = class QString;
@@ -75,6 +76,7 @@ class GODOT_EXPORT StringName {
     friend void unregister_core_types();
 
     void setupFromCString(const StaticCString &p_static_string);
+    void setupFromCString(const char *,uint32_t hash_val);
     explicit StringName(_Data *p_data) { _data = p_data; }
 
 public:
@@ -122,8 +124,9 @@ public:
     {
         if(this==&p_name)
             return *this;
-        if(_data)
+        if(_data) {
             unref();
+        }
         _data = p_name._data;
         p_name._data = nullptr;
         return *this;
@@ -148,7 +151,7 @@ public:
     [[nodiscard]] constexpr bool empty() const { return _data == nullptr; }
 
     //Marked as explicit since it *will* allocate memory
-    explicit StringName(const char *p_name);
+    //explicit StringName(const char *p_name);
 
 
     StringName(const StringName &p_name) noexcept;
@@ -160,7 +163,7 @@ public:
     //TODO: mark StringName(const String &p_name) explicit, it allocates some memory, even if COW'ed
     explicit StringName(StringView p_name);
 
-    StringName(const StaticCString &p_static_string) {
+    _FORCE_INLINE_ StringName(const StaticCString &p_static_string) {
         _data = nullptr;
 
         ERR_FAIL_COND(!configured);
@@ -179,14 +182,16 @@ public:
 
         if constexpr (N<=1) // static zero-terminated string of length 1 is just \000
             return;
+
         //TODO: consider compile-time hash and index generation
         ERR_FAIL_COND(!configured);
-        setupFromCString(StaticCString(s));
+        setupFromCString(s,entt::hashed_string::value((const char *)s,N-1));
     }
 
     ~StringName() noexcept {
-        if(_data)
+        if(_data) {
             unref();
+        }
     }
 };
 GODOT_EXPORT StringName operator+(const StringName &v,StringView sv);

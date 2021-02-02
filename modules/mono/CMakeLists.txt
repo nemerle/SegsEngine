@@ -92,7 +92,6 @@ find_package(Dotnet) # optional, used under windows to build things
 
 #include(FindPkgConfig)  # we don't need the pkg-config path on OS X, but we need other macros in this file
 #pkg_check_modules(MONO REQUIRED IMPORTED_TARGET mono-2)
-OPTION(MONO_GLUE_AVAILABLE "Use mono glue?" OFF)
 
 add_subdirectory(binding_generator)
 

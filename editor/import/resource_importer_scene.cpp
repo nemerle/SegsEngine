@@ -262,19 +262,22 @@ static bool _teststr(const String &p_what, const char *_str) {
 
     // remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for
     // this
-    while (!what.empty() && (what.back() >= '0' && what.back() <= '9' || what.back() <= 32 || what.back() == '.')) {
+    while (!what.empty() && ((what.back() >= '0' && what.back() <= '9') || what.back() <= 32 || what.back() == '.')) {
 
         what = StringUtils::substr(what, 0, what.length() - 1);
     }
 
-    if (StringUtils::findn(what, "$" + p_str) != String::npos) // blender and other stuff
+    if (StringUtils::findn(what, "$" + p_str) != String::npos) { // blender and other stuff
         return true;
+    }
     if (StringUtils::ends_with(
-                StringUtils::to_lower(what), "-" + p_str)) // collada only supports "_" and "-" besides letters
+                StringUtils::to_lower(what), "-" + p_str)) { // collada only supports "_" and "-" besides letters
         return true;
+    }
     if (StringUtils::ends_with(
-                StringUtils::to_lower(what), "_" + p_str)) // collada only supports "_" and "-" besides letters
+                StringUtils::to_lower(what), "_" + p_str)) { // collada only supports "_" and "-" besides letters
         return true;
+    }
     return false;
 }
 

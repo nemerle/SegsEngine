@@ -40,7 +40,7 @@ void Physics2DServerWrapMT::thread_exit() {
 void Physics2DServerWrapMT::thread_step(real_t p_delta) {
 
     physics_server_2d->step(p_delta);
-    step_sem->post();
+    step_sem.post();
 }
 
 void Physics2DServerWrapMT::_thread_callback(void *_instance) {
@@ -84,11 +84,11 @@ void Physics2DServerWrapMT::step(real_t p_step) {
 
 void Physics2DServerWrapMT::sync() {
 
-    if (step_sem) {
+    if (create_thread) {
         if (first_frame)
             first_frame = false;
         else
-            step_sem->wait(); //must not wait if a step was not issued
+            step_sem.wait(); //must not wait if a step was not issued
     }
     physics_server_2d->sync();
 }
@@ -106,8 +106,6 @@ void Physics2DServerWrapMT::end_sync() {
 void Physics2DServerWrapMT::init() {
 
     if (create_thread) {
-
-        step_sem = memnew(Semaphore);
         //OS::get_singleton()->release_rendering_thread();
         if (create_thread) {
             thread.start(_thread_callback, this);
@@ -199,10 +197,6 @@ void Physics2DServerWrapMT::finish() {
 
         physics_server_2d->finish();
     }
-
-
-
-    memdelete(step_sem);
 }
 
 Physics2DServerWrapMT::Physics2DServerWrapMT(PhysicsServer2D *p_contained, bool p_create_thread) :
@@ -210,7 +204,7 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(PhysicsServer2D *p_contained, bool 
     queueing_thread_singleton = this;
     physics_server_2d = p_contained;
     create_thread = p_create_thread;
-    step_sem = nullptr;
+
     step_pending = 0;
     step_thread_up = false;
 

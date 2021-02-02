@@ -1206,18 +1206,20 @@ void AnimationTreePlayer::animation_node_set_master_animation(const StringName &
     GET_NODE(NODE_ANIMATION, AnimationTreeNode);
     n->from = p_master_animation;
     dirty_caches = true;
-    if (master.empty())
+    if (master.empty()) {
         _update_sources();
+    }
 }
 
-void AnimationTreePlayer::animation_node_set_filter_path(const StringName &p_node, const NodePath &p_track_path, bool p_filter) {
-
+void AnimationTreePlayer::animation_node_set_filter_path(
+        const StringName &p_node, const NodePath &p_track_path, bool p_filter) {
     GET_NODE(NODE_ANIMATION, AnimationTreeNode);
 
-    if (p_filter)
+    if (p_filter) {
         n->filter[p_track_path] = true;
-    else
+    } else {
         n->filter.erase(p_track_path);
+    }
 }
 
 void AnimationTreePlayer::animation_node_set_get_filtered_paths(const StringName &p_node, Vector<NodePath> *r_paths) const {

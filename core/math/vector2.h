@@ -38,8 +38,8 @@ struct Vector2i;
 struct GODOT_EXPORT Vector2 {
 
     enum Axis {
-    AXIS_X,
-    AXIS_Y,
+        AXIS_X,
+        AXIS_Y,
     };
     union {
         real_t x;
@@ -281,41 +281,27 @@ struct GODOT_EXPORT Vector2i {
         int height;
     };
 
-   constexpr int &operator[](int p_idx) {
-        return p_idx ? y : x;
-    }
-   constexpr int operator[](int p_idx) const {
-        return p_idx ? y : x;
-    }
+    constexpr int &operator[](int p_idx) { return p_idx ? y : x; }
 
-    Vector2i operator+(Vector2i p_v) const {
+    constexpr int operator[](int p_idx) const { return p_idx ? y : x; }
 
-        return Vector2i(x + p_v.x, y + p_v.y);
-    }
+    Vector2i operator+(Vector2i p_v) const { return Vector2i(x + p_v.x, y + p_v.y); }
 
     void operator+=(const Vector2i &p_v);
     Vector2i operator-(const Vector2i &p_v) const;
     void operator-=(const Vector2i &p_v);
-    constexpr Vector2i operator*(Vector2i p_v1) const {
-        return Vector2i(x * p_v1.x, y * p_v1.y);
-    }
+    constexpr Vector2i operator*(Vector2i p_v1) const { return Vector2i(x * p_v1.x, y * p_v1.y); }
 
-    Vector2i operator*(int rvalue) const {
-        return Vector2i(x * rvalue, y * rvalue);
-    }
+    Vector2i operator*(int rvalue) const { return Vector2i(x * rvalue, y * rvalue); }
 
     void operator*=(int rvalue) {
         x *= rvalue;
         y *= rvalue;
     }
 
-    constexpr Vector2i operator/(Vector2i p_v1) const {
-        return Vector2i(x / p_v1.x, y / p_v1.y);
-    };
+    constexpr Vector2i operator/(Vector2i p_v1) const { return Vector2i(x / p_v1.x, y / p_v1.y); };
 
-    Vector2i operator/(int rvalue) const {
-        return Vector2i(x / rvalue, y / rvalue);
-    }
+    Vector2i operator/(int rvalue) const { return Vector2i(x / rvalue, y / rvalue); }
 
     void operator/=(int rvalue) {
         x /= rvalue;
@@ -338,9 +324,9 @@ struct GODOT_EXPORT Vector2i {
     operator String() const;
 
     constexpr operator Vector2() const { return Vector2(float(x), float(y)); }
-    constexpr Vector2i(Vector2 p_vec2) : x((int)p_vec2.x),y((int)p_vec2.y) {}
-    constexpr Vector2i(int p_x, int p_y) : x(p_x),y(p_y) {}
-    constexpr Vector2i() : x(0),y(0) {}
+    constexpr Vector2i(Vector2 p_vec2) : x((int)p_vec2.x), y((int)p_vec2.y) {}
+    constexpr Vector2i(int p_x, int p_y) : x(p_x), y(p_y) {}
+    constexpr Vector2i() : x(0), y(0) {}
 };
 
 using Size2i = Vector2i;

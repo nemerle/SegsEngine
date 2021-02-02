@@ -91,6 +91,7 @@ static int _get_datatype_size(SL::DataType p_type) {
         case SL::TYPE_USAMPLER3D: return 16;
         case SL::TYPE_SAMPLERCUBE: return 16;
         case SL::TYPE_SAMPLEREXT: return 16;
+        case SL::TYPE_STRUCT: return 0;
     }
 
     ERR_FAIL_V(0);
@@ -131,6 +132,7 @@ static int _get_datatype_alignment(SL::DataType p_type) {
         case SL::TYPE_USAMPLER3D: return 16;
         case SL::TYPE_SAMPLERCUBE: return 16;
         case SL::TYPE_SAMPLEREXT: return 16;
+        case SL::TYPE_STRUCT: return 0;
     }
 
     ERR_FAIL_V(0);

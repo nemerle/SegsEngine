@@ -716,7 +716,7 @@ void ResourceManager::add_resource_format_loader(ResourceLoaderInterface* p_form
 void ResourceManager::remove_resource_format_loader(const ResourceLoaderInterface* p_format_loader) {
 
     if (unlikely(not p_format_loader)) {
-        _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Null p_format_loader in remove_resource_format_loader.");
+        _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Null p_format_loader in remove_resource_format_loader.",{});
         return;
     }
     ERR_FAIL_COND_MSG(D() == nullptr, "ResourceManager was already destructed");
@@ -731,7 +731,7 @@ void ResourceManager::remove_resource_format_loader(const ResourceLoaderInterfac
 void ResourceManager::remove_resource_format_loader(const Ref<ResourceFormatLoader>& p_format_loader) {
 
     if (unlikely(not p_format_loader)) {
-        _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Null p_format_loader in remove_resource_format_loader.");
+        _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Null p_format_loader in remove_resource_format_loader.",{});
         return;
     }
     ERR_FAIL_COND_MSG(D()==nullptr,"ResourceManager was already destructed");

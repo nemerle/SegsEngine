@@ -39,9 +39,7 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 
     ERR_FAIL_INDEX_V(p_argument, get_argument_count(), PropertyInfo());
 
-    PropertyInfo info = _gen_argument_type_info(p_argument);
-    info.name = StringName("arg" + itos(p_argument));
-    return info;
+    return _gen_argument_type_info(p_argument);
 }
 
 PropertyInfo MethodBind::get_return_info() const {

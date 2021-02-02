@@ -232,15 +232,15 @@ private:
     Transform physics_last_object_transform;
     Transform physics_last_camera_transform;
     ObjectID physics_last_id;
-    bool physics_has_last_mousepos;
     Vector2 physics_last_mousepos;
+    bool physics_has_last_mousepos;
     struct {
 
-        bool alt;
-        bool control;
-        bool shift;
-        bool meta;
         int mouse_mask;
+        uint8_t alt : 1;
+        uint8_t control : 1;
+        uint8_t shift : 1;
+        uint8_t meta : 1;
 
     } physics_last_mouse_state;
 

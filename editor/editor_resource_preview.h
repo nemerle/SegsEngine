@@ -78,8 +78,8 @@ class GODOT_EXPORT EditorResourcePreview : public Node {
 
     List<QueueItem> queue;
 
-    Mutex *preview_mutex;
-    Semaphore *preview_sem;
+    Mutex preview_mutex;
+    Semaphore preview_sem;
     Thread thread;
     volatile bool exit;
     volatile bool exited;

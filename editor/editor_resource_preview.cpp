@@ -115,7 +115,7 @@ void EditorResourcePreview::_thread_func(void *ud) {
 
 void EditorResourcePreview::_preview_ready(StringView p_str, const Ref<Texture> &p_texture, const Ref<Texture> &p_small_texture, const Callable &callit, const Variant &p_ud) {
 
-    preview_mutex->lock();
+    preview_mutex.lock();
 
     String path(p_str);
     uint32_t hash = 0;
@@ -137,7 +137,7 @@ void EditorResourcePreview::_preview_ready(StringView p_str, const Ref<Texture> 
 
     cache[path] = item;
 
-    preview_mutex->unlock();
+    preview_mutex.unlock();
 
     MessageQueue::get_singleton()->push_callable(callit, path, p_texture, p_small_texture, p_ud);
 }
@@ -227,11 +227,11 @@ void EditorResourcePreview::_thread() {
     exited = false;
     while (!exit) {
 
-        preview_sem->wait();
-        preview_mutex->lock();
+        preview_sem.wait();
+        preview_mutex.lock();
 
         if (queue.empty()) {
-            preview_mutex->unlock();
+            preview_mutex.unlock();
             continue;
         }
 
@@ -247,10 +247,10 @@ void EditorResourcePreview::_thread() {
 
             _preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.callable, item.userdata);
 
-            preview_mutex->unlock();
+            preview_mutex.unlock();
         } else {
 
-            preview_mutex->unlock();
+            preview_mutex.unlock();
 
             Ref<ImageTexture> texture;
             Ref<ImageTexture> small_texture;
@@ -362,7 +362,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
     ERR_FAIL_NULL(entry.get_object());
     ERR_FAIL_COND(not p_res);
 
-    preview_mutex->lock();
+    preview_mutex.lock();
 
     String path_id = "ID:" + itos(p_res->get_instance_id());
 
@@ -376,7 +376,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
         Variant res;
         Callable::CallError ce;
         entry.call(pargs,4,res,ce);
-        preview_mutex->unlock();
+        preview_mutex.unlock();
         return;
     }
 
@@ -389,14 +389,14 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
     item.userdata = p_userdata;
 
     queue.emplace_back(item);
-    preview_mutex->unlock();
-    preview_sem->post();
+    preview_mutex.unlock();
+    preview_sem.post();
 }
 
 void EditorResourcePreview::queue_resource_preview(StringView p_path, const Callable &callback, const Variant &p_userdata) {
 
     ERR_FAIL_NULL(callback.get_object());
-    preview_mutex->lock();
+    preview_mutex.lock();
     if (cache.contains_as(p_path)) {
         auto & entry(cache[String(p_path)]);
         entry.order = order++;
@@ -407,7 +407,7 @@ void EditorResourcePreview::queue_resource_preview(StringView p_path, const Call
         Variant res;
         Callable::CallError ce;
         callback.call(pargs,4,res,ce);
-        preview_mutex->unlock();
+        preview_mutex.unlock();
         return;
     }
 
@@ -417,8 +417,8 @@ void EditorResourcePreview::queue_resource_preview(StringView p_path, const Call
     item.userdata = p_userdata;
 
     queue.emplace_back(item);
-    preview_mutex->unlock();
-    preview_sem->post();
+    preview_mutex.unlock();
+    preview_sem.post();
 }
 
 void EditorResourcePreview::add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator) {
@@ -452,7 +452,7 @@ void EditorResourcePreview::_bind_methods() {
 
 void EditorResourcePreview::check_for_invalidation(StringView p_path) {
 
-    preview_mutex->lock();
+    preview_mutex.lock();
 
     bool call_invalidated = false;
     auto iter = cache.find_as(p_path);
@@ -465,7 +465,7 @@ void EditorResourcePreview::check_for_invalidation(StringView p_path) {
         }
     }
 
-    preview_mutex->unlock();
+    preview_mutex.unlock();
 
     if (call_invalidated) { //do outside mutex
         call_deferred([this,path=Variant(p_path)] { emit_signal("preview_invalidated", path);});
@@ -480,7 +480,7 @@ void EditorResourcePreview::start() {
 void EditorResourcePreview::stop() {
     if (thread.is_started()) {
         exit = true;
-        preview_sem->post();
+        preview_sem.post();
         while (!exited) {
             OS::get_singleton()->delay_usec(10000);
             RenderingServer::sync_thread(); //sync pending stuff, as thread may be blocked on visual server
@@ -491,16 +491,11 @@ void EditorResourcePreview::stop() {
 
 EditorResourcePreview::EditorResourcePreview() {
     singleton = this;
-    preview_mutex = memnew(Mutex);
-    preview_sem = memnew(Semaphore);
     order = 0;
     exit = false;
     exited = false;
 }
 
 EditorResourcePreview::~EditorResourcePreview() {
-
     stop();
-    memdelete(preview_mutex);
-    memdelete(preview_sem);
 }

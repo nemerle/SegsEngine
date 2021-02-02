@@ -571,9 +571,8 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 }
 
 void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
-
-    using ScriptMemberMap = Map<const Script *, HashSet<StringName> >;
-    using ScriptConstantsMap = Map<const Script *, HashMap<StringName, Variant> >;
+    using ScriptMemberMap = Map<const Script *, HashSet<StringName>>;
+    using ScriptConstantsMap = Map<const Script *, HashMap<StringName, Variant>>;
 
     Object *obj = ObjectDB::get_instance(p_id);
     if (!obj)
@@ -582,60 +581,59 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
     using PropertyDesc = Pair<PropertyInfo, Variant>;
     List<PropertyDesc> properties;
 
-if (ScriptInstance *si = obj->get_script_instance()) {
-    if (si->get_script()) {
+    if (ScriptInstance *si = obj->get_script_instance()) {
+        if (si->get_script()) {
+            ScriptMemberMap members;
+            members[si->get_script().get()] = HashSet<StringName>();
+            si->get_script()->get_members(&(members[si->get_script().get()]));
 
-        ScriptMemberMap members;
-        members[si->get_script().get()] = HashSet<StringName>();
-        si->get_script()->get_members(&(members[si->get_script().get()]));
+            ScriptConstantsMap constants;
+            constants[si->get_script().get()] = HashMap<StringName, Variant>();
+            si->get_script()->get_constants(&(constants[si->get_script().get()]));
 
-        ScriptConstantsMap constants;
-        constants[si->get_script().get()] = HashMap<StringName, Variant>();
-        si->get_script()->get_constants(&(constants[si->get_script().get()]));
+            Ref<Script> base = si->get_script()->get_base_script();
+            while (base) {
+                members[base.get()] = HashSet<StringName>();
+                base->get_members(&(members[base.get()]));
 
-        Ref<Script> base = si->get_script()->get_base_script();
-        while (base) {
+                constants[base.get()] = HashMap<StringName, Variant>();
+                base->get_constants(&(constants[base.get()]));
 
-            members[base.get()] = HashSet<StringName>();
-            base->get_members(&(members[base.get()]));
+                base = base->get_base_script();
+            }
 
-            constants[base.get()] = HashMap<StringName, Variant>();
-            base->get_constants(&(constants[base.get()]));
-
-            base = base->get_base_script();
-        }
-
-        for (const eastl::pair<const Script *, HashSet<StringName>> &sm : members) {
-            for (const StringName &E : sm.second) {
-                Variant m;
-                if (si->get(E, m)) {
-                    String script_path(sm.first == si->get_script().get() ?
-                                                  String() :
-                                                  String(PathUtils::get_file(sm.first->get_path())) + "/");
-                    PropertyInfo pi(
-                            m.get_type(), StringName("Members/" + script_path + E.asCString()));
-                    properties.push_back(PropertyDesc(pi, m));
+            for (const eastl::pair<const Script *const, HashSet<StringName>> &sm : members) {
+                for (const StringName &E : sm.second) {
+                    Variant m;
+                    if (si->get(E, m)) {
+                        String script_path(sm.first == si->get_script().get() ?
+                                                   String() :
+                                                   String(PathUtils::get_file(sm.first->get_path())) + "/");
+                        PropertyInfo pi(m.get_type(), StringName("Members/" + script_path + E.asCString()));
+                        properties.push_back(PropertyDesc(pi, m));
+                    }
                 }
             }
-        }
 
-        for (const auto &sc : constants) {
-            for (const eastl::pair<const StringName, Variant> &E : sc.second) {
-                String script_path(sc.first == si->get_script().get() ?
-                                             String() :
-                                             String(PathUtils::get_file(sc.first->get_path())) + "/");
-                if (E.second.get_type() == VariantType::OBJECT) {
-                    Variant id = Variant::from(E.second.as<Object *>()->get_instance_id());
-                    PropertyInfo pi(id.get_type(), StringName("Constants/" + String(E.first)), PropertyHint::ObjectID, "Object");
-                    properties.push_back(PropertyDesc(pi, id));
-                } else {
-                    PropertyInfo pi(E.second.get_type(), StringName("Constants/" + script_path + E.first.asCString()));
-                    properties.push_back(PropertyDesc(pi, E.second));
+            for (const auto &sc : constants) {
+                for (const eastl::pair<const StringName, Variant> &E : sc.second) {
+                    String script_path(sc.first == si->get_script().get() ?
+                                               String() :
+                                               String(PathUtils::get_file(sc.first->get_path())) + "/");
+                    if (E.second.get_type() == VariantType::OBJECT) {
+                        Variant id = Variant::from(E.second.as<Object *>()->get_instance_id());
+                        PropertyInfo pi(id.get_type(), StringName("Constants/" + String(E.first)),
+                                PropertyHint::ObjectID, "Object");
+                        properties.push_back(PropertyDesc(pi, id));
+                    } else {
+                        PropertyInfo pi(
+                                E.second.get_type(), StringName("Constants/" + script_path + E.first.asCString()));
+                        properties.push_back(PropertyDesc(pi, E.second));
+                    }
                 }
             }
         }
     }
-}
 
     if (Node *node = object_cast<Node>(obj)) {
         // in some cases node will not be in tree here
@@ -653,10 +651,11 @@ if (ScriptInstance *si = obj->get_script_instance()) {
         if (Script *s = object_cast<Script>(res)) {
             HashMap<StringName, Variant> constants;
             s->get_constants(&constants);
-            for (eastl::pair<const StringName,Variant> &E : constants) {
+            for (eastl::pair<const StringName, Variant> &E : constants) {
                 if (E.second.get_type() == VariantType::OBJECT) {
                     Variant id = Variant::from(E.second.as<Object *>()->get_instance_id());
-                    PropertyInfo pi(id.get_type(), StringName("Constants/" + String(E.first)), PropertyHint::ObjectID, "Object");
+                    PropertyInfo pi(id.get_type(), StringName("Constants/" + String(E.first)), PropertyHint::ObjectID,
+                            "Object");
                     properties.push_front(PropertyDesc(pi, E.second));
                 } else {
                     PropertyInfo pi(E.second.get_type(), StringName("Constants/" + String(E.first)));
@@ -668,7 +667,7 @@ if (ScriptInstance *si = obj->get_script_instance()) {
 
     Vector<PropertyInfo> pinfo;
     obj->get_property_list(&pinfo, true);
-    for(PropertyInfo &E : pinfo ) {
+    for (PropertyInfo &E : pinfo) {
         if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
             properties.push_back(PropertyDesc(E, obj->get(E.name)));
         }
@@ -690,10 +689,10 @@ if (ScriptInstance *si = obj->get_script_instance()) {
         prop.push_back(pi.name);
         prop.push_back(int(pi.type));
 
-        //only send information that can be sent..
-        int len = 0; //test how big is this to encode
+        // only send information that can be sent..
+        int len = 0; // test how big is this to encode
         encode_variant(var, nullptr, len);
-        if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+        if (len > packet_peer_stream->get_output_buffer_max_size()) { // limit to max size
             prop.push_back(PropertyHint::ObjectTooBig);
             prop.push_back("");
             prop.push_back(pi.usage);

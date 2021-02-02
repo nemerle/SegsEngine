@@ -262,13 +262,6 @@ Dictionary Dictionary::duplicate(bool p_deep) const {
     return n;
 }
 
-Dictionary &Dictionary::operator=(const Dictionary &p_dictionary) {
-    if(this==&p_dictionary)
-        return *this;
-    _ref(p_dictionary);
-    return *this;
-}
-
 Dictionary::Dictionary(const Dictionary &p_from) {
     _p = nullptr;
     _ref(p_from);

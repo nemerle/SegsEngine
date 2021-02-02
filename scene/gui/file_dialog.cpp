@@ -245,12 +245,12 @@ void FileDialog::_action_pressed() {
             valid = true; // match none
         } else if (filters.size() > 1 && filter->get_selected() == 0) {
             // match all filters
-            for (int i = 0; i < filters.size(); i++) {
+            for (const String &flt_src : filters) {
 
-                StringView flt = StringUtils::get_slice(filters[i],(';'), 0);
+                StringView flt = StringUtils::get_slice(flt_src,';', 0);
                 for (int j = 0; j < StringUtils::get_slice_count(flt,','); j++) {
 
-                    StringView str = StringUtils::strip_edges(StringUtils::get_slice(flt,(','), j));
+                    StringView str = StringUtils::strip_edges(StringUtils::get_slice(flt,',', j));
                     if (StringUtils::match(f,str)) {
                         valid = true;
                         break;
@@ -265,11 +265,11 @@ void FileDialog::_action_pressed() {
                 idx--;
             if (idx >= 0 && idx < filters.size()) {
 
-                StringView flt = StringUtils::get_slice(filters[idx],(';'), 0);
+                StringView flt = StringUtils::get_slice(filters[idx],';', 0);
                 int filterSliceCount = StringUtils::get_slice_count(flt,',');
                 for (int j = 0; j < filterSliceCount; j++) {
 
-                    StringView str = StringUtils::strip_edges(StringUtils::get_slice(flt,(','), j));
+                    StringView str = StringUtils::strip_edges(StringUtils::get_slice(flt,',', j));
                     if (StringUtils::match(f,str)) {
                         valid = true;
                         break;
@@ -277,7 +277,7 @@ void FileDialog::_action_pressed() {
                 }
 
                 if (!valid && filterSliceCount > 0) {
-                    StringView str = StringUtils::strip_edges(StringUtils::get_slice(flt,(','), 0));
+                    StringView str = StringUtils::strip_edges(StringUtils::get_slice(flt,',', 0));
                     f += StringUtils::substr(str,1, str.length() - 1);
                     file->set_text(PathUtils::get_file(f));
                     valid = true;
@@ -313,19 +313,22 @@ void FileDialog::_cancel_pressed() {
 
 bool FileDialog::_is_open_should_be_disabled() {
 
-    if (mode == MODE_OPEN_ANY || mode == MODE_SAVE_FILE)
+    if (mode == MODE_OPEN_ANY || mode == MODE_SAVE_FILE) {
         return false;
+    }
 
     TreeItem *ti = tree->get_next_selected(tree->get_root());
     while (ti) {
         TreeItem *prev_ti = ti;
         ti = tree->get_next_selected(tree->get_root());
-        if (ti == prev_ti)
+        if (ti == prev_ti) {
             break;
+        }
     }
     // We have something that we can't select?
-    if (!ti)
+    if (!ti) {
         return mode != MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
+    }
 
     Dictionary d = ti->get_metadata(0).as<Dictionary>();
 
@@ -689,20 +692,23 @@ void FileDialog::set_mode(Mode p_mode) {
             break;
         case MODE_OPEN_DIR:
             get_ok()->set_text(RTR("Select Current Folder"));
-            if (mode_overrides_title)
+            if (mode_overrides_title) {
                 set_title(RTR("Open a Directory"));
+            }
             makedir->show();
             break;
         case MODE_OPEN_ANY:
             get_ok()->set_text(RTR("Open"));
-            if (mode_overrides_title)
+            if (mode_overrides_title) {
                 set_title(RTR("Open a File or Directory"));
+            }
             makedir->show();
             break;
         case MODE_SAVE_FILE:
             get_ok()->set_text(RTR("Save"));
-            if (mode_overrides_title)
+            if (mode_overrides_title) {
                 set_title(RTR("Save a File"));
+            }
             makedir->show();
             break;
     }

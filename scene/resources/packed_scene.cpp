@@ -430,9 +430,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
     //really convoluted condition, but it basically checks that index is only saved when part of an inherited scene OR the node parent is from the edited scene
     if (p_owner->get_scene_inherited_state() ||
-            p_node != p_owner &&
+            (p_node != p_owner &&
             (p_node->get_owner() != p_owner ||
-             p_node->get_parent() != p_owner && p_node->get_parent()->get_owner() != p_owner)) {
+             (p_node->get_parent() != p_owner && p_node->get_parent()->get_owner() != p_owner)))) {
         //part of an inherited scene, or parent is from an instanced scene
         nd.index = p_node->get_index();
     }
@@ -650,7 +650,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
     bool save_node = !nd.properties.empty() || !nd.groups.empty(); // some local properties or groups exist
     save_node = save_node || p_node == p_owner; // owner is always saved
-    save_node = save_node || p_node->get_owner() == p_owner && instanced_by_owner; //part of scene and not instanced
+    save_node = save_node || (p_node->get_owner() == p_owner && instanced_by_owner); //part of scene and not instanced
 
     int idx = nodes.size();
     int parent_node = NO_PARENT_SAVED;

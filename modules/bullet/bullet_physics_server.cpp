@@ -44,7 +44,7 @@
 #include "shape_bullet.h"
 #include "soft_body_bullet.h"
 
-#include "core/list.h"
+#include "core/external_profiler.h"
 #include "core/class_db.h"
 #include "core/error_macros.h"
 #include "core/property_info.h"

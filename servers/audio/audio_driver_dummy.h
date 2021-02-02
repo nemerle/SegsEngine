@@ -33,6 +33,7 @@
 #include "servers/audio_server.h"
 
 #include "core/os/thread.h"
+#include "core/os/mutex.h"
 
 class AudioDriverDummy : public AudioDriver {
 

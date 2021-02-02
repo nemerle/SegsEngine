@@ -35,7 +35,7 @@
 
 
 class InListNodeBase {
-public:    
+public:
     class IntrusiveListBase* _root;
     InListNodeBase* _next;
     InListNodeBase* _prev;
@@ -168,7 +168,7 @@ public:
     IntrusiveList() noexcept = default;
     _FORCE_INLINE_ ~IntrusiveList() {
         if (unlikely(_first != nullptr)) {
-            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "List was not cleared before destruction");
+            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "List was not cleared before destruction",{});
         }
     }
 };

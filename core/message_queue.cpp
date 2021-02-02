@@ -30,15 +30,15 @@
 
 #include "message_queue.h"
 
-
-#include "core_string_names.h"
-#include "core/project_settings.h"
-#include "core/print_string.h"
-#include "core/os/mutex.h"
-#include "core/object_db.h"
-#include "core/string_utils.h"
-#include "core/script_language.h"
 #include "core/callable_method_pointer.h"
+#include "core/core_string_names.h"
+#include "core/external_profiler.h"
+#include "core/object_db.h"
+#include "core/os/mutex.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
+#include "core/string_utils.h"
 
 #define STACK_DEPTH 3
 MessageQueue *MessageQueue::singleton = nullptr;

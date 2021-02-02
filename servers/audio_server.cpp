@@ -29,14 +29,16 @@
 /*************************************************************************/
 
 #include "audio_server.h"
+
 #include "core/debugger/script_debugger.h"
+#include "core/external_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/method_bind.h"
 #include "core/method_enum_caster.h"
+#include "core/object_tooling.h"
 #include "core/os/file_access.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
-#include "core/object_tooling.h"
 #include "core/project_settings.h"
 #include "core/resource/resource_manager.h"
 #include "core/script_language.h"

@@ -469,7 +469,7 @@ const String &FileSystemDock::get_current_path() const {
 
 void FileSystemDock::_set_current_path_text(StringView p_path) {
     if (p_path == StringView("Favorites")) {
-        current_path->set_text_uistring(TTR("Favorites").asString());
+        current_path->set_text(TTR("Favorites"));
     } else {
         current_path->set_text(path);
     }

@@ -89,14 +89,14 @@ public:
 
     BVHHandle create(T *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
 
-        // not completely sure why, but the order of the pairing callbacks seems to be causing problems in
-        // the render tree unless these are flushed before creating a new object
+        // not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
+        // of waiting for update, so only uncomment this if there are bugs.
         if (USE_PAIRS) {
-            _check_for_collisions();
+            //_check_for_collisions();
         }
 
 #ifdef TOOLS_ENABLED
-        if constexpr (!USE_PAIRS) {
+        if (!USE_PAIRS) {
             if (p_pairable) {
                 WARN_PRINT_ONCE("creating pairable item in BVH with USE_PAIRS set to false");
             }
@@ -105,8 +105,16 @@ public:
 
         BVHHandle h = tree.item_add(p_userdata, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask);
 
-        if constexpr (USE_PAIRS) {
-            _add_changed_item(h, p_aabb);
+        if (USE_PAIRS) {
+            // for safety initialize the expanded AABB
+            AABB &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+            expanded_aabb = p_aabb;
+            expanded_aabb.grow_by(tree._pairing_expansion);
+
+            // force a collision check no matter the AABB
+            _add_changed_item(h, p_aabb, false);
+
+            _check_for_collisions(true);
         }
 
         return h;
@@ -169,6 +177,8 @@ public:
         }
 
         tree.item_remove(p_handle);
+
+        _check_for_collisions(true);
     }
 
     // call e.g. once per frame (this does a trickle optimize)
@@ -190,11 +200,9 @@ public:
         tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
 
         if constexpr (USE_PAIRS) {
-            // not completely sure why, but the order of the pairing callbacks seems to be causing problems in
-            // the render tree unless these are flushed before creating a new object.. we will do this for set_pairable
-            // to just in case. This may not be required, and may slow things down slightly when there are a lot
-            // of visibility changes in a frame
-            _check_for_collisions();
+            // not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
+            // of waiting for update, so only uncomment this if there are bugs.
+            //_check_for_collisions();
 
             // when the pairable state changes, we need to force a collision check because newly pairable
             // items may be in collision, and unpairable items might move out of collision.
@@ -298,8 +306,6 @@ private:
             // noop
             return;
         }
-        AABB bb;
-
         typename BVHTREE_CLASS::CullParams params;
 
         params.result_count_overall = 0;

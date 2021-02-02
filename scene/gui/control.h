@@ -485,7 +485,6 @@ public:
     void set_disable_visibility_clip(bool p_ignore);
     bool is_visibility_clip_disabled() const;
 
-    void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
     String get_configuration_warning() const override;
 
     Control();

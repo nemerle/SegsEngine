@@ -37,6 +37,7 @@
 #include "core/math/rect2.h"
 #include "core/math/vector3.h"
 #include "core/os/thread.h"
+#include "core/os/semaphore.h"
 
 class ResourceInteractiveLoader;
 class Resource;
@@ -622,7 +623,7 @@ public:
 class GODOT_EXPORT _Semaphore : public RefCounted {
 
     GDCLASS(_Semaphore, RefCounted)
-    Semaphore *semaphore;
+    Semaphore semaphore;
 
     static void _bind_methods();
 

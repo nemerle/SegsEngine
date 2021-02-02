@@ -69,14 +69,14 @@ void SceneMapEditor::edit(SceneMap *p_scenemap) {
 }
 
 void SceneMapEditor::_notification(int p_what) {
-    NodeNotification nn=static_cast<NodeNotification>(p_what);
+    //NodeNotification nn=static_cast<NodeNotification>(p_what);
     switch(p_what) {
     case NOTIFICATION_PROCESS: {
         if (!m_node) {
             return;
         }
 
-        Transform xf = m_node->get_global_transform();
+        //Transform xf = m_node->get_global_transform();
 
         /*if (xf != grid_xform) {
             for (int i = 0; i < 3; i++) {

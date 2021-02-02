@@ -1388,7 +1388,7 @@ const String &RasterizerStorageGLES3::texture_get_path(RID p_texture) const {
 }
 void RasterizerStorageGLES3::texture_debug_usage(Vector<RenderingServer::TextureInfo> *r_info) {
 
-    List<RID> textures;
+    Vector<RID> textures;
     texture_owner.get_owned_list(&textures);
 
     for (const RID &E : textures) {

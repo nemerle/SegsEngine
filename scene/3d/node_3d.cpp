@@ -139,7 +139,7 @@ void Node3D::_notification(int p_what) {
                 data.parent = object_cast<Node3D>(p);
 
             if (data.parent)
-                data.parent->data.children.push_back(this);
+                data.parent->data.children.emplace_back(this);
 
             if (data.toplevel && !Engine::get_singleton()->is_editor_hint()) {
 
@@ -524,14 +524,16 @@ void Node3D::_propagate_visibility_changed() {
     emit_signal(SceneStringNames::visibility_changed);
     Object_change_notify(this,"visible");
 #ifdef TOOLS_ENABLED
-    if (data.gizmo)
+    if (data.gizmo) {
         _update_gizmo();
+    }
 #endif
 
     for (Node3D * c : data.children) {
 
-        if (!c || !c->data.visible)
+        if (!c || !c->data.visible) {
             continue;
+        }
         c->_propagate_visibility_changed();
     }
 }

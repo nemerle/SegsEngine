@@ -201,8 +201,8 @@ public:
     static void add_namespace(StringName ns,StringView header_file) {
         GLOBAL_LOCK_FUNCTION
         ERR_FAIL_COND(classes.find(ns)!=classes.end());
-        classes[ns] = ClassInfo();
         ClassInfo &ti = classes[ns];
+        ti = ClassInfo();
         ti.name = ns;
         ti.inherits = StringName();
         ti.api = current_api;
@@ -259,7 +259,7 @@ public:
         ci.creation_func = &_create_ptr_func<T>;
         T::register_custom_data_to_otdb();
     }
-    static bool bind_helper(MethodBind *bind,const char * instance_type,const StringName &p_name);
+    static bool bind_helper(MethodBind *bind, const StringName &p_name);
     static bool can_bind(const StringName &classname, const StringName &p_name);
 
     static void get_class_list(Vector<StringName> *p_classes);

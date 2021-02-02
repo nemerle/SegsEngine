@@ -47,7 +47,7 @@ public:
             RID canvas;
             bool operator<(const CanvasKey &p_canvas) const {
                 if (stacking == p_canvas.stacking)
-                    return canvas < p_canvas.canvas;
+                    return canvas.get_data() < p_canvas.canvas.get_data();
                 return stacking < p_canvas.stacking;
             }
             CanvasKey() {
@@ -82,11 +82,11 @@ public:
         Rect2 viewport_to_screen_rect;
 
         int render_info[RS::VIEWPORT_RENDER_INFO_MAX];
-        int viewport_to_screen;
-        int shadow_atlas_size;
-        RS::ViewportUpdateMode update_mode;
-        RS::ViewportDebugDraw debug_draw;
-        RS::ViewportClearMode clear_mode;
+        int viewport_to_screen = 0;
+        int shadow_atlas_size = 0;
+        RS::ViewportUpdateMode update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
+        RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
+        RS::ViewportClearMode clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 
         bool viewport_render_direct_to_screen : 1;
         bool hide_scenario : 1;
@@ -97,19 +97,15 @@ public:
         bool keep_3d_linear : 1;
         bool use_arvr : 1; /* use arvr interface to override camera positioning and projection matrices and control output */
 
-        bool transparent_bg;
+        bool transparent_bg : 1;
 
         Viewport() {
-            update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
-            clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
             transparent_bg = false;
             disable_environment = false;
-            viewport_to_screen = 0;
-            shadow_atlas_size = 0;
             disable_3d = false;
             disable_3d_by_usage = false;
             keep_3d_linear = false;
-            debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
+
             for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_MAX; i++) {
                 render_info[i] = 0;
             }

@@ -568,13 +568,19 @@ TS_Function *TS_Function::from_rd(const TS_TypeLike *inside, const MethodInterfa
     res->enclosing_type = inside;
 
     res->return_type = TS_TypeResolver::get().resolveType(method_interface->return_type);
+    int arg_idx=0;
     for(const ArgumentInterface & ai : method_interface->arguments) {
         res->arg_types.emplace_back(TS_TypeResolver::get().resolveType(ai.type));
-        res->arg_values.emplace_back(escape_csharp_keyword(ai.name));
+        auto arg_name = ai.name;
+        if(arg_name.empty()) {
+            arg_name = String(String::CtorSprintf(),"arg%d",arg_idx);
+        }
+        res->arg_values.emplace_back(escape_csharp_keyword(arg_name));
         res->nullable_ref.emplace_back(ai.def_param_mode!= ArgumentInterface::CONSTANT);
         if(!ai.default_argument.empty()) {
             res->arg_defaults[res->arg_values.size()-1] = ai.default_argument;
         }
+        arg_idx++;
     }
     s_ptr_cache[method_interface] = res;
     return res;

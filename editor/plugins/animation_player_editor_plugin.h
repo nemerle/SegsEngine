@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_PLAYER_EDITOR_PLUGIN_H
-#define ANIMATION_PLAYER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -227,12 +226,14 @@ protected:
     void _prepare_onion_layers_1_deferred();
 
 public:
-    AnimationPlayer *get_player() const;
+    AnimationPlayer *get_player() const { return player; }
     static AnimationPlayerEditor *singleton;
 
     bool is_pinned() const { return pin->is_pressed(); }
     void unpin() { pin->set_pressed(false); }
+
     AnimationTrackEditor *get_track_editor() { return track_editor; }
+
     Dictionary get_state() const;
     void set_state(const Dictionary &p_state);
 
@@ -270,5 +271,3 @@ public:
     AnimationPlayerEditorPlugin(EditorNode *p_node);
     ~AnimationPlayerEditorPlugin() override;
 };
-
-#endif // ANIMATION_PLAYER_EDITOR_PLUGIN_H

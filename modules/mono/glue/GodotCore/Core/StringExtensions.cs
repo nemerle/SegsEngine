@@ -400,10 +400,12 @@ namespace Godot
         {
             int index = 0;
             int hashv = 5381;
-            int c;
-
-            while ((c = instance[index++]) != 0)
-                hashv = (hashv << 5) + hashv + c; // hash * 33 + c
+            
+            foreach (char c in instance)
+            {
+                hashv = (hashv << 5) + hashv + (int)c; // hash * 33 + c
+                
+            }
 
             return hashv;
         }

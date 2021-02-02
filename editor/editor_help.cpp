@@ -397,7 +397,7 @@ void EditorHelp::_update_doc() {
     m_private->section_line.push_back(Pair<String, int>(TTR("Top").asCString(), 0));
     class_desc->push_font(doc_title_font);
     class_desc->push_color(title_color);
-    class_desc->add_text_uistring((TTR("Class:") + " ").asString());
+    class_desc->add_text((TTR("Class:") + " "));
     class_desc->push_color(headline_color);
     _add_text(edited_class);
     class_desc->pop();
@@ -412,7 +412,7 @@ void EditorHelp::_update_doc() {
 
         class_desc->push_color(title_color);
         class_desc->push_font(doc_font);
-        class_desc->add_text_uistring((TTR("Inherits:") + " ").asString());
+        class_desc->add_text((TTR("Inherits:") + " "));
         class_desc->pop();
 
         String inherits(cd.inherits);
@@ -444,7 +444,7 @@ void EditorHelp::_update_doc() {
                 if (!found) {
                     class_desc->push_color(title_color);
                     class_desc->push_font(doc_font);
-                    class_desc->add_text_uistring((TTR("Inherited by:") + " ").asString());
+                    class_desc->add_text(TTR("Inherited by:") + " ");
                     class_desc->pop();
                     found = true;
                 }
@@ -636,7 +636,7 @@ void EditorHelp::_update_doc() {
     for (size_t i = 0; i < cd.methods.size(); i++) {
         if (skip_methods.contains_as(cd.methods[i].name)) {
             if (cd.methods[i].arguments.empty() /* getter */ ||
-                    cd.methods[i].arguments.size() == 1 && cd.methods[i].return_type == "void" /* setter */) {
+                    (cd.methods[i].arguments.size() == 1 && cd.methods[i].return_type == "void") /* setter */) {
                 continue;
             }
         }
@@ -666,7 +666,7 @@ void EditorHelp::_update_doc() {
 
             for (const DocContents::MethodDoc &dm : methods) {
                 StringView q = dm.qualifiers;
-                if (pass == 0 && q.contains("virtual") || pass == 1 && !q.contains("virtual")) {
+                if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
                     m.push_back(dm);
                 }
             }
@@ -1145,7 +1145,7 @@ void EditorHelp::_update_doc() {
 
             for (size_t i = 0; i < methods.size(); i++) {
                 auto q = methods[i].qualifiers;
-                if (pass == 0 && q.contains("virtual") || pass == 1 && not q.contains("virtual")) {
+                if ((pass == 0 && q.contains("virtual")) || (pass == 1 && not q.contains("virtual"))) {
                     methods_filtered.push_back(methods[i]);
                 }
             }

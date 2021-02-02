@@ -270,7 +270,8 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
     Node *scene_node= get_scene_node(this);
     if (!display_foreign && p_node->get_owner() != scene_node && p_node != scene_node) {
 
-        if (!show_enabled_subscene && !can_open_instance || !p_node->get_owner() || !scene_node->is_editable_instance(p_node->get_owner())) {
+        if ((!show_enabled_subscene && !can_open_instance) || !p_node->get_owner() ||
+                !scene_node->is_editable_instance(p_node->get_owner())) {
             return false;
         }
         //allow

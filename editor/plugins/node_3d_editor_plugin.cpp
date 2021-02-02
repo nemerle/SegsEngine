@@ -2757,10 +2757,10 @@ void Node3DEditorViewport::_draw() {
     if (message_time > 0) {
         Ref<Font> font = get_theme_font("font", "Label");
         Point2 msgpos = Point2(5, get_size().y - 20);
-        UIString msg(message.asString());
-        font->draw_ui_string(ci, msgpos + Point2(1, 1), msg, Color(0, 0, 0, 0.8f));
-        font->draw_ui_string(ci, msgpos + Point2(-1, -1), msg, Color(0, 0, 0, 0.8f));
-        font->draw_ui_string(ci, msgpos, msg, Color(1, 1, 1, 1));
+        String msg(message);
+        font->draw(ci, msgpos + Point2(1, 1), msg, Color(0, 0, 0, 0.8f));
+        font->draw(ci, msgpos + Point2(-1, -1), msg, Color(0, 0, 0, 0.8f));
+        font->draw(ci, msgpos, msg, Color(1, 1, 1, 1));
     }
 
     if (_edit.mode == TRANSFORM_ROTATE) {

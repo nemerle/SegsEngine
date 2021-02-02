@@ -1211,8 +1211,8 @@ void EditorNode::_save_edited_subresources(Node *scene, Map<RES, bool> &processe
 
 void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 
-    if (p_node->is_class("Viewport") || p_node != editor_data.get_edited_scene_root() &&
-        p_node->get_owner() != editor_data.get_edited_scene_root())
+    if (p_node->is_class("Viewport") || (p_node != editor_data.get_edited_scene_root() &&
+        p_node->get_owner() != editor_data.get_edited_scene_root()))
         return;
 
     if (p_node->is_class("CanvasItem"))
@@ -2100,7 +2100,8 @@ void EditorNode::_run(bool p_current, StringView p_custom) {
     String args;
     bool skip_breakpoints;
 
-    if (p_current || editor_data.get_edited_scene_root() && !p_custom.empty() && p_custom == editor_data.get_edited_scene_root()->get_filename()) {
+    if (p_current || (editor_data.get_edited_scene_root() && !p_custom.empty() &&
+                             p_custom == editor_data.get_edited_scene_root()->get_filename())) {
 
         Node *scene = editor_data.get_edited_scene_root();
 
@@ -2953,8 +2954,8 @@ void EditorNode::_discard_changes(StringView p_str) {
                 }
             } else if (current_option == FILE_CLOSE_OTHERS || current_option == FILE_CLOSE_RIGHT) {
                 if (editor_data.get_edited_scene_count() == 1 ||
-                        current_option == FILE_CLOSE_RIGHT &&
-                        editor_data.get_edited_scene_count() <= editor_data.get_edited_scene() + 1) {
+                        (current_option == FILE_CLOSE_RIGHT &&
+                        editor_data.get_edited_scene_count() <= editor_data.get_edited_scene() + 1)) {
                     current_option = -1;
                     save_confirmation->hide();
                 } else {
@@ -2990,26 +2991,29 @@ void EditorNode::_discard_changes(StringView p_str) {
 
 void EditorNode::_update_debug_options() {
     Variant false_var(false);
+    auto *es = EditorSettings::get_singleton();
 
     bool check_deploy_remote =
-            EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false_var).as<bool>();
-    bool check_file_server =
-            EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false_var).as<bool>();
-    bool check_debug_collisons =
-            EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false_var).as<bool>();
+            es->get_project_metadata("debug_options", "run_deploy_remote_debug", false_var).as<bool>();
+    bool check_file_server = es->get_project_metadata("debug_options", "run_file_server", false_var).as<bool>();
+    bool check_debug_collisons = es->get_project_metadata("debug_options", "run_debug_collisons", false_var).as<bool>();
     bool check_debug_navigation =
-            EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false_var).as<bool>();
-    bool check_live_debug =
-            EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", false_var).as<bool>();
-    bool check_reload_scripts =
-            EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", false_var).as<bool>();
+            es->get_project_metadata("debug_options", "run_debug_navigation", false_var).as<bool>();
+    bool check_live_debug = es->get_project_metadata("debug_options", "run_live_debug", false_var).as<bool>();
+    bool check_reload_scripts = es->get_project_metadata("debug_options", "run_reload_scripts", false_var).as<bool>();
 
-    if (check_deploy_remote) _menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
-    if (check_file_server) _menu_option_confirm(RUN_FILE_SERVER, true);
-    if (check_debug_collisons) _menu_option_confirm(RUN_DEBUG_COLLISONS, true);
-    if (check_debug_navigation) _menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
-    if (check_live_debug) _menu_option_confirm(RUN_LIVE_DEBUG, true);
-    if (check_reload_scripts) _menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
+    if (check_deploy_remote)
+        _menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
+    if (check_file_server)
+        _menu_option_confirm(RUN_FILE_SERVER, true);
+    if (check_debug_collisons)
+        _menu_option_confirm(RUN_DEBUG_COLLISONS, true);
+    if (check_debug_navigation)
+        _menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
+    if (check_live_debug)
+        _menu_option_confirm(RUN_LIVE_DEBUG, true);
+    if (check_reload_scripts)
+        _menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
 }
 
 void EditorNode::_update_file_menu_opened() {
@@ -5122,8 +5126,8 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
             _scene_tab_closed(scene_tabs->get_hovered_tab());
         }
     } else {
-        if (mb->get_button_index() == BUTTON_LEFT && mb->is_doubleclick() ||
-            mb->get_button_index() == BUTTON_MIDDLE && mb->is_pressed()) {
+        if ((mb->get_button_index() == BUTTON_LEFT && mb->is_doubleclick()) ||
+            (mb->get_button_index() == BUTTON_MIDDLE && mb->is_pressed())) {
             _menu_option_confirm(FILE_NEW_SCENE, true);
         }
     }
@@ -5186,20 +5190,44 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 
     bool unsaved = saved_version != editor_data.get_undo_redo().get_version();
 
-    if (p_tab == editor_data.get_edited_scene()) return; // pointless
+    if (p_tab == editor_data.get_edited_scene()) {
+        return; // pointless
+    }
+//TODO: code below triggers "Cannot pass lambda functions to method observer callback." message,
+// since this is called with ScriptEditorDebugger::_method_changeds set as callback in undo_redo
+//    uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
+//    int version = unsaved ? saved_version : 0;
+//    int next_ver = next_scene_version == 0 ? editor_data.get_undo_redo().get_version() + 1 : next_scene_version;
+//    auto ed_scene=editor_data.get_edited_scene();
+//    int undo_vers=saved_version;
+//    editor_data.get_undo_redo().create_action_pair(TTR("Switch Scene Tab"),
+//        this->get_instance_id(),
+//        [=](){
+//            set_current_version(version);
+//            set_current_scene(p_tab);
+//            set_current_version(next_ver);
+//        },
+//        [=](){
+//            set_current_version(next_scene_version);
+//            set_current_scene(ed_scene);
+//            set_current_version(undo_vers);
+//        }
+//    );
+//    editor_data.get_undo_redo().commit_action();
 
     uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
+    auto &undo_redo(editor_data.get_undo_redo());
+    undo_redo.create_action(TTR("Switch Scene Tab"));
+    undo_redo.add_do_method(this, "set_current_version", unsaved ? saved_version : 0);
+    undo_redo.add_do_method(this, "set_current_scene", p_tab);
+    undo_redo.add_do_method(this, "set_current_version",
+            next_scene_version == 0 ? undo_redo.get_version() + 1 : next_scene_version);
 
-    editor_data.get_undo_redo().create_action(TTR("Switch Scene Tab"));
-    editor_data.get_undo_redo().add_do_method(this, "set_current_version", unsaved ? saved_version : 0);
-    editor_data.get_undo_redo().add_do_method(this, "set_current_scene", p_tab);
-    editor_data.get_undo_redo().add_do_method(this, "set_current_version",
-            next_scene_version == 0 ? editor_data.get_undo_redo().get_version() + 1 : next_scene_version);
+    undo_redo.add_undo_method(this, "set_current_version", next_scene_version);
+    undo_redo.add_undo_method(this, "set_current_scene", editor_data.get_edited_scene());
+    undo_redo.add_undo_method(this, "set_current_version", saved_version);
+    undo_redo.commit_action();
 
-    editor_data.get_undo_redo().add_undo_method(this, "set_current_version", next_scene_version);
-    editor_data.get_undo_redo().add_undo_method(this, "set_current_scene", editor_data.get_edited_scene());
-    editor_data.get_undo_redo().add_undo_method(this, "set_current_version", saved_version);
-    editor_data.get_undo_redo().commit_action();
 }
 
 ToolButton *EditorNode::add_bottom_panel_item(const StringName &p_text, Control *p_item) {
@@ -5224,8 +5252,7 @@ ToolButton *EditorNode::add_bottom_panel_item(const StringName &p_text, Control 
 }
 
 bool EditorNode::are_bottom_panels_hidden() const {
-
-    for (const BottomPanelItem & itm : bottom_panel_items) {
+    for (const BottomPanelItem &itm : bottom_panel_items) {
         if (itm.button->is_pressed())
             return false;
     }
@@ -5234,9 +5261,7 @@ bool EditorNode::are_bottom_panels_hidden() const {
 }
 
 void EditorNode::hide_bottom_panel() {
-
     for (size_t i = 0; i < bottom_panel_items.size(); i++) {
-
         if (bottom_panel_items[i].control->is_visible()) {
             _bottom_panel_switch(false, i);
             break;
@@ -5245,9 +5270,7 @@ void EditorNode::hide_bottom_panel() {
 }
 
 void EditorNode::make_bottom_panel_item_visible(Control *p_item) {
-
     for (size_t i = 0; i < bottom_panel_items.size(); i++) {
-
         if (bottom_panel_items[i].control == p_item) {
             _bottom_panel_switch(true, i);
             break;
@@ -5561,7 +5584,6 @@ void EditorNode::_global_menu_action(const Variant &p_id, const Variant &p_meta)
 }
 
 void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
-
     String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_selected_path());
 
     _add_dropped_files_recursive(p_files, to_path);
@@ -5614,16 +5636,13 @@ void EditorNode::_file_access_close_error_notify(StringView p_str) {
 }
 
 void EditorNode::reload_scene(StringView p_path) {
-
     // first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
     Vector<Ref<Resource>> cached;
     ResourceCache::get_cached_resources(cached);
     List<Ref<Resource>> to_clear; // clear internal resources from previous scene from being used
     for (const Ref<Resource> &E : cached) {
-
-        if (StringUtils::begins_with(
-                    E->get_path(), String(p_path) + "::")) { // subresources of existing scene
+        if (StringUtils::begins_with(E->get_path(), String(p_path) + "::")) { // subresources of existing scene
             to_clear.push_back(E);
         }
     }
@@ -5742,11 +5761,9 @@ void EditorNode::dim_editor(bool p_dimming, bool p_force_dim) {
     }
 }
 
-bool EditorNode::is_editor_dimmed() const {
-    return dimmed;
+void EditorNode::update_keying() const {
+    inspector_dock->update_keying();
 }
-
-void EditorNode::update_keying() const { inspector_dock->update_keying(); }
 
 void EditorNode::open_export_template_manager() {
 
@@ -5766,9 +5783,9 @@ Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion
 
     Vector<Ref<EditorResourceConversionPlugin>> ret;
 
-    for (int i = 0; i < resource_conversion_plugins.size(); i++) {
-        if (resource_conversion_plugins[i] && resource_conversion_plugins[i]->handles(p_for_resource)) {
-            ret.emplace_back(resource_conversion_plugins[i]);
+    for (const Ref<EditorResourceConversionPlugin> &plug : resource_conversion_plugins) {
+        if (plug && plug->handles(p_for_resource)) {
+            ret.emplace_back(plug);
         }
     }
 
@@ -5823,13 +5840,13 @@ void EditorNode::_feature_profile_changed() {
     TabContainer *node_tabs = object_cast<TabContainer>(node_dock->get_parent());
     TabContainer *fs_tabs = object_cast<TabContainer>(filesystem_dock->get_parent());
     if (profile) {
-
         node_tabs->set_tab_hidden(
                 node_dock->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
         // The Import dock is useless without the FileSystem dock. Ensure the configuration is valid.
         bool fs_dock_disabled = profile->is_feature_disabled(EditorFeatureProfile::FEATURE_FILESYSTEM_DOCK);
         fs_tabs->set_tab_hidden(filesystem_dock->get_index(), fs_dock_disabled);
-        import_tabs->set_tab_hidden(import_dock->get_index(), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
+        import_tabs->set_tab_hidden(import_dock->get_index(),
+                fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 
         main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
         main_editor_buttons[EDITOR_SCRIPT]->set_visible(
@@ -5837,17 +5854,16 @@ void EditorNode::_feature_profile_changed() {
         if (StreamPeerSSL::is_available())
             main_editor_buttons[EDITOR_ASSETLIB]->set_visible(
                     !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
-        if (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) &&
-            singleton->main_editor_buttons[EDITOR_3D]->is_pressed() ||
-                profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) &&
-                singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed() ||
-                StreamPeerSSL::is_available() &&
-                profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) &&
-                singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed()) {
+        if ((profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) &&
+                    singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
+                (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) &&
+                        singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed()) ||
+                (StreamPeerSSL::is_available() &&
+                        profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) &&
+                        singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
             _editor_select(EDITOR_2D);
         }
     } else {
-
         import_tabs->set_tab_hidden(import_dock->get_index(), false);
         node_tabs->set_tab_hidden(node_dock->get_index(), false);
         fs_tabs->set_tab_hidden(filesystem_dock->get_index(), false);
@@ -5856,7 +5872,8 @@ void EditorNode::_feature_profile_changed() {
         filesystem_dock->set_visible(true);
         main_editor_buttons[EDITOR_3D]->set_visible(true);
         main_editor_buttons[EDITOR_SCRIPT]->set_visible(true);
-        if (StreamPeerSSL::is_available()) main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
+        if (StreamPeerSSL::is_available())
+            main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
     }
 
     _update_dock_slots_visibility();
@@ -5971,13 +5988,13 @@ int EditorNode::execute_and_show_output(const StringName &p_title, StringView p_
 #include <QObject>
 
 namespace {
+
 // TODO: split this into resourceimporter resolver and editorplugin resolver
 struct EditorPluginResolver : public ResolverInterface {
     ResourceImporterScene *m_parent_importer;
     EditorPluginResolver(ResourceImporterScene *parent) : m_parent_importer(parent) {}
 
-    bool new_plugin_detected(QObject *ob,const QJsonObject &/*metadata*/,const char *) override {
-
+    bool new_plugin_detected(QObject *ob, const QJsonObject & /*metadata*/, const char *) override {
         bool res = false;
         assert(m_parent_importer);
         auto loader_interface = qobject_cast<EditorSceneImporterInterface *>(ob);
@@ -5996,9 +6013,9 @@ struct EditorPluginResolver : public ResolverInterface {
         }
     }
 };
-struct ResourcePluginResolver : public ResolverInterface {
-    bool new_plugin_detected(QObject *ob,const QJsonObject &/*metadata*/,const char *) override {
 
+struct ResourcePluginResolver : public ResolverInterface {
+    bool new_plugin_detected(QObject *ob, const QJsonObject & /*metadata*/, const char *) override {
         bool res = false;
         auto resource_interface = qobject_cast<ResourceImporterInterface *>(ob);
         if (resource_interface) {
@@ -6103,6 +6120,7 @@ EditorNode::EditorNode() {
 
     {
         int display_scale = editor_settings->getT<int>("interface/editor/display_scale");
+        float scale;
         switch (display_scale) {
             case 0: {
                 // Try applying a suitable display scale automatically.
@@ -6112,7 +6130,7 @@ EditorNode::EditorNode() {
                 editor_set_scale(OS::get_singleton()->get_screen_max_scale());
 #else
                 const int screen = OS::get_singleton()->get_current_screen();
-                float scale;
+
                 if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).y >= 1400) {
                     // hiDPI display.
                     scale = 2.0;
@@ -6123,33 +6141,32 @@ EditorNode::EditorNode() {
                 } else {
                     scale = 1.0;
                 }
-
-                editor_set_scale(scale);
 #endif
             } break;
 
             case 1:
-                editor_set_scale(0.75);
+                scale = 0.75f;
                 break;
             case 2:
-                editor_set_scale(1.0);
+                scale = 1.0;
                 break;
             case 3:
-                editor_set_scale(1.25);
+                scale = 1.25;
                 break;
             case 4:
-                editor_set_scale(1.5);
+                scale = 1.5f;
                 break;
             case 5:
-                editor_set_scale(1.75);
+                scale = 1.75f;
                 break;
             case 6:
-                editor_set_scale(2.0);
+                scale = 2.0f;
                 break;
             default:
-                editor_set_scale(EditorSettings::get_singleton()->getT<float>("interface/editor/custom_display_scale"));
+                scale = EditorSettings::get_singleton()->getT<float>("interface/editor/custom_display_scale");
                 break;
         }
+        editor_set_scale(scale);
 
     }
     // Define a minimum window size to prevent UI elements from overlapping or being cut off
@@ -7398,28 +7415,24 @@ bool EditorPluginList::forward_spatial_gui_input(
 }
 
 void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) {
-
     for (int i = 0; i < plugins_list.size(); i++) {
         plugins_list[i]->forward_canvas_draw_over_viewport(p_overlay);
     }
 }
 
 void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
-
     for (int i = 0; i < plugins_list.size(); i++) {
         plugins_list[i]->forward_canvas_force_draw_over_viewport(p_overlay);
     }
 }
 
 void EditorPluginList::forward_spatial_draw_over_viewport(Control *p_overlay) {
-
     for (int i = 0; i < plugins_list.size(); i++) {
         plugins_list[i]->forward_spatial_draw_over_viewport(p_overlay);
     }
 }
 
 void EditorPluginList::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
-
     for (int i = 0; i < plugins_list.size(); i++) {
         plugins_list[i]->forward_spatial_force_draw_over_viewport(p_overlay);
     }

@@ -597,7 +597,7 @@ void Variant::evaluate(Operator p_op, const Variant &p_a, const Variant &p_b, Va
             }
             DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2, <, Vector2)
             DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3, <, Vector3)
-            DEFAULT_OP_LOCALMEM(math, OP_LESS, _RID, <, RID)
+            //DEFAULT_OP_LOCALMEM(math, OP_LESS, _RID, <, RID)
             DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_BYTE_ARRAY, uint8_t)
             DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_INT_ARRAY, int)
             DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_REAL_ARRAY, real_t)
@@ -606,6 +606,7 @@ void Variant::evaluate(Operator p_op, const Variant &p_a, const Variant &p_b, Va
             DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_VECTOR3_ARRAY, Vector3)
             DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_COLOR_ARRAY, Color)
 
+            CASE_TYPE(math, OP_LESS, _RID)
             CASE_TYPE(math, OP_LESS, NIL)
             CASE_TYPE(math, OP_LESS, RECT2)
             CASE_TYPE(math, OP_LESS, TRANSFORM2D)
@@ -681,7 +682,7 @@ void Variant::evaluate(Operator p_op, const Variant &p_a, const Variant &p_b, Va
             }
             DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2, <, Vector2)
             DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3, <, Vector3)
-            DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, _RID, <, RID)
+            //DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, _RID, <, RID)
             DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_BYTE_ARRAY, uint8_t)
             DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_INT_ARRAY, int)
             DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_REAL_ARRAY, real_t)
@@ -690,6 +691,7 @@ void Variant::evaluate(Operator p_op, const Variant &p_a, const Variant &p_b, Va
             DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_VECTOR3_ARRAY, Vector3)
             DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_COLOR_ARRAY, Color)
 
+            CASE_TYPE(math, OP_GREATER, _RID)
             CASE_TYPE(math, OP_GREATER, NIL)
             CASE_TYPE(math, OP_GREATER, RECT2)
             CASE_TYPE(math, OP_GREATER, TRANSFORM2D)

@@ -925,7 +925,7 @@ public:
     float light_get_param(RID p_light, RS::LightParam p_param) override;
     Color light_get_color(RID p_light) override;
     bool light_get_use_gi(RID p_light) override;
-    RS::LightBakeMode light_get_bake_mode(RID p_light);
+    RS::LightBakeMode light_get_bake_mode(RID p_light) override;
 
     AABB light_get_aabb(RID p_light) const override;
     uint64_t light_get_version(RID p_light) const override;
@@ -1197,14 +1197,14 @@ public:
 
     struct RenderTarget : public RID_Data {
 
-        GLuint fbo;
+        GLuint fbo = 0;
         GLuint color;
-        GLuint depth;
+        GLuint depth = 0;
 
         struct Buffers {
+            int8_t active : 1;
+            int8_t effects_active : 1;
 
-            bool active;
-            bool effects_active;
             GLuint fbo;
             GLuint depth;
             GLuint specular;
@@ -1228,13 +1228,8 @@ public:
                 };
 
                 Vector<Size> sizes;
-                GLuint color;
-                int levels;
-
-                MipMaps() :
-                        color(0),
-                        levels(0) {
-                }
+                GLuint color = 0;
+                int levels = 0;
             };
 
             MipMaps mip_maps[2]; //first mipmap chain starts from full-screen
@@ -1244,12 +1239,11 @@ public:
                 GLuint blur_fbo[2]; // blur fbo
                 GLuint blur_red[2]; // 8 bits red buffer
 
-                GLuint linear_depth;
+                GLuint linear_depth = 0;
 
                 Vector<GLuint> depth_mipmap_fbos; //fbos for depth mipmapsla ver
 
-                SSAO() :
-                        linear_depth(0) {
+                SSAO() {
                     blur_fbo[0] = 0;
                     blur_fbo[1] = 0;
                 }
@@ -1267,39 +1261,28 @@ public:
 
         // External FBO to render our final result to (mostly used for ARVR)
         struct External {
-            GLuint fbo;
             RID texture;
-
-            External() :
-                    fbo(0) {}
+            GLuint fbo = 0;
         } external;
 
-        uint64_t last_exposure_tick;
+        uint64_t last_exposure_tick = 0;
 
-        int width, height;
+        int width = 0;
+        int height = 0;
 
         bool flags[RENDER_TARGET_FLAG_MAX];
 
         RID texture;
-        RS::ViewportMSAA msaa;
+        RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
         uint8_t used_in_frame:1;
         uint8_t use_fxaa:1;
         uint8_t use_debanding:1;
 
 
         RenderTarget() :
-                fbo(0),
-                depth(0),
-                last_exposure_tick(0),
-                width(0),
-                height(0),
                 used_in_frame(false),
-                msaa(RS::VIEWPORT_MSAA_DISABLED),
                 use_fxaa(false),
                 use_debanding(false)  {
-            exposure.fbo = 0;
-            buffers.fbo = 0;
-            external.fbo = 0;
             for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
                 flags[i] = false;
             }

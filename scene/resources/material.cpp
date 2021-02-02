@@ -318,27 +318,6 @@ void ShaderMaterial::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "shader", PropertyHint::ResourceType, "Shader"), "set_shader", "get_shader");
 }
 
-void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-
-#ifdef TOOLS_ENABLED
-    const char * quote_style(EDITOR_DEF_T<bool>("text_editor/completion/use_single_quotes", false) ? "'" : "\"");
-#else
-    const char * quote_style = "\"";
-#endif
-
-    StringView f(p_function);
-    if ((f == StringView("get_shader_param") || f == StringView("set_shader_param")) && p_idx == 0) {
-
-        if (shader) {
-            Vector<PropertyInfo> pl;
-            shader->get_param_list(&pl);
-            for (const PropertyInfo &E : pl) {
-                r_options->push_back(quote_style + StringUtils::replace_first(E.name,"shader_param/", "") + quote_style);
-            }
-        }
-    }
-    Resource::get_argument_options(p_function, p_idx, r_options);
-}
 using namespace RenderingServerEnums;
 bool ShaderMaterial::_can_do_next_pass() const {
     return shader && shader->get_mode() == ShaderMode::SPATIAL;

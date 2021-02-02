@@ -157,7 +157,7 @@ public:
     void add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
     void remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
     bool has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const;
-    _FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
+    const VSet<RID> &get_exceptions() const { return exceptions; }
 
     _FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
         if (collisionLayer != p_layer) {
@@ -191,7 +191,8 @@ public:
     virtual void dispatch_callbacks() = 0;
 
     void set_collision_enabled(bool p_enabled);
-    bool is_collisions_response_enabled();
+    //TODO: the is_collisions_response_enabled is unused/not exposed to scripts, remove it?
+    bool is_collisions_response_enabled() { return collisionsEnabled; }
 
     void notify_new_overlap(AreaBullet *p_area);
     virtual void on_enter_area(AreaBullet *p_area) = 0;
@@ -211,7 +212,7 @@ public:
 
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
 protected:
-    btCollisionShape *mainShape;
+    btCollisionShape *mainShape = nullptr;
     Vector<ShapeWrapper> shapes;
 
 public:
@@ -225,7 +226,7 @@ public:
     void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
     void set_shape(int p_index, ShapeBullet *p_shape);
 
-    int get_shape_count() const;
+    int get_shape_count() const { return shapes.size(); }
     ShapeBullet *get_shape(int p_index) const;
     btCollisionShape *get_bt_shape(int p_index) const;
 

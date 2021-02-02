@@ -723,7 +723,7 @@ ThemeEditor::ThemeEditor() {
     le->set_text("LineEdit");
     second_vb->add_child(le);
     le = memnew(LineEdit);
-    le->set_text_uistring(TTR("Disabled LineEdit").asString());
+    le->set_text(TTR("Disabled LineEdit"));
     le->set_editable(false);
     second_vb->add_child(le);
     TextEdit *te = memnew(TextEdit);

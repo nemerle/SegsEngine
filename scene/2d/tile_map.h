@@ -43,13 +43,13 @@ class GODOT_EXPORT TileMap : public Node2D {
     GDCLASS(TileMap,Node2D)
 
 public:
-    enum Mode {
+    enum Mode : int8_t {
         MODE_SQUARE,
         MODE_ISOMETRIC,
         MODE_CUSTOM
     };
 
-    enum HalfOffset {
+    enum HalfOffset : int8_t {
         HALF_OFFSET_X,
         HALF_OFFSET_Y,
         HALF_OFFSET_DISABLED,
@@ -57,28 +57,28 @@ public:
         HALF_OFFSET_NEGATIVE_Y,
     };
 
-    enum TileOrigin {
+    enum TileOrigin : int8_t {
         TILE_ORIGIN_TOP_LEFT,
         TILE_ORIGIN_CENTER,
         TILE_ORIGIN_BOTTOM_LEFT
     };
 
 private:
-    enum DataFormat {
+    enum DataFormat : int8_t {
         FORMAT_1 = 0,
         FORMAT_2
     };
 
     Ref<TileSet> tile_set;
     Size2i cell_size;
+    Transform2D custom_transform;
+    CollisionObject2D *collision_parent;
+    Navigation2D *navigation;
     int quadrant_size;
     Mode mode;
-    Transform2D custom_transform;
     HalfOffset half_offset;
     bool use_parent;
-    CollisionObject2D *collision_parent;
     bool use_kinematic;
-    Navigation2D *navigation;
 
     union PosKey {
 

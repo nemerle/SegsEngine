@@ -61,7 +61,7 @@ protected:
 
 public:
     Skeleton *get_skeleton_node() const { return skeleton_node; }
-    RID get_skeleton() const;
+    RID get_skeleton() const { return skeleton; }
     Ref<Skin> get_skin() const;
     ~SkinReference();
 };

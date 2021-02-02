@@ -843,7 +843,7 @@ public:
     void restart_editor();
 
     void dim_editor(bool p_dimming, bool p_force_dim = false);
-    bool is_editor_dimmed() const;
+    bool is_editor_dimmed() const { return dimmed; }
 
     void edit_current() { _edit_current(); }
 

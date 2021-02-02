@@ -245,7 +245,7 @@ Error DocData::load_classes(QByteArray p_dir, bool recursively) {
             recursively ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
     QDebug inst(qDebug());
     inst.setAutoInsertSpaces(false);
-    inst << "Lading docs:";
+    inst << "Loading docs:";
     while (fl.hasNext()) {
         QString name = fl.next();
         auto fi(fl.fileInfo());

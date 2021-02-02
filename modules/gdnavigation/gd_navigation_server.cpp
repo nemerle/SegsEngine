@@ -31,6 +31,7 @@
 #include "gd_navigation_server.h"
 
 #include "core/os/mutex.h"
+#include "core/external_profiler.h"
 
 #ifndef _3D_DISABLED
 #include "navigation_mesh_generator.h"

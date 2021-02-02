@@ -31,6 +31,7 @@
 #include "shader_gles3.h"
 
 #include "core/print_string.h"
+#include "core/external_profiler.h"
 
 //#define DEBUG_OPENGL
 

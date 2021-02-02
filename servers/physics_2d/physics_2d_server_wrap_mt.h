@@ -50,7 +50,7 @@ class Physics2DServerWrapMT : public PhysicsServer2D {
     Thread::ID main_thread;
     Thread thread;
     Mutex alloc_mutex;
-    Semaphore *step_sem;
+    Semaphore step_sem;
     mutable PhysicsServer2D *physics_server_2d;
     int step_pending;
     int pool_max_size;

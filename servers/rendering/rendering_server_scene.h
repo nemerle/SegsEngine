@@ -488,7 +488,7 @@ public:
 
     volatile bool probe_bake_thread_exit;
     Thread probe_bake_thread;
-    Semaphore *probe_bake_sem;
+    Semaphore probe_bake_sem;
     Mutex probe_bake_mutex;
     Deque<Instance *> probe_bake_list;
 

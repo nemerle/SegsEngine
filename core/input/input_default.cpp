@@ -958,12 +958,12 @@ InputDefault::JoyEvent InputDefault::_get_mapped_axis_event(const JoyDeviceMappi
     JoyEvent event;
     event.type = TYPE_MAX;
 
-    for (int i = 0; i < mapping.bindings.size(); i++) {
-        const JoyBinding binding = mapping.bindings[i];
+    for (const JoyBinding &binding : mapping.bindings) {
         if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
             float value = p_value;
-            if (binding.input.axis.invert)
+            if (binding.input.axis.invert) {
                 value = -value;
+            }
             if (binding.input.axis.range == FULL_AXIS ||
                     (binding.input.axis.range == POSITIVE_HALF_AXIS && value > 0) ||
                     (binding.input.axis.range == NEGATIVE_HALF_AXIS && value < 0)) {

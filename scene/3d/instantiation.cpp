@@ -88,11 +88,11 @@ static void search_for_parent_with_library(LibraryEntryInstance *n) {
 void LibraryEntryInstance::update_instance()
 {
 
-    if(!resolved_library || entry_name.empty())
+    if(!resolved_library || entry_name.empty()) {
         return;
+    }
 
     {
-        //instantiated_child->set_editable_instance(false);
         LibraryItemHandle h = resolved_library->find_item_by_name(entry_name);
         set_filename(lib_name+"::"+StringUtils::num(h));
         ERR_FAIL_COND_MSG(h == LibraryItemHandle(-1), "Library does not contain selected entry:" + entry_name);

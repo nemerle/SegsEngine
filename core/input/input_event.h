@@ -493,8 +493,8 @@ class GODOT_EXPORT InputEventAction : public InputEvent {
     GDCLASS(InputEventAction,InputEvent)
 
     StringName action;
-    bool pressed;
-    float strength;
+    bool pressed = false;
+    float strength = 1.0f;
 
 protected:
     static void _bind_methods();
@@ -516,8 +516,6 @@ public:
     bool shortcut_match(const Ref<InputEvent> &p_event) const override;
     bool is_action_type() const override { return true; }
     String as_text() const override;
-
-    InputEventAction();
 };
 
 class GODOT_EXPORT InputEventGesture : public InputEventWithModifiers {

@@ -133,10 +133,9 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
         if (devnode) {
 
             String devnode_str = devnode;
-            if (devnode_str.find(ignore_str) == -1) {
-                joy_mutex->lock();
+            if (!devnode_str.contains(ignore_str)) {
+                MutexGuard guard(joy_mutex);
                 open_joypad(devnode);
-                joy_mutex->unlock();
             }
         }
         udev_device_unref(dev);
@@ -146,7 +145,7 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 void JoypadLinux::monitor_joypads(udev *p_udev) {
 
-    udev_device *dev = NULL;
+    udev_device *dev = nullptr;
     udev_monitor *mon = udev_monitor_new_from_netlink(p_udev, "udev");
     udev_monitor_filter_add_match_subsystem_devtype(mon, "input", NULL);
     udev_monitor_enable_receiving(mon);
@@ -173,13 +172,13 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 
             if (dev && udev_device_get_devnode(dev) != 0) {
 
-                joy_mutex->lock();
+                MutexGuard guard(joy_mutex);
                 String action = udev_device_get_action(dev);
                 const char *devnode = udev_device_get_devnode(dev);
                 if (devnode) {
 
-                    String devnode_str = devnode;
-                    if (devnode_str.find(ignore_str) == -1) {
+                    StringView devnode_str(devnode);
+                    if (devnode_str.contains(ignore_str)) {
 
                         if (action == "add")
                             open_joypad(devnode);
@@ -189,7 +188,6 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
                 }
 
                 udev_device_unref(dev);
-                joy_mutex->unlock();
             }
         }
         usleep(50000);

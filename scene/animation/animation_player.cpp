@@ -1527,25 +1527,6 @@ NodePath AnimationPlayer::get_root() const {
     return root;
 }
 
-void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-
-#ifdef TOOLS_ENABLED
-    const char *quote_style(EDITOR_DEF_T<bool>("text_editor/completion/use_single_quotes", false) ? "'" : "\"");
-#else
-    const char *quote_style = "\"";
-#endif
-
-    String pf(p_function);
-    if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "remove_animation" || p_function == "has_animation" || p_function == "queue")) {
-        Vector<StringName> al(get_animation_list());
-        for (const StringName &E : al) {
-
-            r_options->emplace_back(quote_style + String(E) + quote_style);
-        }
-    }
-    Node::get_argument_options(p_function, p_idx, r_options);
-}
-
 #ifdef TOOLS_ENABLED
 AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
 

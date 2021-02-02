@@ -346,8 +346,6 @@ public:
 
     void clear_caches(); ///< must be called by hand if an animation was modified after added
 
-    void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-
 #ifdef TOOLS_ENABLED
     // These may be interesting for games, but are too dangerous for general use
     AnimatedValuesBackup backup_animated_values();

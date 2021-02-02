@@ -69,8 +69,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
     switch (p_option) {
         case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY: {
 
-            bool trimesh_shape = p_option == MENU_OPTION_CREATE_STATIC_TRIMESH_BODY;
-
             EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
             UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -106,16 +104,19 @@ void MeshInstanceEditor::_menu_option(int p_option) {
             for (Node * E : selection) {
 
                 MeshInstance3D *instance = object_cast<MeshInstance3D>(E);
-                if (!instance)
+                if (!instance) {
                     continue;
+                }
 
                 Ref<Mesh> m = instance->get_mesh();
-                if (not m)
+                if (!m) {
                     continue;
+                }
 
                 Ref<Shape> shape = m->create_trimesh_shape();
-                if (not shape)
+                if (!shape) {
                     continue;
+                }
 
                 CollisionShape3D *cshape = memnew(CollisionShape3D);
                 cshape->set_shape(shape);
@@ -218,10 +219,10 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
             ur->create_action(TTR("Create Multiple Convex Shapes"));
 
-            for (int i = 0; i < shapes.size(); i++) {
+            for (const Ref<Shape> & shp : shapes) {
 
                 CollisionShape3D *cshape = memnew(CollisionShape3D);
-                cshape->set_shape(shapes[i]);
+                cshape->set_shape(shp);
                 cshape->set_transform(node->get_transform());
 
                 Node *owner = node->get_owner();
@@ -240,8 +241,9 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
             Ref<NavigationMesh> nmesh(make_ref_counted<NavigationMesh>());
 
-            if (not nmesh)
+            if (!nmesh) {
                 return;
+            }
 
             nmesh->create_from_mesh(mesh);
             NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
@@ -320,8 +322,8 @@ struct MeshInstanceEditorEdgeSort {
             a = p_a;
             b = p_b;
         } else {
-            b = p_a;
             a = p_b;
+            b = p_a;
         }
     }
 };
@@ -398,8 +400,9 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 
 void MeshInstanceEditor::_debug_uv_draw() {
 
-    if (uv_lines.empty())
+    if (uv_lines.empty()) {
         return;
+    }
 
     debug_uv->set_clip_contents(true);
     debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), Color(0.2f, 0.2f, 0.0));
@@ -420,7 +423,8 @@ void MeshInstanceEditor::_create_outline_mesh() {
         err_dialog->set_text(TTR("Mesh has not surface to create outlines from!"));
         err_dialog->popup_centered_minsize();
         return;
-    } else if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
+    }
+    if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
         err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES!"));
         err_dialog->popup_centered_minsize();
         return;

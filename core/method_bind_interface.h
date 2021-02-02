@@ -234,8 +234,7 @@ struct MethodBinder {
         bind->set_name(p_name);
         bind->set_default_arguments(p_default_args);
 
-        const char * instance_type = bind->get_instance_class();
-        if(!ClassDB::bind_helper(bind,instance_type,p_name) )
+        if(!ClassDB::bind_helper(bind,p_name) )
         {
             memdelete(bind);
             return nullptr;

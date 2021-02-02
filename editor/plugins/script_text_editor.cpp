@@ -639,7 +639,7 @@ void ScriptTextEditor::_validate_script() {
         warnings_panel->push_cell();
         warnings_panel->push_meta(w.line - 1);
         warnings_panel->push_color(warnings_panel->get_theme_color("warning_color", "Editor"));
-        warnings_panel->add_text_uistring((TTR("Line") + " " + itos(w.line)).asString());
+        warnings_panel->add_text(String(TTR("Line")) + " " + itos(w.line));
         warnings_panel->add_text(" (" + w.string_code + "):");
         warnings_panel->pop(); // Color.
         warnings_panel->pop(); // Meta goto.
@@ -654,7 +654,7 @@ void ScriptTextEditor::_validate_script() {
         ignore_meta["code"] = StringUtils::to_lower(w.string_code);
         warnings_panel->push_cell();
         warnings_panel->push_meta(ignore_meta);
-        warnings_panel->add_text_uistring(TTR("(ignore)").asString());
+        warnings_panel->add_text(TTR("(ignore)"));
         warnings_panel->pop(); // Meta ignore.
         warnings_panel->pop(); // Cell.
     }

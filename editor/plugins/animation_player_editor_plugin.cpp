@@ -353,7 +353,7 @@ void AnimationPlayerEditor::_animation_rename() {
     StringName selected_name = animation->get_item_text(selected);
 
     name_title->set_text(TTR("Change Animation Name:"));
-    name->set_text_uistring(selected_name.asString());
+    name->set_text(selected_name);
     renaming = true;
     name_dialog->popup_centered(Size2(300, 90));
     name->select_all();
@@ -801,17 +801,10 @@ void AnimationPlayerEditor::_update_animation() {
     // of the animation player in the current editor..
 
     updating = true;
+    const bool playing=player->is_playing();
 
-    if (player->is_playing()) {
-
-        play->set_pressed(true);
-        stop->set_pressed(false);
-
-    } else {
-
-        play->set_pressed(false);
-        stop->set_pressed(true);
-    }
+    play->set_pressed(playing);
+    stop->set_pressed(!playing);
 
     scale->set_text(StringUtils::num(player->get_speed_scale(), 2));
     const auto &current = player->get_assigned_animation();
@@ -1359,8 +1352,9 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 
     // This would be called per viewport and we want to act once only.
     int64_t frame = get_tree()->get_frame();
-    if (frame == onion.last_frame)
+    if (frame == onion.last_frame) {
         return;
+    }
 
     if (!onion.enabled || !is_processing() || !is_visible() || !get_player()) {
         _stop_onion_skinning();
@@ -1373,22 +1367,23 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
     onion.can_overlay = false;
     plugin->update_overlays();
 
-    if (player->is_playing())
+    if (player->is_playing()) {
         return;
+    }
 
     // And go to next step afterwards.
     call_deferred([this]() { _prepare_onion_layers_2(); });
 }
 
 void AnimationPlayerEditor::_prepare_onion_layers_2() {
-
     Ref<Animation> anim = player->get_animation(StringName(player->get_assigned_animation()));
-    if (not anim)
+    if (!anim)
         return;
 
     if (!_are_onion_layers_valid())
         _allocate_onion_layers();
 
+    auto *rs = RenderingServer::get_singleton();
     // Hide superfluous elements that would make the overlay unnecessary cluttered.
     Dictionary canvas_edit_state;
     Dictionary spatial_edit_state;
@@ -1402,7 +1397,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
         Array vp;
         vp.resize(4);
         for (int i = 0; i < vp.size(); i++) {
-            //TODO: suspicious duplicate call on Dictionary?
+            // TODO: suspicious duplicate call on Dictionary?
             Dictionary d = orig_vp[i].as<Dictionary>().duplicate();
             d["use_environment"] = false;
             d["doppler"] = false;
@@ -1429,18 +1424,18 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
     // Tweak the root viewport to ensure it's rendered before our target.
     RID root_vp = get_tree()->get_root()->get_viewport_rid();
     Rect2 root_vp_screen_rect = get_tree()->get_root()->get_attach_to_screen_rect();
-    RenderingServer::get_singleton()->viewport_attach_to_screen(root_vp, Rect2());
-    RenderingServer::get_singleton()->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_ALWAYS);
+    rs->viewport_attach_to_screen(root_vp, Rect2());
+    rs->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_ALWAYS);
 
     RID present_rid;
     if (onion.differences_only) {
         // Capture present scene as it is.
-        RenderingServer::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, RID());
+        rs->canvas_item_set_material(onion.capture.canvas_item, RID());
         present_rid = onion.captures[onion.captures.size() - 1];
-        RenderingServer::get_singleton()->viewport_set_active(present_rid, true);
-        RenderingServer::get_singleton()->viewport_set_parent_viewport(root_vp, present_rid);
-        RenderingServer::get_singleton()->draw(false);
-        RenderingServer::get_singleton()->viewport_set_active(present_rid, false);
+        rs->viewport_set_active(present_rid, true);
+        rs->viewport_set_parent_viewport(root_vp, present_rid);
+        rs->draw(false);
+        rs->viewport_set_active(present_rid, false);
     }
 
     // Backup current animation state.
@@ -1449,21 +1444,24 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
     // Render every past/future step with the capture shader.
 
-    RenderingServer::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
+    rs->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
     onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/default_clear_color"));
     onion.capture.material->set_shader_param("differences_only", onion.differences_only);
-    onion.capture.material->set_shader_param("present", onion.differences_only ? RenderingServer::get_singleton()->viewport_get_texture(present_rid) : RID());
+    onion.capture.material->set_shader_param(
+            "present", onion.differences_only ? rs->viewport_get_texture(present_rid) : RID());
 
     int step_off_a = onion.past ? -onion.steps : 0;
     int step_off_b = onion.future ? onion.steps : 0;
     int cidx = 0;
-    onion.capture.material->set_shader_param("dir_color", onion.force_white_modulate ? Color(1, 1, 1) : EDITOR_GET_T<Color>("editors/animation/onion_layers_past_color"));
+    onion.capture.material->set_shader_param(
+            "dir_color", onion.force_white_modulate ? Color(1, 1, 1) :
+                                                      EDITOR_GET_T<Color>("editors/animation/onion_layers_past_color"));
     for (int step_off = step_off_a; step_off <= step_off_b; step_off++) {
-
         if (step_off == 0) {
             // Skip present step and switch to the color of future.
             if (!onion.force_white_modulate)
-                onion.capture.material->set_shader_param("dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
+                onion.capture.material->set_shader_param(
+                        "dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
             continue;
         }
 
@@ -1476,19 +1474,19 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
             get_tree()->flush_transform_notifications(); // Needed for transforms of Spatials.
             values_backup.update_skeletons(); // Needed for Skeletons (2D & 3D).
 
-            RenderingServer::get_singleton()->viewport_set_active(onion.captures[cidx], true);
-            RenderingServer::get_singleton()->viewport_set_parent_viewport(root_vp, onion.captures[cidx]);
-            RenderingServer::get_singleton()->draw(false);
-            RenderingServer::get_singleton()->viewport_set_active(onion.captures[cidx], false);
+            rs->viewport_set_active(onion.captures[cidx], true);
+            rs->viewport_set_parent_viewport(root_vp, onion.captures[cidx]);
+            rs->draw(false);
+            rs->viewport_set_active(onion.captures[cidx], false);
         }
 
         cidx++;
     }
 
     // Restore root viewport.
-    RenderingServer::get_singleton()->viewport_set_parent_viewport(root_vp, RID());
-    RenderingServer::get_singleton()->viewport_attach_to_screen(root_vp, root_vp_screen_rect);
-    RenderingServer::get_singleton()->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+    rs->viewport_set_parent_viewport(root_vp, RID());
+    rs->viewport_attach_to_screen(root_vp, root_vp_screen_rect);
+    rs->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 
     // Restore animation state
     // (Seeking with update=true wouldn't do the trick because the current value of the properties
@@ -1509,6 +1507,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
     onion.can_overlay = true;
     plugin->update_overlays();
 }
+
 void AnimationPlayerEditor::_prepare_onion_layers_1_deferred() {
     call_deferred([this]() {_prepare_onion_layers_1();});
 }
@@ -1551,10 +1550,7 @@ void AnimationPlayerEditor::_bind_methods() {
 
 AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;
 
-AnimationPlayer *AnimationPlayerEditor::get_player() const {
 
-    return player;
-}
 
 AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin) {
     editor = p_editor;
@@ -1659,19 +1655,20 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
     onion_skinning = memnew(MenuButton);
     onion_skinning->set_tooltip(TTR("Onion Skinning Options"));
-    onion_skinning->get_popup()->add_separator(TTR("Directions"));
-    onion_skinning->get_popup()->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
-    onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
-    onion_skinning->get_popup()->add_check_item(TTR("Future"), ONION_SKINNING_FUTURE);
-    onion_skinning->get_popup()->add_separator(TTR("Depth"));
-    onion_skinning->get_popup()->add_radio_check_item(TTR("1 step"), ONION_SKINNING_1_STEP);
-    onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
-    onion_skinning->get_popup()->add_radio_check_item(TTR("2 steps"), ONION_SKINNING_2_STEPS);
-    onion_skinning->get_popup()->add_radio_check_item(TTR("3 steps"), ONION_SKINNING_3_STEPS);
-    onion_skinning->get_popup()->add_separator();
-    onion_skinning->get_popup()->add_check_item(TTR("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
-    onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
-    onion_skinning->get_popup()->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
+    auto *popup_onion=onion_skinning->get_popup();
+    popup_onion->add_separator(TTR("Directions"));
+    popup_onion->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
+    popup_onion->set_item_checked(popup_onion->get_item_count() - 1, true);
+    popup_onion->add_check_item(TTR("Future"), ONION_SKINNING_FUTURE);
+    popup_onion->add_separator(TTR("Depth"));
+    popup_onion->add_radio_check_item(TTR("1 step"), ONION_SKINNING_1_STEP);
+    popup_onion->set_item_checked(popup_onion->get_item_count() - 1, true);
+    popup_onion->add_radio_check_item(TTR("2 steps"), ONION_SKINNING_2_STEPS);
+    popup_onion->add_radio_check_item(TTR("3 steps"), ONION_SKINNING_3_STEPS);
+    popup_onion->add_separator();
+    popup_onion->add_check_item(TTR("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
+    popup_onion->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
+    popup_onion->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
     hb->add_child(onion_skinning);
 
     hb->add_child(memnew(VSeparator));

@@ -1964,15 +1964,15 @@ void TextEdit::_click_selection_held() {
     // Warning: is_mouse_button_pressed(BUTTON_LEFT) returns false for double+ clicks, so this doesn't work for MODE_WORD
     // and MODE_LINE. However, moving the mouse triggers _gui_input, which calls these functions too, so that's not a huge problem.
     // I'm unsure if there's an actual fix that doesn't have a ton of side effects.
-    if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && D()->selection.selecting_mode != PrivateData::Selection::MODE_NONE) {
+    if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && D()->selection.selecting_mode != Selection::MODE_NONE) {
         switch (D()->selection.selecting_mode) {
-            case PrivateData::Selection::MODE_POINTER: {
+            case Selection::MODE_POINTER: {
                 D()->_update_selection_mode_pointer();
             } break;
-            case PrivateData::Selection::MODE_WORD: {
+            case Selection::MODE_WORD: {
                 D()->_update_selection_mode_word();
             } break;
-            case PrivateData::Selection::MODE_LINE: {
+            case Selection::MODE_LINE: {
                 D()->_update_selection_mode_line();
             } break;
             default: {
@@ -7470,7 +7470,6 @@ bool TextEdit::is_highlight_current_line_enabled() const {
 }
 
 bool TextEdit::is_text_field() const {
-
     return true;
 }
 

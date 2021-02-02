@@ -1074,8 +1074,9 @@ int TileMap::get_cell(int p_x, int p_y) const {
 
     const HashMap<PosKey, Cell>::const_iterator E = tile_map.find(pk);
 
-    if (E==tile_map.end())
+    if (E==tile_map.end()) {
         return INVALID_CELL;
+    }
 
     return E->second.id;
 }
@@ -1085,8 +1086,9 @@ bool TileMap::is_cell_x_flipped(int p_x, int p_y) const {
 
     const HashMap<PosKey, Cell>::const_iterator E = tile_map.find(pk);
 
-    if (E==tile_map.end())
+    if (E==tile_map.end()) {
         return false;
+    }
 
     return E->second.flip_h;
 }
@@ -1096,8 +1098,9 @@ bool TileMap::is_cell_y_flipped(int p_x, int p_y) const {
 
     const HashMap<PosKey, Cell>::const_iterator E = tile_map.find(pk);
 
-    if (E==tile_map.end())
+    if (E==tile_map.end()) {
         return false;
+    }
 
     return E->second.flip_v;
 }
@@ -1107,8 +1110,9 @@ bool TileMap::is_cell_transposed(int p_x, int p_y) const {
 
     const HashMap<PosKey, Cell>::const_iterator E = tile_map.find(pk);
 
-    if (E==tile_map.end())
+    if (E==tile_map.end()) {
         return false;
+    }
 
     return E->second.transpose;
 }
@@ -1119,8 +1123,9 @@ void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) 
 
     const HashMap<PosKey, Cell>::iterator E = tile_map.find(pk);
 
-    if (E==tile_map.end())
+    if (E==tile_map.end()) {
         return;
+    }
 
     Cell c = E->second;
     c.autotile_coord_x = p_coord.x;
@@ -1130,8 +1135,9 @@ void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) 
     PosKey qk = pk.to_quadrant(_get_quadrant_size());
     HashMap<PosKey, Quadrant>::iterator Q = quadrant_map.find(qk);
 
-    if (Q==quadrant_map.end())
+    if (Q==quadrant_map.end()) {
         return;
+    }
 
     _make_quadrant_dirty(Q);
 }
@@ -1142,8 +1148,9 @@ Vector2 TileMap::get_cell_autotile_coord(int p_x, int p_y) const {
 
     const HashMap<PosKey, Cell>::const_iterator E = tile_map.find(pk);
 
-    if (E==tile_map.end())
+    if (E==tile_map.end()) {
         return Vector2();
+    }
 
     return Vector2(E->second.autotile_coord_x, E->second.autotile_coord_y);
 }

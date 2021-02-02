@@ -176,7 +176,7 @@ public:
         using RetType = const Vector<AABB> *;
 
         RetType ret;
-        command_queue.push_and_sync( [this,p1,p2,&ret]() { ret = &(submission_thread_singleton->mesh_surface_get_skeleton_aabb(p1, p2));});
+        command_queue.push_and_sync( [p1,p2,&ret]() { ret = &(submission_thread_singleton->mesh_surface_get_skeleton_aabb(p1, p2));});
         SYNC_DEBUG
         return *ret;
     }
@@ -598,7 +598,7 @@ public:
 
     void request_frame_drawn_callback(Callable &&p1) override {
         assert (Thread::get_caller_id() != server_thread);
-        command_queue.push([this, p1 = eastl::move(p1)]() mutable {
+        command_queue.push([p1 = eastl::move(p1)]() mutable {
             submission_thread_singleton->request_frame_drawn_callback(eastl::move(p1));
         });
     }

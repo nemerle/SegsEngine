@@ -165,17 +165,6 @@ class GODOT_EXPORT CanvasItem : public Node {
     GDCLASS(CanvasItem,Node)
 //    Q_GADGET
 
-public:
-    enum BlendMode {
-
-        BLEND_MODE_MIX, //default
-        BLEND_MODE_ADD,
-        BLEND_MODE_SUB,
-        BLEND_MODE_MUL,
-        BLEND_MODE_PREMULT_ALPHA,
-        BLEND_MODE_DISABLED
-    };
-
 private:
     mutable IntrusiveListNode<Node> xform_change;
 
@@ -189,24 +178,24 @@ private:
 
     Vector<CanvasItem *> children_items;
     CanvasItem * C;
-
-    int light_mask;
-
-    bool first_draw;
-    bool visible;
-    bool pending_update;
-    bool toplevel;
-    bool drawing;
-    bool block_transform_notify;
-    bool behind;
-    bool use_parent_material;
-    bool notify_local_transform;
-    bool notify_transform;
-
     Ref<Material> material;
 
     mutable Transform2D global_transform;
-    mutable bool global_invalid;
+
+    int light_mask;
+
+    uint8_t first_draw : 1;
+    uint8_t visible : 1;
+    uint8_t pending_update : 1;
+    uint8_t toplevel : 1;
+    uint8_t drawing : 1;
+    uint8_t block_transform_notify : 1;
+    uint8_t behind : 1;
+    uint8_t use_parent_material : 1;
+    uint8_t notify_local_transform : 1;
+    uint8_t notify_transform : 1;
+    mutable uint8_t global_invalid : 1;
+
     static CanvasItem *current_item_drawn;
 public:
     /*Q_INVOKABLE*/ void _toplevel_raise_self();
@@ -286,21 +275,21 @@ public:
     /* VISIBILITY */
 
     void set_visible(bool p_visible);
-    bool is_visible() const;
+    bool is_visible() const { return visible; }
     bool is_visible_in_tree() const;
-    void show();
-    void hide();
+    void show() { set_visible(true); }
+    void hide() { set_visible(false); }
 
     void update();
 
     virtual void set_light_mask(int p_light_mask);
-    int get_light_mask() const;
+    _FORCE_INLINE_ int get_light_mask() const { return light_mask; }
 
     void set_modulate(const Color &p_modulate);
-    Color get_modulate() const;
+    _FORCE_INLINE_ Color get_modulate() const { return modulate; }
 
     void set_self_modulate(const Color &p_self_modulate);
-    Color get_self_modulate() const;
+    _FORCE_INLINE_ Color get_self_modulate() const { return self_modulate; }
 
     /* DRAWING API */
 
@@ -335,10 +324,10 @@ public:
     /* RECT / TRANSFORM */
 
     void set_as_top_level(bool p_toplevel);
-    bool is_set_as_top_level() const;
+    _FORCE_INLINE_ bool is_set_as_top_level() const { return toplevel; }
 
     void set_draw_behind_parent(bool p_enable);
-    bool is_draw_behind_parent_enabled() const;
+    _FORCE_INLINE_ bool is_draw_behind_parent_enabled() const { return behind; }
 
     CanvasItem *get_parent_item() const;
 
@@ -348,12 +337,10 @@ public:
     virtual Transform2D get_global_transform_with_canvas() const;
 
     CanvasItem *get_toplevel() const;
-    _FORCE_INLINE_ RID get_canvas_item() const {
-        return canvas_item;
-    }
+    _FORCE_INLINE_ RID get_canvas_item() const { return canvas_item; }
 
     void set_block_transform_notify(bool p_enable);
-    bool is_block_transform_notify_enabled() const;
+    bool is_block_transform_notify_enabled() const { return block_transform_notify; }
 
     Transform2D get_canvas_transform() const;
     Transform2D get_viewport_transform() const;
@@ -367,7 +354,7 @@ public:
     Ref<Material> get_material() const;
 
     virtual void set_use_parent_material(bool p_use_parent_material);
-    bool get_use_parent_material() const;
+    bool get_use_parent_material() const { return use_parent_material; }
 
     Ref<InputEvent> make_input_local(const Ref<InputEvent> &p_event) const;
     Vector2 make_canvas_position_local(const Vector2 &screen_point) const;
@@ -376,10 +363,10 @@ public:
     Vector2 get_local_mouse_position() const;
 
     void set_notify_local_transform(bool p_enable);
-    bool is_local_transform_notification_enabled() const;
+    bool is_local_transform_notification_enabled() const { return notify_local_transform; }
 
     void set_notify_transform(bool p_enable);
-    bool is_transform_notification_enabled() const;
+    bool is_transform_notification_enabled() const { return notify_transform; }
 
     void force_update_transform();
 

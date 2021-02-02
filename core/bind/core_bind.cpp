@@ -2483,11 +2483,11 @@ void _Marshalls::_bind_methods() {
 ////////////////
 
 void _Semaphore::wait() {
-    semaphore->wait();
+    semaphore.wait();
 }
 
 void _Semaphore::post() {
-    semaphore->post();
+    semaphore.post();
 }
 
 IMPL_GDCLASS(_Semaphore)
@@ -2498,11 +2498,9 @@ void _Semaphore::_bind_methods() {
 }
 
 _Semaphore::_Semaphore() {
-    semaphore = memnew(Semaphore);
 }
 
 _Semaphore::~_Semaphore() {
-    memdelete(semaphore);
 }
 
 ///////////////
@@ -2641,8 +2639,8 @@ PoolStringArray _ClassDB::get_class_list() const {
     PoolStringArray ret;
     ret.resize(classes.size());
     int idx = 0;
-    for (size_t i = 0, fin = classes.size(); i < fin; ++i) {
-        ret.set(idx++, String(classes[i]));
+    for (const StringName &sn : classes) {
+        ret.set(idx++, String(sn));
     }
 
     return ret;

@@ -89,11 +89,11 @@ struct UndoRedo::PrivateData
     PrivateData() {
     }
     void _pop_history_tail() {
-
         _discard_redo();
 
-        if (actions.empty())
+        if (actions.empty()) {
             return;
+        }
 
         for (Operation &op : actions[0].undo_ops) {
             if (op.type == Operation::TYPE_REFERENCE) {
@@ -132,8 +132,9 @@ struct UndoRedo::PrivateData
         for (auto & op : E) {
 
             Object *obj = ObjectDB::get_instance(op.object);
-            if (!obj) //may have been deleted and this is fine
+            if (!obj) { //may have been deleted and this is fine
                 continue;
+            }
 
             switch (op.type) {
 
@@ -237,8 +238,9 @@ struct UndoRedo::PrivateData
         VARIANT_ARGPTRS
         Operation do_op;
         do_op.object = p_object->get_instance_id();
-        if (object_cast<Resource>(p_object))
+        if (object_cast<Resource>(p_object)) {
             do_op.resref = Ref<Resource>(object_cast<Resource>(p_object));
+        }
 
         do_op.type = Operation::TYPE_METHOD;
         do_op.name = StringName(p_method);
@@ -277,8 +279,9 @@ struct UndoRedo::PrivateData
 
         Operation undo_op;
         undo_op.object = p_object->get_instance_id();
-        if (object_cast<Resource>(p_object))
+        if (object_cast<Resource>(p_object)) {
             undo_op.resref = Ref<Resource>(object_cast<Resource>(p_object));
+        }
 
         undo_op.type = Operation::TYPE_METHOD;
         undo_op.name = p_method;
@@ -326,13 +329,15 @@ struct UndoRedo::PrivateData
     }
     void add_undo_reference(Object *p_object) {
         // No undo if the merge mode is MERGE_ENDS
-        if (merge_mode == MERGE_ENDS)
+        if (merge_mode == MERGE_ENDS) {
             return;
+        }
 
         Operation undo_op;
         undo_op.object = p_object->get_instance_id();
-        if (object_cast<Resource>(p_object))
+        if (object_cast<Resource>(p_object)) {
             undo_op.resref = Ref<Resource>(object_cast<Resource>(p_object));
+        }
 
         undo_op.type = Operation::TYPE_REFERENCE;
         actions[current_action + 1].undo_ops.push_back(undo_op);
@@ -340,8 +345,9 @@ struct UndoRedo::PrivateData
     void commit_action()
     {
         action_level--;
-        if (action_level > 0)
+        if (action_level > 0) {
             return; //still nested
+        }
 
         if (merging) {
             version--;
@@ -357,8 +363,9 @@ struct UndoRedo::PrivateData
     }
     bool redo()
     {
-        if ((current_action + 1) >= actions.size())
+        if ((current_action + 1) >= actions.size()) {
             return false; //nothing to redo
+        }
 
         current_action++;
 
@@ -368,8 +375,9 @@ struct UndoRedo::PrivateData
     }
     bool undo()
     {
-        if (current_action < 0)
+        if (current_action < 0) {
             return false; //nothing to redo
+        }
         _process_operation_list(actions[current_action].undo_ops);
         current_action--;
         version--;

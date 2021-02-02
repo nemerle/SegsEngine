@@ -4253,9 +4253,9 @@ namespace eastl
         size_t operator()(const string& x) const
         {
             const unsigned char* p = (const unsigned char*)x.c_str(); // To consider: limit p to at most 256 chars.
-            unsigned int c, result = 2166136261U; // We implement an FNV-like string hash.
-            while((c = *p++) != 0) // Using '!=' disables compiler warnings.
-                result = (result * 16777619) ^ c;
+            uint32_t c, result = 2166136261U;   // FNV1a hash. Perhaps the best string hash. Intentionally uint32_t instead of size_t, so the behavior is the same regardless of size.
+            while((c = *p++) != 0)     // Using '!=' disables compiler warnings.
+                result = (result ^ c) * 16777619;
             return (size_t)result;
         }
     };

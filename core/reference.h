@@ -27,20 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #pragma once
 
 #include "core/object.h"
 #include "core/ref_ptr.h"
 #include "core/safe_refcount.h"
 #include "core/typesystem_decls.h"
-#include <cassert>
-
-#ifdef DEBUG_METHODS_ENABLED
-
-template <class T, typename>
-struct GetTypeInfo;
-#endif
 
 class GODOT_EXPORT RefCounted : public Object {
 
@@ -186,9 +178,9 @@ public:
     }
 
     operator Variant() const {
-
         return Variant(get_ref_ptr());
     }
+
     RefPtr get_ref_ptr() const {
 
         RefPtr refptr;
@@ -196,6 +188,7 @@ public:
         *irr = *this;
         return refptr;
     }
+
     T *get() const { return reference; }
 
     void reset()
@@ -276,16 +269,13 @@ Ref<T>::Ref(const Variant &p_variant) {
    reference = nullptr;
    *this = refFromRefPtr<T>(refptr);
 }
-//template <class T, class U>
-//Ref<T> static_ref_cast(const Ref<U>& intrusivePtr)
-//{
-//    return static_cast<T*>(intrusivePtr.ptr());
-//}
+
 template <class T, class U>
 Ref<T> dynamic_ref_cast(const Ref<U>& intrusivePtr)
 {
     return Ref<T>(object_cast<T>(intrusivePtr.get()));
 }
+
 template <class T, class U>
 Ref<T> dynamic_ref_cast(Ref<U>& intrusivePtr)
 {
@@ -312,6 +302,8 @@ public:
 };
 
 #ifdef DEBUG_METHODS_ENABLED
+template <class T, typename>
+struct GetTypeInfo;
 
 template <class T>
 struct GetTypeInfo<Ref<T>,void> {

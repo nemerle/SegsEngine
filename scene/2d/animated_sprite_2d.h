@@ -32,6 +32,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
+#include "core/string.h"
 
 class GODOT_EXPORT SpriteFrames : public Resource {
 
@@ -89,7 +90,7 @@ public:
         const HashMap<StringName, Anim>::const_iterator E = animations.find(p_anim);
         if (unlikely(E==animations.end())) {
             report_missing_animation(p_anim.asCString());
-            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Animation missing: " _STR(Ref<Texture>()));
+            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Animation missing: " + String(p_anim),{});
             return Ref<Texture>();
         }
         ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
@@ -104,7 +105,7 @@ public:
         const HashMap<StringName, Anim>::const_iterator E = animations.find(p_anim);
         if (unlikely(E==animations.end())) {
             report_missing_animation(p_anim.asCString());
-            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Animation missing: " _STR(Ref<Texture>()));
+            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Animation missing: " + String(p_anim),{});
             return Ref<Texture>();
         }
         ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
@@ -121,7 +122,7 @@ public:
         HashMap<StringName, Anim>::iterator E = animations.find(p_anim);
         if (unlikely(E==animations.end())) {
             report_missing_animation(p_anim.asCString());
-            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Animation missing: " _STR(Ref<Texture>()));
+            _err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Animation missing: " + String(p_anim),{});
             return;
         }
         ERR_FAIL_COND(p_idx < 0);

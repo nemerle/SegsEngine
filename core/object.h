@@ -27,7 +27,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #pragma once
 
 #include "core/os/memory.h"
@@ -36,7 +35,7 @@
 #include "core/variant.h"
 #include "core/string_name.h"
 #include "core/forward_decls.h"
-#include "core/jlsignal/Signal.h"
+
 //#include <QObject>
 
 class IObjectTooling;
@@ -44,6 +43,11 @@ class IObjectTooling;
 #ifdef DEBUG_ENABLED
 #include <atomic> // For ObjectRC*
 #endif
+
+namespace jl {
+    class SignalObserver;
+}
+
 class GODOT_EXPORT TypeInfo
 {
 public:
@@ -193,11 +197,10 @@ private:
         }                                                                                                              \
         p_list->emplace_back(PropertyInfo(                                                                             \
                 VariantType::NIL, get_class_static_name(), PropertyHint::None, nullptr, PROPERTY_USAGE_CATEGORY));     \
-        if (!_is_gpl_reversed()) ClassDB::get_property_list(#m_class, p_list, true, this);                             \
+        ClassDB::get_property_list(#m_class, p_list, true, this);                                                      \
         if (m_class::_get_get_property_list() != BaseClassName::_get_get_property_list()) {                            \
             _get_property_list(p_list);                                                                                \
         }                                                                                                              \
-        if (_is_gpl_reversed()) ClassDB::get_property_list(#m_class, p_list, true, this);                              \
         if (p_reversed) {                                                                                              \
             BaseClassName::_get_property_listv(p_list, p_reversed);                                                    \
         }                                                                                                              \
@@ -270,14 +273,14 @@ private:
     RefPtr script;
     ObjectID _instance_id;
     mutable StringName _class_name;
-    mutable const StringName *_class_ptr;
+    mutable const StringName *_class_ptr = nullptr;
     eastl::array<void *,MAX_SCRIPT_INSTANCE_BINDINGS> *_script_instance_bindings = nullptr;
     uint32_t instance_binding_count;
 
-    bool _block_signals;
-    bool _can_translate;
-    bool _emitting;
-    bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
+    uint8_t _block_signals : 1;
+    uint8_t _can_translate : 1;
+    uint8_t _emitting : 1;
+    uint8_t _is_queued_for_deletion : 1; // set to true by SceneTree::queue_delete()
 
     void _predelete();
     void _postinitialize();
@@ -326,11 +329,7 @@ protected:
 public: // made public since it's exposed to scripting language side.
     void property_list_changed_notify();
 public:
-    jl::SignalObserver &observer() {
-        if(!observer_endpoint)
-            observer_endpoint = memnew(jl::SignalObserver);
-        return *observer_endpoint;
-    }
+    jl::SignalObserver &observer();
 
     virtual void _changed_callback(Object *p_changed, StringName p_prop);
     Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -365,8 +364,6 @@ public:
 #ifdef DEBUG_ENABLED
     ObjectRC *_use_rc();
 #endif
-    bool _is_gpl_reversed() const { return false; }
-
     ObjectID get_instance_id() const { return _instance_id; }
 
     // this is used for editors
@@ -477,7 +474,7 @@ public:
     VariantType get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = nullptr) const;
 
     virtual void get_translatable_strings(List<StringName> *p_strings) const;
-    virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+
 #ifdef DEBUG_ENABLED
     /// Used in ObjectDB::cleanup() warning print
     virtual const char *get_dbg_name() const { return nullptr; }

@@ -1075,17 +1075,16 @@ bool InputEventAction::is_action(const StringName &p_action) const {
 bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 
     Ref<InputEventAction> act = dynamic_ref_cast<InputEventAction>(p_event);
-    if (not act)
+    if (!act || action != act->action) // not an action, or doesn't match?
         return false;
 
-    bool match = action == act->action;
-    if (match) {
-        if (p_pressed != nullptr)
-            *p_pressed = act->pressed;
-        if (p_strength != nullptr)
-            *p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+    if (p_pressed != nullptr) {
+        *p_pressed = act->pressed;
     }
-    return match;
+    if (p_strength != nullptr) {
+        *p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+    }
+    return true;
 }
 
 String InputEventAction::as_text() const {
@@ -1111,10 +1110,6 @@ void InputEventAction::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "strength", PropertyHint::Range, "0,1,0.01"), "set_strength", "get_strength");
 }
 
-InputEventAction::InputEventAction() {
-    pressed = false;
-    strength = 1.0f;
-}
 /////////////////////////////
 
 void InputEventGesture::set_position(const Vector2 &p_pos) {

@@ -2731,7 +2731,7 @@ void VisualServerScene::_gi_probe_bake_thread() {
 
     while (true) {
 
-        probe_bake_sem->wait();
+        probe_bake_sem.wait();
         if (probe_bake_thread_exit) {
             break;
         }
@@ -3139,7 +3139,7 @@ void VisualServerScene::render_probes() {
                             probe->dynamic.updating_stage = GIUpdateStage::LIGHTING;
                             probe_bake_list.emplace_back(instance_probe);
                         }
-                        probe_bake_sem->post();
+                        probe_bake_sem.post();
                     }
                 } break;
                 case GIUpdateStage::LIGHTING: {
@@ -3423,7 +3423,6 @@ VisualServerScene *VisualServerScene::singleton = nullptr;
 
 VisualServerScene::VisualServerScene() {
 
-    probe_bake_sem = memnew(Semaphore);
     probe_bake_thread.start(_gi_probe_bake_threads, this);
     probe_bake_thread_exit = false;
 
@@ -3433,7 +3432,6 @@ VisualServerScene::VisualServerScene() {
 
 VisualServerScene::~VisualServerScene() {
     probe_bake_thread_exit = true;
-    probe_bake_sem->post();
+    probe_bake_sem.post();
     probe_bake_thread.wait_to_finish();
-    memdelete(probe_bake_sem);
 }

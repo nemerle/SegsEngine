@@ -384,22 +384,15 @@ void RayCast3D::_clear_debug_shape() {
         return;
 
     MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
-    if (mi->is_inside_tree())
+    if (mi->is_inside_tree()) {
         mi->queue_delete();
-    else
+    }
+    else {
         memdelete(mi);
+    }
 
     debug_shape = nullptr;
 }
 
-RayCast3D::RayCast3D() : against(0), cast_to(Vector3(0, -1, 0)) {
+RayCast3D::RayCast3D() = default;
 
-    enabled = false;
-    collided = false;
-    against_shape = 0;
-    collision_mask = 1;
-    debug_shape = nullptr;
-    exclude_parent_body = true;
-    collide_with_areas = false;
-    collide_with_bodies = true;
-}

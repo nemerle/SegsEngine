@@ -31,19 +31,20 @@
 #pragma once
 
 /**
-	@author Juan Linietsky <reduzio@gmail.com>
+    @author Juan Linietsky <reduzio@gmail.com>
  * This class exists to workaround a limitation in C++ but keep the design OK.
  * It's basically an opaque container of a Reference reference, so Variant can use it.
 */
 
-#include "core/typedefs.h"
+#include "core/godot_export.h"
+#include <stdint.h>
 
 class RID;
 class GODOT_EXPORT RefPtr {
 
-    mutable intptr_t data;
+    mutable intptr_t data; // actual stored value is a Ref<RefCounted> *
 public:
-	bool is_null() const;
+    bool is_null() const;
     RefPtr &operator=(const RefPtr &p_other);
     RefPtr &operator=(RefPtr &&p_other) noexcept {
         // Do a swap here and assume p_other will be destroyed by the caller, so that our previous data will be freed
@@ -52,13 +53,13 @@ public:
         p_other.data = t;
         return *this;
     }
-    bool operator==(const RefPtr &p_other) const;
-    bool operator!=(const RefPtr &p_other) const;
+    bool operator==(const RefPtr &p_other) const noexcept;
+    bool operator!=(const RefPtr &p_other) const noexcept { return !(*this==p_other); }
     RID get_rid() const;
     void unref();
     void *get() const { return &data; }
     RefPtr(const RefPtr &p_other);
     RefPtr(RefPtr &&p_other) noexcept : data(p_other.data) { p_other.data = 0; }
-    RefPtr();
+    RefPtr() noexcept;
     ~RefPtr();
 };

@@ -178,8 +178,9 @@ uint32_t StringName::hash() const {
 
 StringName::operator UIString() const {
 
-    if (!_data||!_data->cname)
+    if (!_data||!_data->cname) {
         return UIString();
+    }
 
     return UIString::fromUtf8(_data->get_name());
 }
@@ -188,8 +189,9 @@ UIString StringName::asString() const { return (UIString)*this; }
 
 const char *StringName::asCString() const noexcept
 {
-    if (!_data||!_data->cname)
+    if (!_data||!_data->cname) {
         return "";
+    }
 
     return _data->get_name();
 }
@@ -220,70 +222,20 @@ StringName::StringName(const StringName &p_name) noexcept {
     }
 }
 
-
-
-StringName::StringName(const char *p_name) {
-
-    _data = nullptr;
-
-    ERR_FAIL_COND(!configured);
-
-    if (!p_name || p_name[0] == 0)
-        return; //empty, ignore
-
-    MutexLock mlocker(lock);
-
-    uint32_t hash = StringUtils::hash(p_name);
-    uint32_t idx = hash & STRING_TABLE_MASK;
-
-    _data = _table[idx];
-
-    while (_data) {
-
-        // compare hash first
-        if (_data->hash == hash && 0==strcmp(_data->get_name(),p_name))
-            break;
-        _data = _data->next;
-    }
-
-    if (_data) {
-        if (_data->refcount.ref()) {
-            // exists
-            return;
-        }
-    }
-
-    _data = memnew(_Data);
-    _data->refcount.init();
-    _data->set_dynamic_name(p_name);
-    _data->idx = idx;
-    _data->hash = hash;
-    _data->next = _table[idx];
-    _data->prev = nullptr;
-    if (_table[idx])
-        _table[idx]->prev = _data;
-    _table[idx] = _data;
-
+void StringName::setupFromCString(const StaticCString &p_static_string) {
+    setupFromCString(p_static_string.ptr,StringUtils::hash(p_static_string.ptr));
 }
 
-void StringName::setupFromCString(const StaticCString &p_static_string) {
+void StringName::setupFromCString(const char *ptr, uint32_t hash) {
 
+    const uint32_t idx = hash & STRING_TABLE_MASK;
     MutexLock mlocker(lock);
-
-    uint32_t hash = StringUtils::hash(p_static_string.ptr);
-    if(hash==2304634407)
-    {
-        printf("in\n");
-    }
-
-    uint32_t idx = hash & STRING_TABLE_MASK;
-
     _data = _table[idx];
 
     while (_data) {
 
         // compare hash first
-        if (_data->hash == hash && 0==strcmp(_data->get_name(),p_static_string.ptr))
+        if (_data->hash == hash && 0==strcmp(_data->get_name(),ptr))
             break;
         _data = _data->next;
     }
@@ -298,7 +250,7 @@ void StringName::setupFromCString(const StaticCString &p_static_string) {
     _data = memnew(_Data);
 
     _data->refcount.init();
-    _data->set_static_name(p_static_string.ptr);
+    _data->set_static_name(ptr);
     _data->idx = idx;
     _data->hash = hash;
     _data->next = _table[idx];
@@ -318,15 +270,10 @@ StringName::StringName(StringView p_name) {
     if (p_name.empty())
         return;
 
+    const uint32_t hash = StringUtils::hash(p_name);
+    const uint32_t idx = hash & STRING_TABLE_MASK;
+
     MutexLock mlocker(lock);
-
-    uint32_t hash = StringUtils::hash(p_name);
-    if(hash==2304634407)
-    {
-        printf("in\n");
-    }
-
-    uint32_t idx = hash & STRING_TABLE_MASK;
 
     _data = _table[idx];
 

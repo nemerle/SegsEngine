@@ -32,8 +32,9 @@ if(MSVC)
       #add_compile_options (/sdl)
       #add_compile_options (/arch:AVX2)
     endif()
-else()
-    # -pedantic  -Wno-gnu-anonymous-struct -Wno-gnu-zero-variadic-macro-arguments
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-Wall -Wextra -Wno-deprecated-copy -Wno-unused-parameter -Wno-sign-compare)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     add_compile_options(-Wall -Wextra -Wno-deprecated-copy -Wno-unused-parameter -Wno-sign-compare -Wno-nested-anon-types)
 endif()
 

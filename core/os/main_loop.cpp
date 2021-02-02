@@ -30,6 +30,7 @@
 
 #include "main_loop.h"
 
+#include "core/external_profiler.h"
 #include "core/script_language.h"
 #include "core/method_bind.h"
 #include "core/input/input_event.h"

@@ -1,3 +1,5 @@
+#pragma once
+
 /*************************************************************************/
 /*  memory.h                                                             */
 /*************************************************************************/
@@ -28,10 +30,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
 
 #include "core/godot_export.h"
-#include "core/external_profiler.h"
+//#include "core/external_profiler.h"
 
 #include <stdint.h>
 #include <cstddef>

@@ -65,29 +65,16 @@ public:
     RID_Data *get_data() const { return _data; }
 
     constexpr bool operator==(RID p_rid) const {
-
         return _data == p_rid._data;
     }
-    bool operator<(RID p_rid) const {
-
-        return _data < p_rid._data;
-    }
-    bool operator<=(RID p_rid) const {
-
-        return _data <= p_rid._data;
-    }
-    bool operator>(RID p_rid) const {
-
-        return _data > p_rid._data;
-    }
-    _FORCE_INLINE_ bool operator!=(RID p_rid) const {
-
+    bool operator!=(RID p_rid) const {
         return _data != p_rid._data;
     }
-    _FORCE_INLINE_ bool is_valid() const { return _data != nullptr; }
-
-    _FORCE_INLINE_ uint32_t get_id() const { return _data ? _data->get_id() : 0; }
-
+    bool operator<(RID p_rid) const {
+        return _data < p_rid._data;
+    }
+    bool is_valid() const { return _data != nullptr; }
+    uint32_t get_id() const { return _data ? _data->get_id() : 0; }
 };
 
 namespace eastl {
@@ -132,7 +119,7 @@ protected:
 #endif
 
 public:
-    virtual void get_owned_list(List<RID> *p_owned);
+    void get_owned_list(Vector<RID> *p_owned);
     static void init_rid();
     virtual ~RID_OwnerBase() = default;
 

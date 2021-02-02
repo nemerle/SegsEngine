@@ -70,13 +70,22 @@ public:
     bool operator!=(const Dictionary &p_dictionary) const;
 
     uint32_t hash() const;
-    Dictionary &operator=(const Dictionary &p_dictionary);
+
+    Dictionary &operator=(const Dictionary &p_dictionary) {
+        if(this==&p_dictionary) {
+            return *this;
+        }
+        _ref(p_dictionary);
+        return *this;
+    }
 
     Dictionary &operator=(Dictionary &&p_from) noexcept {
-        if (this == &p_from)
+        if (this == &p_from) {
             return *this;
-        if (_p)
+        }
+        if (_p) {
             _unref();
+        }
         _p = p_from._p;
         p_from._p = nullptr;
         return *this;

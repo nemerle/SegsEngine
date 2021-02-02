@@ -31,6 +31,7 @@
 #include "os.h"
 
 //#include "core/image.h"
+#include "core/external_profiler.h"
 #include "core/method_enum_caster.h"
 #include "core/object_db.h"
 #include "core/os/dir_access.h"
@@ -41,10 +42,10 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/string_formatter.h"
-#include "core/type_info.h"
 #include "core/string_utils.inl"
-#include "servers/audio_server.h"
+#include "core/type_info.h"
 #include "core/version_generated.gen.h"
+#include "servers/audio_server.h"
 
 #include "EASTL/fixed_hash_set.h"
 #include "EASTL/string_view.h"

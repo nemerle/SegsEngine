@@ -63,7 +63,7 @@ public:
         PAUSE_MODE_PROCESS
     };
 
-    enum DuplicateFlags {
+    enum DuplicateFlags : int8_t {
 
         DUPLICATE_SIGNALS = 1,
         DUPLICATE_GROUPS = 2,
@@ -161,9 +161,10 @@ protected:
 
     void _notification(int p_notification);
 
-    virtual void add_child_notify(Node *p_child);
-    virtual void remove_child_notify(Node *p_child);
-    virtual void move_child_notify(Node *p_child);
+    //! By default child add/move/remove notifications are no-ops
+    virtual void add_child_notify(Node *p_child) { }
+    virtual void remove_child_notify(Node *p_child) {}
+    virtual void move_child_notify(Node *p_child) { }
 
     void _propagate_replace_owner(Node *p_owner, Node *p_by_owner);
 
@@ -226,6 +227,8 @@ public:
 
     int get_child_count() const;
     Node *get_child(int p_index) const;
+    const Vector<Node *> &children() const;
+
     bool has_node(const NodePath &p_path) const;
     Node *get_node(const NodePath &p_path) const;
     Node *get_node_or_null(const NodePath &p_path) const;
@@ -260,7 +263,7 @@ public:
 
     void set_owner(Node *p_owner);
     Node *get_owner() const;
-    void get_owned_by(Node *p_by, Vector<Node *> *p_owned);
+    void get_owned_by(Node *p_by, Vector<Node *> &p_owned);
 
     void remove_and_skip();
     int get_index() const;
@@ -299,7 +302,7 @@ public:
     bool is_processing_internal() const;
 
     void set_process_priority(int p_priority);
-    int get_process_priority() const;
+    int get_process_priority() const { return process_priority; }
 
     void set_process_input(bool p_enable);
     bool is_processing_input() const;
@@ -362,11 +365,9 @@ public:
 
     bool is_owned_by_parent() const;
 
-    void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-
     void clear_internal_tree_resource_paths();
 
-    _FORCE_INLINE_ Viewport *get_viewport() const { return viewport; }
+    Viewport *get_viewport() const { return viewport; }
 
     virtual String get_configuration_warning() const;
 
@@ -397,7 +398,7 @@ public:
     void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 
     Ref<MultiplayerAPI> get_multiplayer() const;
-    Ref<MultiplayerAPI> get_custom_multiplayer() const;
+    const Ref<MultiplayerAPI> &get_custom_multiplayer() const { return multiplayer; }
     void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
     MultiplayerAPI_RPCMode get_node_rpc_mode(const StringName &p_method) const;
     MultiplayerAPI_RPCMode get_node_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;

@@ -2770,35 +2770,6 @@ bool Control::is_visibility_clip_disabled() const {
 }
 
 
-void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-    using namespace eastl;
-#ifdef TOOLS_ENABLED
-    const char * quote_style(EDITOR_DEF_T<bool>("text_editor/completion/use_single_quotes", false) ? "'" : "\"");
-#else
-    const char * quote_style = "\"";
-#endif
-
-    Node::get_argument_options(p_function, p_idx, r_options);
-
-    if (p_idx == 0) {
-        Vector<StringName> sn;
-        StringView pf = p_function;
-        if (pf == "add_theme_color_override"_sv || pf == "has_color"_sv || pf == "has_color_override"_sv || pf == "get_theme_color"_sv) {
-            Theme::get_default()->get_color_list(get_class_name(), &sn);
-        } else if (pf == "add_theme_style_override"_sv || pf == "has_style"_sv || pf == "has_style_override"_sv || pf == "get_theme_style"_sv) {
-            sn = Theme::get_default()->get_stylebox_list(get_class_name());
-        } else if (pf == "add_font_override"_sv || pf == "has_font"_sv || pf == "has_font_override"_sv || pf == "get_theme_font"_sv) {
-            Theme::get_default()->get_font_list(get_class_name(), &sn);
-        } else if (pf == "add_constant_override"_sv || pf == "has_constant"_sv || pf == "has_constant_override"_sv || pf == "get_theme_constant"_sv) {
-            Theme::get_default()->get_constant_list(get_class_name(), &sn);
-        }
-        eastl::sort(sn.begin(),sn.end(),WrapAlphaCompare());
-        for (const StringName &E : sn) {
-            r_options->push_back(quote_style + String(E.asCString()) + quote_style);
-        }
-    }
-}
-
 String Control::get_configuration_warning() const {
     String warning(CanvasItem::get_configuration_warning());
 

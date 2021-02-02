@@ -63,11 +63,12 @@ const String &ProjectSettings::get_resource_path() const {
 }
 
 String ProjectSettings::localize_path(StringView p_path) const {
-    if (resource_path.empty())
+    if (resource_path.empty()) {
         return String(p_path); // not initialized yet
+    }
 
     if (StringUtils::begins_with(p_path, "res://") || StringUtils::begins_with(p_path, "user://") ||
-            PathUtils::is_abs_path(p_path) && !StringUtils::begins_with(p_path, resource_path))
+            (PathUtils::is_abs_path(p_path) && !StringUtils::begins_with(p_path, resource_path)))
         return PathUtils::simplify_path(p_path);
 
     DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -184,9 +185,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
     }
 
     if (props.contains(p_name)) {
-        if (!props[p_name].overridden)
+        if (!props[p_name].overridden) {
             props[p_name].variant = p_value;
-
+        }
     } else {
         props[p_name] = VariantContainer(p_value, last_order++);
     }
@@ -227,8 +228,9 @@ void ProjectSettings::_get_property_list(Vector<PropertyInfo> *p_list) const {
     for (const eastl::pair<const StringName, VariantContainer> &E : props) {
         const VariantContainer *v = &E.second;
 
-        if (v->hide_from_editor)
+        if (v->hide_from_editor) {
             continue;
+        }
 
         _VCSort vc;
         vc.name = E.first;
@@ -236,10 +238,12 @@ void ProjectSettings::_get_property_list(Vector<PropertyInfo> *p_list) const {
         vc.type = v->variant.get_type();
         if (begins_with(vc.name, "input/") || begins_with(vc.name, "import/") || begins_with(vc.name, "export/") ||
                 begins_with(vc.name, "/remap") || StringUtils::begins_with(vc.name, "/locale") ||
-                StringUtils::begins_with(vc.name, "/autoload"))
+                StringUtils::begins_with(vc.name, "/autoload")) {
             vc.flags = PROPERTY_USAGE_STORAGE;
-        else
+        }
+        else {
             vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
+        }
 
         if (v->restart_if_changed) {
             vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
@@ -250,27 +254,31 @@ void ProjectSettings::_get_property_list(Vector<PropertyInfo> *p_list) const {
     for (const _VCSort &E : vclist) {
         StringName prop_info_name = E.name;
         size_t dot = StringUtils::find(prop_info_name, ".");
-        if (dot != String::npos)
+        if (dot != String::npos) {
             prop_info_name = StringName(StringView(prop_info_name).substr(0, dot));
+        }
 
         if (custom_prop_info.contains(prop_info_name)) {
             PropertyInfo pi = custom_prop_info.at(prop_info_name);
             pi.name = E.name;
             pi.usage = E.flags;
-            p_list->push_back(pi);
-        } else
-            p_list->push_back(PropertyInfo(E.type, E.name, PropertyHint::None, nullptr, E.flags));
+            p_list->emplace_back(eastl::move(pi));
+        } else {
+            p_list->emplace_back(E.type, E.name, PropertyHint::None, nullptr, E.flags);
+        }
     }
 }
 
 bool ProjectSettings::_load_resource_pack(StringView p_pack, bool p_replace_files) {
-    if (PackedData::get_singleton()->is_disabled())
+    if (PackedData::get_singleton()->is_disabled()) {
         return false;
+    }
 
     bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files) == OK;
 
-    if (!ok)
+    if (!ok) {
         return false;
+    }
 
     // if data.pck is found, all directory access will be from here
     DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
@@ -280,8 +288,9 @@ bool ProjectSettings::_load_resource_pack(StringView p_pack, bool p_replace_file
 }
 
 void ProjectSettings::_convert_to_last_version(int p_from_version) {
-    if (p_from_version > 3)
+    if (p_from_version > 3) {
         return;
+    }
 
     // Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
     for (eastl::pair<const StringName, ProjectSettings::VariantContainer> &E : props) {

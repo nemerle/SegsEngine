@@ -341,7 +341,7 @@ void EditorSettings::_load_defaults(const Ref<ConfigFile> &p_extra_config) {
         scale = 1.0;
     }
 #endif
-    hints["interface/editor/display_scale"] = PropertyInfo(VariantType::INT, "interface/editor/display_scale", PropertyHint::Enum, FormatVE("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+    hints["interface/editor/display_scale"] = PropertyInfo(VariantType::INT, "interface/editor/display_scale", PropertyHint::Enum, FormatVE("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", (int)Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
     _initial_set("interface/editor/custom_display_scale", 1.0f);
     hints["interface/editor/custom_display_scale"] = PropertyInfo(VariantType::FLOAT, "interface/editor/custom_display_scale", PropertyHint::Range, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
     _initial_set("interface/editor/main_font_size", 14);

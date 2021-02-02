@@ -47,6 +47,7 @@
 #include "core/string.h"
 #include "core/string_formatter.h"
 #include "core/translation.h"
+#include "core/jlsignal/Signal.h"
 
 #include <EASTL/vector_map.h>
 
@@ -105,6 +106,7 @@ struct Object::ObjectPrivate {
         return m_tooling;
     }
 };
+
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
@@ -144,24 +146,29 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 
     PropertyInfo pi;
 
-    if (p_dict.has("type"))
+    if (p_dict.has("type")) {
         pi.type = p_dict["type"].as<VariantType>();
+    }
 
-    if (p_dict.has("name"))
+    if (p_dict.has("name")) {
         pi.name = p_dict["name"].as<StringName>();
+    }
 
-    if (p_dict.has("class_name"))
+    if (p_dict.has("class_name")) {
         pi.class_name = p_dict["class_name"].as<StringName>();
+    }
 
-    if (p_dict.has("hint"))
+    if (p_dict.has("hint")) {
         pi.hint = p_dict["hint"].as<PropertyHint>();
+    }
 
-    if (p_dict.has("hint_string"))
-
+    if (p_dict.has("hint_string")) {
         pi.hint_string = p_dict["hint_string"].as<String>();
+    }
 
-    if (p_dict.has("usage"))
+    if (p_dict.has("usage")) {
         pi.usage = p_dict["usage"].as<uint32_t>();
+    }
 
     return pi;
 }
@@ -176,6 +183,7 @@ Array convert_property_list(const Vector<PropertyInfo> *p_list) {
 
     return va;
 }
+
 Array convert_property_vector(Span<const PropertyInfo> p_list) {
 
     Array va;
@@ -188,6 +196,7 @@ Array convert_property_vector(Span<const PropertyInfo> p_list) {
 
     return va;
 }
+
 MethodInfo::operator Dictionary() const {
 
     Dictionary d;
@@ -730,6 +739,12 @@ void Object::property_list_changed_notify() {
     Object_change_notify(this);
 }
 
+jl::SignalObserver &Object::observer() {
+    if(!observer_endpoint)
+        observer_endpoint = memnew(jl::SignalObserver);
+    return *observer_endpoint;
+}
+
 #ifdef DEBUG_ENABLED
 ObjectRC *Object::_use_rc() {
 
@@ -927,35 +942,6 @@ bool Object::_has_user_signal(const StringName &p_name) const {
         return false;
     return not private_data->signal_map[p_name].user.name.empty();
 }
-
-
-//Variant Object::_emit_signal(const Variant** p_args, int p_argcount, Callable::CallError& r_error) {
-
-//    r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-
-//    ERR_FAIL_COND_V(p_argcount < 1, Variant());
-//    if (p_args[0]->get_type() != VariantType::STRING_NAME && p_args[0]->get_type() != VariantType::STRING) {
-//        r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-//        r_error.argument = 0;
-//        r_error.expected = VariantType::STRING_NAME;
-//        ERR_FAIL_COND_V(p_args[0]->get_type() != VariantType::STRING_NAME && p_args[0]->get_type() != VariantType::STRING, Variant());
-//    }
-
-//    r_error.error = Callable::CallError::CALL_OK;
-
-//    StringName signal = (StringName)*p_args[0];
-
-//    const Variant** args = nullptr;
-
-//    int argc = p_argcount - 1;
-//    if (argc) {
-//        args = &p_args[1];
-//    }
-
-//    emit_signal(signal, args, argc);
-
-//    return Variant();
-//}
 
 struct _ObjectSignalDisconnectData {
 
@@ -1687,9 +1673,6 @@ void Object::set_script_instance_binding(int p_script_language_index, void *p_da
     }
     (*_script_instance_bindings)[p_script_language_index] = p_data;
 }
-void Object::get_argument_options(const StringName & /*p_function*/, int /*p_idx*/, List<String> * /*r_options*/) const {
-}
-
 
 Object::Object() {
     private_data = memnew_args_basic(ObjectPrivate,this);

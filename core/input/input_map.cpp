@@ -136,10 +136,12 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 
     ERR_FAIL_COND_MSG(not p_event, "It's not a reference to a valid InputEvent object.");
     ERR_FAIL_COND_MSG(!input_map.contains(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-    if (_find_event(input_map[p_action], p_event)!=input_map[p_action].inputs.end())
+    auto &map_entry(input_map[p_action]);
+    if (_find_event(map_entry, p_event)!=map_entry.inputs.end()) {
         return; //already gots
+    }
 
-    input_map[p_action].inputs.push_back(p_event);
+    map_entry.inputs.emplace_back(p_event);
 }
 
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
@@ -211,10 +213,12 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
     float strength;
     Vector<Ref<InputEvent> >::iterator event = _find_event(E->second, p_event, &pressed, &strength);
     if (event != E->second.inputs.end()) {
-        if (p_pressed != nullptr)
+        if (p_pressed != nullptr) {
             *p_pressed = pressed;
-        if (p_strength != nullptr)
+        }
+        if (p_strength != nullptr) {
             *p_strength = strength;
+        }
         return true;
     } else {
         return false;
@@ -232,8 +236,9 @@ void InputMap::load_from_globals() {
 
     for (const PropertyInfo &pi :pinfo) {
 
-        if (!begins_with(pi.name,"input/"))
+        if (!begins_with(pi.name,"input/")) {
             continue;
+        }
 
         String name(pi.name.asCString());
         name = substr(name,find(name,"/") + 1, name.length());
@@ -245,8 +250,9 @@ void InputMap::load_from_globals() {
         add_action(StringName(name), deadzone);
         for (int i = 0; i < events.size(); i++) {
             Ref<InputEvent> event = refFromVariant<InputEvent>(events[i]);
-            if (not event)
+            if (!event) {
                 continue;
+            }
             action_add_event(StringName(name), event);
         }
     }
@@ -257,8 +263,9 @@ void addActionKeys(InputMap &im,const StringName &n,std::initializer_list<KeyLis
     for(KeyList key : action_keys) {
         Ref<InputEventKey> k(make_ref_counted<InputEventKey>());
         k->set_keycode(key);
-        if(shifted)
+        if(shifted) {
             k->set_shift(true);
+        }
         im.action_add_event(n, k);
     }
 

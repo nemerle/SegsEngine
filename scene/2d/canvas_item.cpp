@@ -57,7 +57,6 @@ IMPL_GDCLASS(CanvasItem)
 
 VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode);
 VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode);
-VARIANT_ENUM_CAST(CanvasItem::BlendMode);
 
 static Vector<CanvasItemMaterial *> s_dirty_materials;
 
@@ -406,10 +405,12 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
     }
     notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-    if (p_visible)
+    if (p_visible) {
         update(); //todo optimize
-    else
+    }
+    else {
         emit_signal(SceneStringNames::hide);
+    }
     _block();
 
     for (int i = 0; i < get_child_count(); i++) {
@@ -423,51 +424,20 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
     _unblock();
 }
 
-void CanvasItem::show() {
-
-    if (visible)
-        return;
-
-    visible = true;
-    RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, true);
-
-    if (!is_inside_tree())
-        return;
-
-    _propagate_visibility_changed(true);
-    Object_change_notify(this,"visible");
-}
-
-void CanvasItem::hide() {
-
-    if (!visible)
-        return;
-
-    visible = false;
-    RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, false);
-
-    if (!is_inside_tree())
-        return;
-
-    _propagate_visibility_changed(false);
-    Object_change_notify(this,"visible");
-}
-
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
 CanvasItem *CanvasItem::get_current_item_drawn() {
     return current_item_drawn;
 }
 
 void CanvasItem::_update_callback() {
-
     if (!is_inside_tree()) {
         pending_update = false;
         return;
     }
 
     RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
-    //todo updating = true - only allow drawing here
-    if (is_visible_in_tree()) { //todo optimize this!!
+    // todo updating = true - only allow drawing here
+    if (is_visible_in_tree()) { // todo optimize this!!
         if (first_draw) {
             notification(NOTIFICATION_VISIBILITY_CHANGED);
             first_draw = false;
@@ -482,19 +452,21 @@ void CanvasItem::_update_callback() {
         current_item_drawn = nullptr;
         drawing = false;
     }
-    //todo updating = false
+    // todo updating = false
     pending_update = false; // don't change to false until finished drawing (avoid recursive update)
-
 }
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
-    if (canvas_layer)
+    if (canvas_layer) {
         return canvas_layer->get_transform() * get_global_transform();
-    else if (is_inside_tree())
+    }
+
+    if (is_inside_tree()) {
         return get_viewport()->get_canvas_transform() * get_global_transform();
-    else
-        return get_global_transform();
+    }
+
+    return get_global_transform();
 }
 
 Transform2D CanvasItem::get_global_transform() const {
@@ -520,13 +492,17 @@ void CanvasItem::_toplevel_raise_self() {
     if (!is_inside_tree())
         return;
 
+    int idx;
     if (canvas_layer)
-        RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, canvas_layer->get_sort_index());
+        idx = canvas_layer->get_sort_index();
     else
-        RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_viewport()->gui_get_canvas_sort_index());
+        idx = get_viewport()->gui_get_canvas_sort_index();
+
+    RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, idx);
 }
 
 void CanvasItem::_enter_canvas() {
+    auto *rs = RenderingServer::get_singleton();
 
     if ((!object_cast<CanvasItem>(get_parent())) || toplevel) {
 
@@ -552,7 +528,7 @@ void CanvasItem::_enter_canvas() {
         else
             canvas = get_viewport()->find_world_2d()->get_canvas();
 
-        RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+        rs->canvas_item_set_parent(canvas_item, canvas);
         snprintf(group,31,"root_canvas%d",canvas.get_id());
         group[31]=0;
 
@@ -569,8 +545,8 @@ void CanvasItem::_enter_canvas() {
 
         CanvasItem *parent = get_parent_item();
         canvas_layer = parent->canvas_layer;
-        RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item());
-        RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
+        rs->canvas_item_set_parent(canvas_item, parent->get_canvas_item());
+        rs->canvas_item_set_draw_index(canvas_item, get_index());
     }
 
     pending_update = false;
@@ -642,22 +618,25 @@ void CanvasItem::_notification(int p_what) {
 
 void CanvasItem::set_visible(bool p_visible) {
 
-    if (p_visible)
-        show();
-    else
-        hide();
-}
-bool CanvasItem::is_visible() const {
+    if (visible==p_visible)
+        return;
 
-    return visible;
-}
-
-void CanvasItem::update() {
+    visible = p_visible;
+    RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 
     if (!is_inside_tree())
         return;
-    if (pending_update)
+
+    _propagate_visibility_changed(p_visible);
+    Object_change_notify(this,"visible");
+}
+
+
+void CanvasItem::update() {
+
+    if (!is_inside_tree() || pending_update) {
         return;
+    }
 
     pending_update = true;
 
@@ -666,21 +645,19 @@ void CanvasItem::update() {
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
 
-    if (modulate == p_modulate)
+    if (modulate == p_modulate) {
         return;
+    }
 
     modulate = p_modulate;
     RenderingServer::get_singleton()->canvas_item_set_modulate(canvas_item, modulate);
 }
-Color CanvasItem::get_modulate() const {
-
-    return modulate;
-}
 
 void CanvasItem::set_as_top_level(bool p_toplevel) {
 
-    if (toplevel == p_toplevel)
+    if (toplevel == p_toplevel) {
         return;
+    }
 
     if (!is_inside_tree()) {
         toplevel = p_toplevel;
@@ -694,50 +671,40 @@ void CanvasItem::set_as_top_level(bool p_toplevel) {
     _notify_transform();
 }
 
-bool CanvasItem::is_set_as_top_level() const {
-
-    return toplevel;
-}
-
 CanvasItem *CanvasItem::get_parent_item() const {
 
-    if (toplevel)
+    if (toplevel) {
         return nullptr;
+    }
 
     return object_cast<CanvasItem>(get_parent());
 }
 
 void CanvasItem::set_self_modulate(const Color &p_self_modulate) {
 
-    if (self_modulate == p_self_modulate)
+    if (self_modulate == p_self_modulate) {
         return;
+    }
 
     self_modulate = p_self_modulate;
     RenderingServer::get_singleton()->canvas_item_set_self_modulate(canvas_item, self_modulate);
 }
-Color CanvasItem::get_self_modulate() const {
-
-    return self_modulate;
-}
 
 void CanvasItem::set_light_mask(int p_light_mask) {
 
-    if (light_mask == p_light_mask)
+    if (light_mask == p_light_mask) {
         return;
+    }
 
     light_mask = p_light_mask;
     RenderingServer::get_singleton()->canvas_item_set_light_mask(canvas_item, p_light_mask);
 }
 
-int CanvasItem::get_light_mask() const {
-
-    return light_mask;
-}
-
 void CanvasItem::item_rect_changed(bool p_size_changed) {
 
-    if (p_size_changed)
+    if (p_size_changed) {
         update();
+    }
     emit_signal(SceneStringNames::item_rect_changed);
 }
 
@@ -1061,22 +1028,12 @@ void CanvasItem::set_block_transform_notify(bool p_enable) {
     block_transform_notify = p_enable;
 }
 
-bool CanvasItem::is_block_transform_notify_enabled() const {
-
-    return block_transform_notify;
-}
-
 void CanvasItem::set_draw_behind_parent(bool p_enable) {
 
     if (behind == p_enable)
         return;
     behind = p_enable;
     RenderingServer::get_singleton()->canvas_item_set_draw_behind_parent(canvas_item, behind);
-}
-
-bool CanvasItem::is_draw_behind_parent_enabled() const {
-
-    return behind;
 }
 
 void CanvasItem::set_material(const Ref<Material> &p_material) {
@@ -1095,10 +1052,7 @@ void CanvasItem::set_use_parent_material(bool p_use_parent_material) {
     RenderingServer::get_singleton()->canvas_item_set_use_parent_material(canvas_item, p_use_parent_material);
 }
 
-bool CanvasItem::get_use_parent_material() const {
 
-    return use_parent_material;
-}
 
 Ref<Material> CanvasItem::get_material() const {
 
@@ -1234,7 +1188,6 @@ void CanvasItem::_bind_methods() {
 
     MethodBinder::bind_method(D_METHOD("_set_on_top", {"on_top"}), &CanvasItem::_set_on_top);
     MethodBinder::bind_method(D_METHOD("_is_on_top"), &CanvasItem::_is_on_top);
-    //MethodBinder::bind_method(D_METHOD("get_transform"),&CanvasItem::get_transform);
 
     MethodBinder::bind_method(D_METHOD("draw_line", {"from", "to", "color", "width", "antialiased"}), &CanvasItem::draw_line, {DEFVAL(1.0), DEFVAL(false)});
     MethodBinder::bind_method(D_METHOD("draw_polyline", {"points", "color", "width", "antialiased"}), &CanvasItem::draw_polyline, {DEFVAL(1.0), DEFVAL(false)});
@@ -1268,7 +1221,6 @@ void CanvasItem::_bind_methods() {
     MethodBinder::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
     MethodBinder::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
     MethodBinder::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
-    //MethodBinder::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
     MethodBinder::bind_method(D_METHOD("set_material", {"material"}), &CanvasItem::set_material);
     MethodBinder::bind_method(D_METHOD("get_material"), &CanvasItem::get_material);
@@ -1308,13 +1260,6 @@ void CanvasItem::_bind_methods() {
     ADD_SIGNAL(MethodInfo("hide"));
     ADD_SIGNAL(MethodInfo("item_rect_changed"));
 
-    BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
-    BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
-    BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
-    BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
-    BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
-    BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
-
     BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
     BIND_CONSTANT(NOTIFICATION_DRAW);
     BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
@@ -1326,20 +1271,21 @@ Transform2D CanvasItem::get_canvas_transform() const {
 
     ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
 
-    if (canvas_layer)
+    if (canvas_layer) {
         return canvas_layer->get_transform();
-    else if (object_cast<CanvasItem>(get_parent()))
+    }
+
+    if (object_cast<CanvasItem>(get_parent())) {
         return object_cast<CanvasItem>(get_parent())->get_canvas_transform();
-    else
-        return get_viewport()->get_canvas_transform();
+    }
+
+    return get_viewport()->get_canvas_transform();
 }
 
 Transform2D CanvasItem::get_viewport_transform() const {
-
     ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
 
     if (canvas_layer) {
-
         if (get_viewport()) {
             return get_viewport()->get_final_transform() * canvas_layer->get_transform();
         } else {
@@ -1355,10 +1301,6 @@ void CanvasItem::set_notify_local_transform(bool p_enable) {
     notify_local_transform = p_enable;
 }
 
-bool CanvasItem::is_local_transform_notification_enabled() const {
-    return notify_local_transform;
-}
-
 void CanvasItem::set_notify_transform(bool p_enable) {
     if (notify_transform == p_enable)
         return;
@@ -1371,16 +1313,8 @@ void CanvasItem::set_notify_transform(bool p_enable) {
     }
 }
 
-bool CanvasItem::is_transform_notification_enabled() const {
-    return notify_transform;
-}
-
 int CanvasItem::get_canvas_layer() const {
-
-    if (canvas_layer)
-        return canvas_layer->get_layer();
-    else
-        return 0;
+    return canvas_layer ? canvas_layer->get_layer() : 0;
 }
 
 CanvasItem::CanvasItem() :
@@ -1396,7 +1330,6 @@ CanvasItem::CanvasItem() :
     drawing = false;
     behind = false;
     block_transform_notify = false;
-    //viewport=NULL;
     canvas_layer = nullptr;
     use_parent_material = false;
     global_invalid = true;

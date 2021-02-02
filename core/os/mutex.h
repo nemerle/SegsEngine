@@ -36,6 +36,7 @@
 
 using Mutex = std::recursive_mutex;
 using MutexLock = std::scoped_lock<Mutex>;
+using MutexGuard = std::lock_guard<Mutex>;
 
 class SpinLock
 {

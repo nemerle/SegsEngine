@@ -303,13 +303,18 @@ void SceneTreeDock::_replace_with_branch_scene(StringView p_file, Node *base) {
     undo_redo->add_undo_method(parent, "move_child", Variant(base), pos);
 
     Vector<Node *> owned;
-    base->get_owned_by(base->get_owner(), &owned);
-    Array owners;
-    for (Node *F : owned) {
-        owners.push_back(Variant(F));
-    }
+    base->get_owned_by(base->get_owner(), owned);
+//    Array owners;
+//    for (Node *F : owned) {
+//        owners.push_back(Variant(F));
+//    }
     undo_redo->add_do_method(instanced_scene, "set_owner", Variant(edited_scene));
-    undo_redo->add_undo_method(this, "_set_owners", Variant(edited_scene), owners);
+//    undo_redo->add_undo_method(this, "_set_owners", Variant(edited_scene), owners);
+    undo_redo->add_undo_method([es=edited_scene,owned=eastl::move(owned)](){
+        for(Node *n : owned) {
+            n->set_owner(es);
+        }
+    },this->get_instance_id());
 
     undo_redo->add_do_method(editor_selection, "clear");
     undo_redo->add_undo_method(editor_selection, "clear");
@@ -614,7 +619,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
                 Node *parent = node->get_parent();
 
                 Vector<Node *> owned;
-                node->get_owned_by(node->get_owner(), &owned);
+                node->get_owned_by(node->get_owner(), owned);
 
                 HashMap<const Node *, Node *> duplimap;
                 Node *dup = node->duplicate_from_editor(duplimap);
@@ -1639,7 +1644,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
         former_names.emplace_back(node->get_name());
 
         Vector<Node *> owned;
-        node->get_owned_by(node->get_owner(), &owned);
+        node->get_owned_by(node->get_owner(), owned);
         Array owners;
         for (Node *E : owned) {
 
@@ -1710,7 +1715,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
         Node *node = p_nodes[ni];
 
         Vector<Node *> owned;
-        node->get_owned_by(node->get_owner(), &owned);
+        node->get_owned_by(node->get_owner(), owned);
         Array owners;
         for (Node *E : owned) {
 
@@ -1903,7 +1908,7 @@ void SceneTreeDock::_delete_confirm() {
                 continue;
 
             Vector<Node *> owned;
-            n->get_owned_by(n->get_owner(), &owned);
+            n->get_owned_by(n->get_owner(), owned);
             Array owners;
             for (Node *F : owned) {
 
