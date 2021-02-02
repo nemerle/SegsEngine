@@ -2863,8 +2863,16 @@ template <> bool hash_compare_helper<Color>(Color p_lhs, Color p_rhs) {
                                                                                                                        \
     return true
 
+static bool can_compare(VariantType a,VariantType b)
+{
+    if( (a == VariantType::STRING || a == VariantType::STRING_NAME) && 
+        (b == VariantType::STRING || b == VariantType::STRING_NAME) )
+        return true;
+    return a==b;
+}
+
 bool Variant::hash_compare(const Variant &p_variant) const {
-    if (type != p_variant.type) {
+    if (!can_compare(type,p_variant.type)) {
         return false;
     }
 

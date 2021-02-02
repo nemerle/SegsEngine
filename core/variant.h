@@ -546,7 +546,7 @@ template <> GODOT_EXPORT Variant Variant::from(const Vector<String> &);
 template <> GODOT_EXPORT Variant Variant::from(const Vector<StringView> &);
 template <> GODOT_EXPORT Variant Variant::from(const Vector<StringName> &);
 template <> GODOT_EXPORT Variant Variant::from(const Vector<Variant> &);
-template <> GODOT_EXPORT Variant Variant::from(const Frustum &p_array);
+template <> GODOT_EXPORT Variant Variant::from(const Frustum &);
 template <> GODOT_EXPORT Variant Variant::from(const Span<const Vector2> &);
 template <> GODOT_EXPORT Variant Variant::from(const Span<const Vector3> &);
 
