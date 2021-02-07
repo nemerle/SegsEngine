@@ -149,7 +149,7 @@ public:
     void set_clipboard(StringView p_text);
     String get_clipboard() const;
 
-    void set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen = 0);
+    void set_video_mode(Size2 p_size, bool p_fullscreen, bool p_resizeable, int p_screen = 0);
     Size2 get_video_mode(int p_screen = 0) const;
     bool is_video_mode_fullscreen(int p_screen = 0) const;
     bool is_video_mode_resizable(int p_screen = 0) const;
@@ -245,11 +245,6 @@ public:
 
     void dump_memory_to_file(const String &p_file);
     void dump_resources_to_file(StringView p_file);
-
-    bool has_virtual_keyboard() const;
-    void show_virtual_keyboard(const String &p_existing_text = String());
-    void hide_virtual_keyboard();
-    int get_virtual_keyboard_height();
 
     void print_resources_in_use(bool p_short = false);
     void print_all_resources(StringView p_to_file);

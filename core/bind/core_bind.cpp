@@ -265,7 +265,7 @@ void _OS::close_midi_inputs() {
     OS::get_singleton()->close_midi_inputs();
 }
 
-void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
+void _OS::set_video_mode(Size2 p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
     OS::VideoMode vm;
     vm.width = p_size.width;
     vm.height = p_size.height;
@@ -953,22 +953,6 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
     }
 }
 
-bool _OS::has_virtual_keyboard() const {
-    return OS::get_singleton()->has_virtual_keyboard();
-}
-
-void _OS::show_virtual_keyboard(const String &p_existing_text) {
-    OS::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2());
-}
-
-void _OS::hide_virtual_keyboard() {
-    OS::get_singleton()->hide_virtual_keyboard();
-}
-
-int _OS::get_virtual_keyboard_height() {
-    return OS::get_singleton()->get_virtual_keyboard_height();
-}
-
 void _OS::print_all_resources(StringView p_to_file) {
     OS::get_singleton()->print_all_resources(p_to_file);
 }
@@ -1230,11 +1214,6 @@ void _OS::_bind_methods() {
 
     MethodBinder::bind_method(D_METHOD("dump_memory_to_file", { "file" }), &_OS::dump_memory_to_file);
     MethodBinder::bind_method(D_METHOD("dump_resources_to_file", { "file" }), &_OS::dump_resources_to_file);
-    MethodBinder::bind_method(D_METHOD("has_virtual_keyboard"), &_OS::has_virtual_keyboard);
-    MethodBinder::bind_method(
-            D_METHOD("show_virtual_keyboard", { "existing_text" }), &_OS::show_virtual_keyboard, { DEFVAL(String()) });
-    MethodBinder::bind_method(D_METHOD("hide_virtual_keyboard"), &_OS::hide_virtual_keyboard);
-    MethodBinder::bind_method(D_METHOD("get_virtual_keyboard_height"), &_OS::get_virtual_keyboard_height);
     MethodBinder::bind_method(
             D_METHOD("print_resources_in_use", { "short" }), &_OS::print_resources_in_use, { DEFVAL(false) });
     MethodBinder::bind_method(

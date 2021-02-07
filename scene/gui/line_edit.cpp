@@ -212,8 +212,6 @@ void LineEdit::_gui_input(const Ref<InputEvent>& p_event) {
             selection.creating = false;
             selection.doubleclick = false;
 
-            if (OS::get_singleton()->has_virtual_keyboard())
-                OS::get_singleton()->show_virtual_keyboard(StringUtils::to_utf8(m_priv->text), get_global_rect(), max_length);
         }
 
         update();
@@ -388,8 +386,6 @@ void LineEdit::_gui_input(const Ref<InputEvent>& p_event) {
                 case KEY_ENTER: {
 
                     emit_signal("text_entered", StringUtils::to_utf8(m_priv->text));
-                    if (OS::get_singleton()->has_virtual_keyboard())
-                        OS::get_singleton()->hide_virtual_keyboard();
 
                 } break;
 
@@ -999,9 +995,6 @@ void LineEdit::_notification(int p_what) {
                 OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos2);
             }
 
-            if (OS::get_singleton()->has_virtual_keyboard())
-                OS::get_singleton()->show_virtual_keyboard(StringUtils::to_utf8(m_priv->text), get_global_rect(), max_length);
-
         } break;
         case NOTIFICATION_FOCUS_EXIT: {
             if (caret_blink_enabled) {
@@ -1012,9 +1005,6 @@ void LineEdit::_notification(int p_what) {
             OS::get_singleton()->set_ime_active(false);
             m_priv->ime_text = "";
             ime_selection = Point2();
-
-            if (OS::get_singleton()->has_virtual_keyboard())
-                OS::get_singleton()->hide_virtual_keyboard();
 
         } break;
         case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
