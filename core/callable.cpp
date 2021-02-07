@@ -58,21 +58,21 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 Object *Callable::get_object() const {
     if (is_null()) {
         return nullptr;
-    } else if (is_custom()) {
-        return ObjectDB::get_instance(custom->get_object());
-    } else {
-        return ObjectDB::get_instance(ObjectID(object));
     }
+    if (is_custom()) {
+        return ObjectDB::get_instance(custom->get_object());
+    }
+    return ObjectDB::get_instance(ObjectID(object));
 }
 
 ObjectID Callable::get_object_id() const {
     if (is_null()) {
         return ObjectID();
-    } else if (is_custom()) {
-        return custom->get_object();
-    } else {
-        return ObjectID(object);
     }
+    if (is_custom()) {
+        return custom->get_object();
+    }
+    return ObjectID(object);
 }
 
 StringName Callable::get_method() const {
@@ -100,25 +100,24 @@ bool Callable::operator==(const Callable &p_callable) const {
     bool custom_a = is_custom();
     bool custom_b = p_callable.is_custom();
 
-    if (custom_a == custom_b) {
-        if (custom_a) {
-            if (custom == p_callable.custom) {
-                return true; //same pointer, dont even compare
-            }
-
-            CallableCustom::CompareEqualFunc eq_a = custom->get_compare_equal_func();
-            CallableCustom::CompareEqualFunc eq_b = p_callable.custom->get_compare_equal_func();
-            if (eq_a == eq_b) {
-                return eq_a(custom, p_callable.custom);
-            } else {
-                return false;
-            }
-        } else {
-            return object == p_callable.object && method == p_callable.method;
-        }
-    } else {
+    if (custom_a != custom_b) {
         return false;
     }
+    if (!custom_a) {
+        return object == p_callable.object && method == p_callable.method;
+    }
+
+    if (custom == p_callable.custom) {
+        return true; // same pointer, dont even compare
+    }
+
+    CallableCustom::CompareEqualFunc eq_a = custom->get_compare_equal_func();
+    CallableCustom::CompareEqualFunc eq_b = p_callable.custom->get_compare_equal_func();
+
+    if (eq_a != eq_b) {
+        return false;
+    }
+    return eq_a(custom, p_callable.custom);
 }
 
 bool Callable::operator!=(const Callable &p_callable) const {

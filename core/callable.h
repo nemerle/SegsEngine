@@ -75,16 +75,16 @@ public:
     //void call_deferred(const Variant **p_arguments, int p_argcount) const;
 
     _FORCE_INLINE_ bool is_null() const {
-        return method == StringName() && object == 0;
+        return method.empty() && object == 0;
     }
     _FORCE_INLINE_ bool is_valid() const {
         return !is_null();
     }
     _FORCE_INLINE_ bool is_custom() const {
-        return method == StringName() && custom != nullptr;
+        return method.empty() && custom != nullptr;
     }
     _FORCE_INLINE_ bool is_standard() const {
-        return method != StringName();
+        return !method.empty();
     }
 
     [[nodiscard]] Object *get_object() const;
