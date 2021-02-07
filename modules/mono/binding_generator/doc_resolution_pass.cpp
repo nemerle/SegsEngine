@@ -88,15 +88,15 @@ void DocResolutionPass::visitConstant(TS_Constant *ci) {
 void DocResolutionPass::visitEnum(TS_Enum *en) {
     resolveTypeDocs(en);
     // right now there are no direct docs for enums, they use their enclosing class constant docs instead.
-    if (en->parent->m_docs)
-        en->m_docs = en->parent->m_docs;
+    if (en->nested_in->m_docs)
+        en->m_docs = en->nested_in->m_docs;
     else {
         // try to find some docs in parent type?
-        const TS_TypeLike *iter = en->parent;
+        const TS_TypeLike *iter = en->nested_in;
         while (iter) {
             en->m_docs = iter->m_docs;
             if (en->m_docs) break;
-            iter = iter->parent;
+            iter = iter->nested_in;
         }
     }
 

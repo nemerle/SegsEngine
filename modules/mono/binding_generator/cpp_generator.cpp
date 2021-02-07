@@ -599,8 +599,8 @@ void CppGeneratorVisitor::prepareArgumentLocals(const TS_Function *finfo, eastl:
 
 static const TS_TypeLike *top_level_ns(const TS_TypeLike *base) {
     while(base) {
-        if(base->parent) {
-            base = base->parent;
+        if(base->nested_in) {
+            base = base->nested_in;
         }
         else
             if(base->kind()==TS_TypeLike::NAMESPACE) {

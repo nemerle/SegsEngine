@@ -17,7 +17,7 @@ void buildCallArgumentList(const TS_Function *finfo, const eastl::vector_map<Str
     FixedVector<String,32,false> arg_parts;
     const TS_TypeLike *parent_ns = finfo->enclosing_type;
     while(parent_ns && parent_ns->kind() != TS_TypeLike::NAMESPACE) {
-        parent_ns = parent_ns->parent;
+        parent_ns = parent_ns->nested_in;
     }
     out.append("(");
     if(finfo->enclosing_type) {
@@ -534,7 +534,7 @@ void CsGeneratorVisitor::visitClassInternal(TS_Type *tp) {
     if (tp->m_imported)
         return;
 
-    bool top_level_class=tp->parent && tp->parent->kind()==TS_TypeLike::NAMESPACE;
+    bool top_level_class=tp->nested_in && tp->nested_in->kind()==TS_TypeLike::NAMESPACE;
     String nativecalls_ns=m_current_module->m_name + "NativeCalls";
 
     if(top_level_class) {
@@ -552,7 +552,7 @@ void CsGeneratorVisitor::visitClassInternal(TS_Type *tp) {
         ctx.append_line("#pragma warning disable CS1591 // Disable warning: 'Missing XML comment for publicly visible type or member'");
         ctx.append_line("#pragma warning disable CS1573 // Disable warning: 'Parameter has no matching param tag in the XML comment'\n");
     }
-    String namespace_path = tp->parent->relative_path(TargetCode::CS_INTERFACE,nullptr);
+    String namespace_path = tp->nested_in->relative_path(TargetCode::CS_INTERFACE,nullptr);
     String icall_ns = m_current_module->m_name+"NativeCalls";
     ctx.start_cs_namespace(namespace_path);
 

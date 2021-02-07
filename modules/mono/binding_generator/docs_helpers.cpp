@@ -127,9 +127,9 @@ static const TS_TypeLike* referenced_type(const TS_TypeLike* from,StringView nam
         if(name=="@GlobalScope") {
             iter=from;
             while(iter) {
-                if(!iter->parent)
+                if(!iter->nested_in)
                     return iter;
-                iter=iter->parent;
+                iter=iter->nested_in;
             }
         }
     }
@@ -304,7 +304,7 @@ static String bbcode_to_xml(StringView p_bbcode, const TS_TypeLike* p_itype, boo
                     // member reference could have been made in a constant belonging to enum belonging to class, so we need to find first enclosing class.
                     const TS_TypeLike *actual_type = target_itype;
                     while(actual_type->kind()!= TS_TypeLike::CLASS)
-                        actual_type = target_itype->parent;
+                        actual_type = target_itype->nested_in;
                     assert(actual_type);
                     const TS_Property* target_iprop = ((const TS_Type*)actual_type)->find_property_by_name(target_cname);
                     if(!target_iprop) {

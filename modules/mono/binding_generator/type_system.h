@@ -136,7 +136,7 @@ public:
     };
 
     // Support for tree of nesting structures - namespace in another namespace, type in namespace,nested types etc.
-    const TS_TypeLike *parent=nullptr;
+    const TS_TypeLike *nested_in=nullptr;
     // support for inheritance : class/struct but also used for enum base types
     const TS_TypeLike *base_type=nullptr;
 
@@ -248,6 +248,7 @@ struct TS_Type : public TS_TypeLike {
     TS_Function * find_method_by_name(TargetCode tgt,StringView name, bool try_parent) const override;
     bool enum_name_would_clash_with_property(StringView cs_enum_name) const override;
 };
+
 struct TS_Enum : public TS_TypeLike {
     static HashMap<String,TS_Enum *> enums;
     String static_wrapper_class;

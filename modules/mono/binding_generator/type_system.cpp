@@ -33,13 +33,13 @@ const TS_TypeLike *TS_TypeLike::common_base(const TS_TypeLike *with) const {
 
     // collect paths to root for both types
 
-    while(lh->parent) {
+    while(lh->nested_in) {
         lh_path.push_back(lh);
-        lh=lh->parent;
+        lh=lh->nested_in;
     }
-    while(rh->parent) {
+    while(rh->nested_in) {
         rh_path.push_back(rh);
-        rh=rh->parent;
+        rh=rh->nested_in;
     }
     if(lh!=rh)
         return nullptr; // no common base
@@ -70,8 +70,8 @@ TS_TypeLike *TS_TypeLike::find_by(eastl::function<bool (const TS_TypeLike *)> fu
     auto iter = eastl::find_if(m_children.begin(),m_children.end(),func);
     if(iter!=m_children.end())
         return *iter;
-    if(parent)
-        return parent->find_by(func);
+    if(nested_in)
+        return nested_in->find_by(func);
     return nullptr;
 }
 
@@ -159,7 +159,7 @@ String TS_TypeLike::relative_path(TargetCode tgt, const TS_TypeLike *rel_to) con
     const TS_TypeLike* rel_iter=rel_to;
     while(rel_iter) {
         rel_path.insert(rel_iter);
-        rel_iter = rel_iter->parent;
+        rel_iter = rel_iter->nested_in;
     }
 
     const TS_TypeLike* ns_iter = this;
@@ -169,7 +169,7 @@ String TS_TypeLike::relative_path(TargetCode tgt, const TS_TypeLike *rel_to) con
         if(kind()==ENUM && ns_iter->c_name()=="Variant" && parts[0]!="Variant") {
             parts[0]="Variant";
         }
-        ns_iter = ns_iter->parent;
+        ns_iter = ns_iter->nested_in;
     }
     return String::joined(parts, tgt==CPP_IMPL ? "::" : ".");
 }
@@ -186,7 +186,7 @@ TS_Function *TS_TypeLike::find_method_by_name(TargetCode tgt, StringView name, b
         return nullptr;
 
     // retry in enclosing container
-    return parent ? parent->find_method_by_name(tgt,name,try_parent) : nullptr;
+    return nested_in ? nested_in->find_method_by_name(tgt,name,try_parent) : nullptr;
 }
 
 
@@ -267,7 +267,7 @@ TS_Namespace *TS_Module::create_ns(const String & access_path, const NamespaceIn
     res->m_source = &src;
     res->set_cs_name(convert_ns_name(src.namespace_name));
     m_namespaces[access_path+src.namespace_name] = res;
-    res->parent = parent;
+    res->nested_in = parent;
     if(parent)
         parent->m_children.push_back(res);
     return res;
@@ -317,7 +317,7 @@ TS_Type *TS_Namespace::find_or_create_by_cpp_name(const String &name)  {
         target_itype = ns_iter->m_source->_get_type_or_null(TypeReference{ name });
         if(target_itype)
             break;
-        ns_iter = (TS_Namespace*)ns_iter->parent;
+        ns_iter = (TS_Namespace*)ns_iter->nested_in;
     }
     if(target_itype==nullptr)
         return nullptr;
@@ -331,7 +331,7 @@ Vector<StringView> TS_Namespace::cs_path_components() const {
     const TS_TypeLike* ns_iter = this;
     while (ns_iter) {
         parts.push_front(ns_iter->cs_name());
-        ns_iter = ns_iter->parent;
+        ns_iter = ns_iter->nested_in;
     }
     Vector<StringView> continous(parts.begin(),parts.end());
     return continous;
@@ -371,7 +371,7 @@ TS_Enum *TS_Enum::get_instance_for(const TS_TypeLike *enclosing, const String &a
         return iter->second;
     auto res = new TS_Enum;
     res->m_rd_data = src;
-    res->parent = enclosing;
+    res->nested_in = enclosing;
     String cs_name = convert_name(access_path, src->cname);
     if(enclosing->enum_name_would_clash_with_property(cs_name)) {
         cs_name += "Enum";
@@ -404,7 +404,7 @@ HashMap< const TypeInterface*, TS_Type*> TS_Type::s_ptr_cache;
 TS_Type *TS_Type::create_type(const TS_TypeLike *owning_type, const TypeInterface *type_interface) {
     TS_Type* res = s_ptr_cache[type_interface];
     if (res) {
-        assert(res->parent==owning_type);
+        assert(res->nested_in==owning_type);
         return res;
     }
 
@@ -416,7 +416,7 @@ TS_Type *TS_Type::create_type(const TS_TypeLike *owning_type, const TypeInterfac
     } else if(type_interface->name=="StringName") {
         res->set_cs_name("string");
     }
-    res->parent = owning_type;
+    res->nested_in = owning_type;
     res->source_type = type_interface;
     s_ptr_cache[type_interface] = res;
     return res;
@@ -502,7 +502,7 @@ TS_Function *TS_Type::find_method_by_name(TargetCode tgt, StringView name, bool 
         current = current->base_type;
     }
 
-    return parent ? parent->TS_TypeLike::find_method_by_name(tgt,name,true) : nullptr;
+    return nested_in ? nested_in->TS_TypeLike::find_method_by_name(tgt,name,true) : nullptr;
 }
 
 bool TS_Type::enum_name_would_clash_with_property(StringView cs_enum_name) const {
@@ -593,11 +593,11 @@ TS_Property *TS_Property::from_rd(const TS_Type *owner, const PropertyInterface 
         return res;
 
     res = new TS_Property;
-    assert(owner && owner->parent);
+    assert(owner && owner->nested_in);
     res->m_owner = owner;
 
     if(owner) {
-        res->cs_name = TS_TypeMapper::get().mapPropertyName(type_interface->cname,owner->cs_name(),owner->parent->cs_name());
+        res->cs_name = TS_TypeMapper::get().mapPropertyName(type_interface->cname,owner->cs_name(),owner->nested_in->cs_name());
     }
     else {
         res->cs_name = TS_TypeMapper::get().mapPropertyName(type_interface->cname,"","");
