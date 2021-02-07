@@ -235,7 +235,7 @@ Ref<Image> ProceduralSky::_generate_sky() {
     }
 
     Ref<Image> image(make_ref_counted<Image>());
-    image->create(w, h, false, Image::FORMAT_RGBE9995, imgdata);
+    image->create(w, h, false, ImageData::FORMAT_RGBE9995, imgdata);
 
     return image;
 }
@@ -423,7 +423,7 @@ void ProceduralSky::_update_sky() {
 
     } else {
         Ref<Image> image = _generate_sky();
-        RenderingServer::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, Image::FORMAT_RGBE9995, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER | RS::TEXTURE_FLAG_REPEAT);
+        RenderingServer::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, ImageData::FORMAT_RGBE9995, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER | RS::TEXTURE_FLAG_REPEAT);
         RenderingServer::get_singleton()->texture_set_data(texture, image);
         _radiance_changed();
     }
@@ -441,7 +441,7 @@ void ProceduralSky::_queue_update() {
 
 void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
 
-    RenderingServer::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, Image::FORMAT_RGBE9995, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER | RS::TEXTURE_FLAG_REPEAT);
+    RenderingServer::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, ImageData::FORMAT_RGBE9995, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER | RS::TEXTURE_FLAG_REPEAT);
     RenderingServer::get_singleton()->texture_set_data(texture, p_image);
     _radiance_changed();
     sky_thread.wait_to_finish();

@@ -126,7 +126,7 @@ struct DynamicFontAtSize::ImplData
             ERR_FAIL_COND_V(mh > 4096, Character::not_found());
 
             int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
-        Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
+        Image::Format require_format = color_size == 4 ? ImageData::FORMAT_RGBA8 : ImageData::FORMAT_LA8;
 
         TexturePosition tex_pos = fa->_find_texture_pos_for_glyph(color_size, require_format, mw, mh);
         ERR_FAIL_COND_V(tex_pos.index < 0, Character::not_found());

@@ -87,9 +87,9 @@ void CurveTexture::_update() {
         }
     }
 
-    Ref<Image> image(make_ref_counted<Image>(_width, 1, false, Image::FORMAT_RF, data));
+    Ref<Image> image(make_ref_counted<Image>(_width, 1, false, ImageData::FORMAT_RF, data));
 
-    RenderingServer::get_singleton()->texture_allocate(_texture, _width, 1, 0, Image::FORMAT_RF, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER);
+    RenderingServer::get_singleton()->texture_allocate(_texture, _width, 1, 0, ImageData::FORMAT_RF, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER);
     RenderingServer::get_singleton()->texture_set_data(_texture, image);
 
     emit_changed();

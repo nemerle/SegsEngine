@@ -253,7 +253,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 
     for (const MacOSIconInfo & icon_info : icon_infos) {
         const Ref<Image> &copy(p_icon);
-        copy->convert(Image::FORMAT_RGBA8);
+        copy->convert(ImageData::FORMAT_RGBA8);
         copy->resize(icon_info.size, icon_info.size);
 
         if (icon_info.is_png) {

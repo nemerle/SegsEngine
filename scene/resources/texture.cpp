@@ -89,7 +89,7 @@ namespace  {
             FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
             ERR_FAIL_COND_V_MSG(err, err, FormatVE("Can't save using saver wrapper at path: '%.*s'.", (int)p_path.size(),p_path.data()));
             Vector<uint8_t> buffer;
-            err = m_saver->save_image(*img,buffer,{});
+            err = m_saver->save_image(img->img_data(),buffer,{});
 
             file->store_buffer(buffer.data(), buffer.size());
             if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
@@ -364,7 +364,7 @@ RID ImageTexture::get_rid() const {
 
 bool ImageTexture::has_alpha() const {
 
-    return (format == Image::FORMAT_LA8 || format == Image::FORMAT_RGBA8);
+    return (format == ImageData::FORMAT_LA8 || format == ImageData::FORMAT_RGBA8);
 }
 
 void ImageTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
@@ -506,7 +506,7 @@ ImageTexture::ImageTexture() {
     storage = STORAGE_RAW;
     lossy_storage_quality = 0.7f;
     image_stored = false;
-    format = Image::FORMAT_L8;
+    format = ImageData::FORMAT_L8;
 }
 
 ImageTexture::~ImageTexture() {
@@ -940,7 +940,7 @@ void StreamTexture::_bind_methods() {
 
 StreamTexture::StreamTexture() {
     m_impl_data = new StreamTextureData;
-    m_impl_data->format = Image::FORMAT_MAX;
+    m_impl_data->format = ImageData::FORMAT_MAX;
     m_impl_data->flags = 0;
     m_impl_data->w = 0;
     m_impl_data->h = 0;
@@ -1460,7 +1460,7 @@ Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const {
 }
 Ref<Image> LargeTexture::to_image() const {
 
-    Ref<Image> img(make_ref_counted<Image>(this->get_width(), this->get_height(), false, Image::FORMAT_RGBA8));
+    Ref<Image> img(make_ref_counted<Image>(this->get_width(), this->get_height(), false, ImageData::FORMAT_RGBA8));
     for (size_t i = 0; i < pieces.size(); i++) {
 
         Ref<Image> src_img = pieces[i].texture->get_data();
@@ -1741,7 +1741,7 @@ CubeMap::CubeMap() {
     cubemap = RenderingServer::get_singleton()->texture_create();
     storage = STORAGE_RAW;
     lossy_storage_quality = 0.7f;
-    format = Image::FORMAT_BPTC_RGBA;
+    format = ImageData::FORMAT_BPTC_RGBA;
 }
 
 CubeMap::~CubeMap() {
@@ -1840,9 +1840,9 @@ void GradientTexture::_update() {
         }
     }
 
-    Ref<Image> image(make_ref_counted<Image>(width, 1, false, Image::FORMAT_RGBA8, data));
+    Ref<Image> image(make_ref_counted<Image>(width, 1, false, ImageData::FORMAT_RGBA8, data));
 
-    RenderingServer::get_singleton()->texture_allocate(texture, width, 1, 0, Image::FORMAT_RGBA8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER);
+    RenderingServer::get_singleton()->texture_allocate(texture, width, 1, 0, ImageData::FORMAT_RGBA8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_FILTER);
     RenderingServer::get_singleton()->texture_set_data(texture, image);
 
     emit_changed();
@@ -2338,7 +2338,7 @@ void TextureLayered::_bind_methods() {
 
 TextureLayered::TextureLayered(bool p_3d) {
     is_3d = p_3d;
-    format = Image::FORMAT_MAX;
+    format = ImageData::FORMAT_MAX;
     flags = FLAGS_DEFAULT;
 
     width = 0;
@@ -2577,7 +2577,7 @@ ExternalTexture::ExternalTexture() {
     size = Size2(1.0, 1.0);
     texture = RenderingServer::get_singleton()->texture_create();
 
-    RenderingServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, RS::TEXTURE_TYPE_EXTERNAL, 0);
+    RenderingServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, ImageData::FORMAT_RGBA8, RS::TEXTURE_TYPE_EXTERNAL, 0);
     Object_change_notify(this);
     emit_changed();
 }

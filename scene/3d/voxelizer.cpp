@@ -498,7 +498,7 @@ Vector<Color> VoxelLightBaker::_get_bake_texture(Ref<Image> p_image, const Color
     if (p_image->is_compressed()) {
         p_image->decompress();
     }
-    p_image->convert(Image::FORMAT_RGBA8);
+    p_image->convert(ImageData::FORMAT_RGBA8);
     p_image->resize(bake_texture_size, bake_texture_size, Image::INTERPOLATE_CUBIC);
 
     PoolVector<uint8_t>::Read r = p_image->get_data().read();
@@ -2115,7 +2115,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
             }
 
             Ref<Image> image(make_ref_counted<Image>());
-            image->create(width, height, false, Image::FORMAT_RGB8, img);
+            image->create(width, height, false, ImageData::FORMAT_RGB8, img);
 
             String name = p_mesh->get_name();
             if (name == "") {

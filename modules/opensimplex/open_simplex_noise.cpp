@@ -109,7 +109,7 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) const {
         }
     }
 
-    return Ref<Image>(make_ref_counted<Image>(p_width, p_height, false, Image::FORMAT_L8, data));
+    return Ref<Image>(make_ref_counted<Image>(p_width, p_height, false, ImageData::FORMAT_L8, data));
 }
 
 Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
@@ -142,7 +142,7 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
         }
     }
 
-    return Ref<Image>(make_ref_counted<Image>(p_size, p_size, false, Image::FORMAT_L8, data));
+    return Ref<Image>(make_ref_counted<Image>(p_size, p_size, false, ImageData::FORMAT_L8, data));
 }
 
 void OpenSimplexNoise::_bind_methods() {

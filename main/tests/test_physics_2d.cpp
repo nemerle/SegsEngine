@@ -161,7 +161,7 @@ class TestPhysics2DMainLoop : public MainLoop {
                 }
             }
 
-            Ref<Image> image(make_ref_counted<Image>(32, 2, 0, Image::FORMAT_LA8, pixels));
+            Ref<Image> image(make_ref_counted<Image>(32, 2, 0, ImageData::FORMAT_LA8, pixels));
 
             body_shape_data[PhysicsServer2D::SHAPE_SEGMENT].image = vs->texture_create_from_image(image);
 
@@ -188,7 +188,7 @@ class TestPhysics2DMainLoop : public MainLoop {
                 }
             }
 
-            Ref<Image> image(make_ref_counted<Image>(32, 32, 0, Image::FORMAT_LA8, pixels));
+            Ref<Image> image(make_ref_counted<Image>(32, 32, 0, ImageData::FORMAT_LA8, pixels));
 
             body_shape_data[PhysicsServer2D::SHAPE_CIRCLE].image = vs->texture_create_from_image(image);
 
@@ -215,7 +215,7 @@ class TestPhysics2DMainLoop : public MainLoop {
                 }
             }
 
-            Ref<Image> image(make_ref_counted<Image>(32, 32, 0, Image::FORMAT_LA8, pixels));
+            Ref<Image> image(make_ref_counted<Image>(32, 32, 0, ImageData::FORMAT_LA8, pixels));
 
             body_shape_data[PhysicsServer2D::SHAPE_RECTANGLE].image = vs->texture_create_from_image(image);
 
@@ -243,7 +243,7 @@ class TestPhysics2DMainLoop : public MainLoop {
                 }
             }
 
-            Ref<Image> image(make_ref_counted<Image>(32, 64, 0, Image::FORMAT_LA8, pixels));
+            Ref<Image> image(make_ref_counted<Image>(32, 64, 0, ImageData::FORMAT_LA8, pixels));
 
             body_shape_data[PhysicsServer2D::SHAPE_CAPSULE].image = vs->texture_create_from_image(image);
 

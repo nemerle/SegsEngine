@@ -71,8 +71,9 @@ struct _IP_ResolverPrivate {
     IP::ResolverID find_empty_id() const {
 
         for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
-            if (queue[i].status == IP::RESOLVER_STATUS_NONE)
+            if (queue[i].status == IP::RESOLVER_STATUS_NONE) {
                 return i;
+            }
         }
         return IP::RESOLVER_INVALID_ID;
     }
@@ -86,16 +87,17 @@ struct _IP_ResolverPrivate {
 
     void resolve_queues() {
 
-        for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
-
-            if (queue[i].status != IP::RESOLVER_STATUS_WAITING)
+        for (QueueItem &qi : queue) {
+            if (qi.status != IP::RESOLVER_STATUS_WAITING) {
                 continue;
-            queue[i].response = IP::get_singleton()->resolve_hostname(queue[i].hostname, queue[i].type);
+            }
+            qi.response = IP::get_singleton()->resolve_hostname(qi.hostname, qi.type);
 
-            if (!queue[i].response.is_valid())
-                queue[i].status = IP::RESOLVER_STATUS_ERROR;
-            else
-                queue[i].status = IP::RESOLVER_STATUS_DONE;
+            if (!qi.response.is_valid()) {
+                qi.status = IP::RESOLVER_STATUS_ERROR;
+            } else {
+                qi.status = IP::RESOLVER_STATUS_DONE;
+            }
         }
     }
 

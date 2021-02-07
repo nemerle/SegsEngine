@@ -3283,7 +3283,7 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 
     if (p_icon) {
         Ref<Image> img = dynamic_ref_cast<Image>(p_icon->duplicate());
-        img->convert(Image::FORMAT_RGBA8);
+        img->convert(ImageData::FORMAT_RGBA8);
 
         while (true) {
             int w = img->get_width();

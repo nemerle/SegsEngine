@@ -193,7 +193,7 @@ struct CodecPluginResolver final : public ResolverInterface {
 IMPL_GDCLASS(Image)
 
 namespace {
-constexpr const char *format_names[Image::FORMAT_MAX] = {
+constexpr const char *format_names[ImageData::FORMAT_MAX] = {
     "Lum8", // luminance
     "LumAlpha8", // luminance-alpha
     "Red8",
@@ -2333,7 +2333,7 @@ void Image::create(const char **p_xpm) {
                     ERR_FAIL_COND(colorptr != colormap.end());
                     uint8_t pixel[4];
                     for (uint32_t i = 0; i < pixel_size; i++) {
-                        pixel[i] = CLAMP<float>(colorptr->second[i] * 255, 0, 255);
+                        pixel[i] = CLAMP<float>(colorptr->second.component(i) * 255, 0, 255);
                     }
                     _put_pixelb(x, y, pixel_size, w.ptr(), pixel);
                 }

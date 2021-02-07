@@ -1242,7 +1242,7 @@ void EditorNode::_save_scene_with_preview(StringView p_file, int p_idx) {
         // We cannot fallback on the 2D editor, because it may not have been used yet,
         // which would result in an invalid texture.
         if (c3d == 0 && c2d == 0) {
-            img = new Image(1,1,0,Image::FORMAT_RGB8);
+            img = new Image(1,1,0,ImageData::FORMAT_RGB8);
         } else if (c3d < c2d) {
             Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
             if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
@@ -1285,7 +1285,7 @@ void EditorNode::_save_scene_with_preview(StringView p_file, int p_idx) {
                 img->crop_from_point(x, y, size, size);
                 img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
             }
-            img->convert(Image::FORMAT_RGB8);
+            img->convert(ImageData::FORMAT_RGB8);
 
             img->flip_y();
 

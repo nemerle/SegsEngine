@@ -171,8 +171,8 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
     if (img->is_compressed()) {
         img->decompress();
     }
-    img->convert(Image::FORMAT_RGBA8);
-    ERR_FAIL_COND(img->get_format() != Image::FORMAT_RGBA8);
+    img->convert(ImageData::FORMAT_RGBA8);
+    ERR_FAIL_COND(img->get_format() != ImageData::FORMAT_RGBA8);
     Size2i s = Size2(img->get_width(), img->get_height());
     ERR_FAIL_COND(s.width == 0 || s.height == 0);
 
@@ -294,7 +294,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
     }
 
     img = make_ref_counted<Image>();
-    img->create(w, h, false, Image::FORMAT_RGF, texdata);
+    img->create(w, h, false, ImageData::FORMAT_RGF, texdata);
 
     Ref<ImageTexture> imgt(make_ref_counted<ImageTexture>());
     imgt->create_from_image(img, 0);
@@ -316,7 +316,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
         }
 
         img = make_ref_counted<Image>();
-        img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
+        img->create(w, h, false, ImageData::FORMAT_RGBA8, colordata);
 
         imgt = make_ref_counted<ImageTexture>();
         imgt->create_from_image(img, 0);
@@ -339,7 +339,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
         }
 
         img = make_ref_counted<Image>();
-        img->create(w, h, false, Image::FORMAT_RGF, normdata);
+        img->create(w, h, false, ImageData::FORMAT_RGF, normdata);
 
         imgt = make_ref_counted<ImageTexture>();
         imgt->create_from_image(img, 0);

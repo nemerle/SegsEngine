@@ -53,8 +53,8 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 
     ERR_FAIL_COND(not p_image || p_image->is_empty());
     Ref<Image> img(dynamic_ref_cast<Image>(p_image->duplicate()));
-    img->convert(Image::FORMAT_LA8);
-    ERR_FAIL_COND(img->get_format() != Image::FORMAT_LA8);
+    img->convert(ImageData::FORMAT_LA8);
+    ERR_FAIL_COND(img->get_format() != ImageData::FORMAT_LA8);
 
     create(Size2(img->get_width(), img->get_height()));
 
@@ -637,7 +637,7 @@ void BitMap::resize(const Size2 &p_new_size) {
 Ref<Image> BitMap::convert_to_image() const {
 
     Ref<Image> image(make_ref_counted<Image>());
-    image->create(width, height, false, Image::FORMAT_L8);
+    image->create(width, height, false, ImageData::FORMAT_L8);
     image->lock();
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {

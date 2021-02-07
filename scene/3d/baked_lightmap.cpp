@@ -533,7 +533,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
                     }
                 }
 
-                image->create(lm.width, lm.height, false, Image::FORMAT_RGBH, data);
+                image->create(lm.width, lm.height, false, ImageData::FORMAT_RGBH, data);
 
             } else {
 
@@ -554,7 +554,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
                     }
                 }
 
-                image->create(lm.width, lm.height, false, Image::FORMAT_RGB8, data);
+                image->create(lm.width, lm.height, false, ImageData::FORMAT_RGB8, data);
 
                 // This texture is saved to SRGB for two reasons:
                 // 1) first is so it looks better when doing the LINEAR->SRGB conversion (more accurate)

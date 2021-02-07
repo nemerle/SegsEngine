@@ -447,11 +447,11 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 static Error _pvrtc_decompress(Image *p_img) {
 
-    ERR_FAIL_COND_V(p_img->get_format() != Image::FORMAT_PVRTC2 && p_img->get_format() != Image::FORMAT_PVRTC2A &&
-                        p_img->get_format() != Image::FORMAT_PVRTC4 && p_img->get_format() != Image::FORMAT_PVRTC4A,
+    ERR_FAIL_COND_V(p_img->get_format() != ImageData::FORMAT_PVRTC2 && p_img->get_format() != ImageData::FORMAT_PVRTC2A &&
+                        p_img->get_format() != ImageData::FORMAT_PVRTC4 && p_img->get_format() != ImageData::FORMAT_PVRTC4A,
         ERR_FILE_UNRECOGNIZED);
 
-    bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC2 || p_img->get_format() == Image::FORMAT_PVRTC2A);
+    bool _2bit = (p_img->get_format() == ImageData::FORMAT_PVRTC2 || p_img->get_format() == ImageData::FORMAT_PVRTC2A);
 
     PoolVector<uint8_t> data = p_img->get_data();
     PoolVector<uint8_t>::Read r = data.read();
@@ -466,7 +466,7 @@ static Error _pvrtc_decompress(Image *p_img) {
     r.release();
 
     bool make_mipmaps = p_img->has_mipmaps();
-    p_img->create(p_img->get_width(), p_img->get_height(), false, Image::FORMAT_RGBA8, newdata);
+    p_img->create(p_img->get_width(), p_img->get_height(), false, ImageData::FORMAT_RGBA8, newdata);
     if (make_mipmaps)
         p_img->generate_mipmaps();
     return OK;
@@ -481,14 +481,14 @@ static void _compress_pvrtc4(Image *p_img) {
         make_mipmaps = img->has_mipmaps();
         img->resize_to_po2(true);
     }
-    img->convert(Image::FORMAT_RGBA8);
+    img->convert(ImageData::FORMAT_RGBA8);
     if (!img->has_mipmaps() && make_mipmaps)
         img->generate_mipmaps();
 
     bool use_alpha = img->detect_alpha();
 
     Ref<Image> new_img(make_ref_counted<Image>());
-    new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
+    new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? ImageData::FORMAT_PVRTC4A : ImageData::FORMAT_PVRTC4);
 
     PoolVector<uint8_t> data = new_img->get_data();
     {
@@ -586,47 +586,47 @@ RES ResourceFormatPVR::load(StringView p_path, StringView p_original_path, Error
     err = f->get_error();
     ERR_FAIL_COND_V(err != OK, RES());
 
-    Image::Format format = Image::FORMAT_MAX;
+    Image::Format format = ImageData::FORMAT_MAX;
 
     switch (flags & 0xFF) {
 
         case 0x18:
-        case 0xC: format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2; break;
+        case 0xC: format = (flags & PVR_HAS_ALPHA) ? ImageData::FORMAT_PVRTC2A : ImageData::FORMAT_PVRTC2; break;
         case 0x19:
-        case 0xD: format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4; break;
+        case 0xD: format = (flags & PVR_HAS_ALPHA) ? ImageData::FORMAT_PVRTC4A : ImageData::FORMAT_PVRTC4; break;
         case 0x16:
-            format = Image::FORMAT_L8;
+            format = ImageData::FORMAT_L8;
             break;
         case 0x17:
-            format = Image::FORMAT_LA8;
+            format = ImageData::FORMAT_LA8;
             break;
         case 0x20:
         case 0x80:
         case 0x81:
-            format = Image::FORMAT_DXT1;
+            format = ImageData::FORMAT_DXT1;
             break;
         case 0x21:
         case 0x22:
         case 0x82:
         case 0x83:
-            format = Image::FORMAT_DXT3;
+            format = ImageData::FORMAT_DXT3;
             break;
         case 0x23:
         case 0x24:
         case 0x84:
         case 0x85:
-            format = Image::FORMAT_DXT5;
+            format = ImageData::FORMAT_DXT5;
             break;
         case 0x4:
         case 0x15:
-            format = Image::FORMAT_RGB8;
+            format = ImageData::FORMAT_RGB8;
             break;
         case 0x5:
         case 0x12:
-            format = Image::FORMAT_RGBA8;
+            format = ImageData::FORMAT_RGBA8;
             break;
         case 0x36:
-            format = Image::FORMAT_ETC;
+            format = ImageData::FORMAT_ETC;
             break;
         default:
             ERR_FAIL_V_MSG(RES(), "Unsupported format in PVR texture: " + itos(flags & 0xFF) + ".");

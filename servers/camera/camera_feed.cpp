@@ -194,7 +194,7 @@ void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
             base_width = new_width;
             base_height = new_height;
 
-            vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
+            vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, ImageData::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
         }
 
         vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
@@ -214,7 +214,7 @@ void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
             base_width = new_width;
             base_height = new_height;
 
-            vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
+            vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, ImageData::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
         }
 
         vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
@@ -240,10 +240,10 @@ void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
             base_width = new_y_width;
             base_height = new_y_height;
 
-            vs->texture_allocate(texture[CameraServer::FEED_Y_IMAGE], new_y_width, new_y_height, 0, Image::FORMAT_R8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
+            vs->texture_allocate(texture[CameraServer::FEED_Y_IMAGE], new_y_width, new_y_height, 0, ImageData::FORMAT_R8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
 
             ///@TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
-            vs->texture_allocate(texture[CameraServer::FEED_CBCR_IMAGE], new_cbcr_width, new_cbcr_height, 0, Image::FORMAT_RG8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
+            vs->texture_allocate(texture[CameraServer::FEED_CBCR_IMAGE], new_cbcr_width, new_cbcr_height, 0, ImageData::FORMAT_RG8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
         }
 
         vs->texture_set_data(texture[CameraServer::FEED_Y_IMAGE], p_y_img);

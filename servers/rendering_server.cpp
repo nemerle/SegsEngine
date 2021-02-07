@@ -323,7 +323,7 @@ Error RenderingServer::_surface_set_data(const SurfaceArrays &p_arrays, uint32_t
                         uint8_t colors[4];
 
                         for (int j = 0; j < 4; j++) {
-                            colors[j] = CLAMP(int((src[i][j]) * 255.0f), 0, 255);
+                            colors[j] = CLAMP(int((src[i].component(j)) * 255.0f), 0, 255);
                         }
 
                         memcpy(&r_vertex_array[p_offsets[ai] + i * p_stride], colors, 4);

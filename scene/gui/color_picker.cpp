@@ -185,7 +185,7 @@ void ColorPicker::_value_changed(double) {
                 scroll[3]->get_value() / 255.0f);
     } else {
         for (int i = 0; i < 4; i++) {
-            color.components()[i] = scroll[i]->get_value() / (raw_mode_enabled ? 1.0f : 255.0f);
+            color.component(i) = scroll[i]->get_value() / (raw_mode_enabled ? 1.0f : 255.0f);
         }
     }
 
@@ -236,10 +236,10 @@ void ColorPicker::_update_color(bool p_update_sliders) {
                     scroll[i]->set_max(100);
                     if (i == 3)
                         scroll[i]->set_max(1);
-                    scroll[i]->set_value(color.components()[i]);
+                    scroll[i]->set_value(color.component(i));
                 } else {
                     scroll[i]->set_step(1);
-                    const float byte_value = color.components()[i] * 255.0f;
+                    const float byte_value = color.component(i) * 255.0f;
                     scroll[i]->set_max(next_power_of_2(M_MAX(255, byte_value)) - 1);
                     scroll[i]->set_value(byte_value);
                 }

@@ -129,31 +129,31 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 
     switch (p_format) {
 
-        case Image::FORMAT_L8: {
+        case ImageData::FORMAT_L8: {
             r_gl_internal_format = GL_R8;
             r_gl_format = GL_RED;
             r_gl_type = GL_UNSIGNED_BYTE;
         } break;
-        case Image::FORMAT_LA8: {
+        case ImageData::FORMAT_LA8: {
             r_gl_internal_format = GL_RG8;
             r_gl_format = GL_RG;
             r_gl_type = GL_UNSIGNED_BYTE;
         } break;
-        case Image::FORMAT_R8: {
+        case ImageData::FORMAT_R8: {
 
             r_gl_internal_format = GL_R8;
             r_gl_format = GL_RED;
             r_gl_type = GL_UNSIGNED_BYTE;
 
         } break;
-        case Image::FORMAT_RG8: {
+        case ImageData::FORMAT_RG8: {
 
             r_gl_internal_format = GL_RG8;
             r_gl_format = GL_RG;
             r_gl_type = GL_UNSIGNED_BYTE;
 
         } break;
-        case Image::FORMAT_RGB8: {
+        case ImageData::FORMAT_RGB8: {
 
             r_gl_internal_format = (config.srgb_decode_supported || (p_flags & RS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) ? GL_SRGB8 : GL_RGB8;
             r_gl_format = GL_RGB;
@@ -161,7 +161,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             r_srgb = true;
 
         } break;
-        case Image::FORMAT_RGBA8: {
+        case ImageData::FORMAT_RGBA8: {
 
             r_gl_format = GL_RGBA;
             r_gl_internal_format = (config.srgb_decode_supported || (p_flags & RS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
@@ -169,78 +169,78 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             r_srgb = true;
 
         } break;
-        case Image::FORMAT_RGBA4444: {
+        case ImageData::FORMAT_RGBA4444: {
 
             r_gl_internal_format = GL_RGBA4;
             r_gl_format = GL_RGBA;
             r_gl_type = GL_UNSIGNED_SHORT_4_4_4_4;
 
         } break;
-        case Image::FORMAT_RGB565: {
+        case ImageData::FORMAT_RGB565: {
 
             r_gl_internal_format = GL_RGB5_A1;
             r_gl_format = GL_RGBA;
             r_gl_type = GL_UNSIGNED_SHORT_5_5_5_1;
 
         } break;
-        case Image::FORMAT_RF: {
+        case ImageData::FORMAT_RF: {
 
             r_gl_internal_format = GL_R32F;
             r_gl_format = GL_RED;
             r_gl_type = GL_FLOAT;
 
         } break;
-        case Image::FORMAT_RGF: {
+        case ImageData::FORMAT_RGF: {
 
             r_gl_internal_format = GL_RG32F;
             r_gl_format = GL_RG;
             r_gl_type = GL_FLOAT;
 
         } break;
-        case Image::FORMAT_RGBF: {
+        case ImageData::FORMAT_RGBF: {
 
             r_gl_internal_format = GL_RGB32F;
             r_gl_format = GL_RGB;
             r_gl_type = GL_FLOAT;
 
         } break;
-        case Image::FORMAT_RGBAF: {
+        case ImageData::FORMAT_RGBAF: {
 
             r_gl_internal_format = GL_RGBA32F;
             r_gl_format = GL_RGBA;
             r_gl_type = GL_FLOAT;
 
         } break;
-        case Image::FORMAT_RH: {
+        case ImageData::FORMAT_RH: {
             r_gl_internal_format = GL_R32F;
             r_gl_format = GL_RED;
             r_gl_type = GL_HALF_FLOAT;
         } break;
-        case Image::FORMAT_RGH: {
+        case ImageData::FORMAT_RGH: {
             r_gl_internal_format = GL_RG32F;
             r_gl_format = GL_RG;
             r_gl_type = GL_HALF_FLOAT;
 
         } break;
-        case Image::FORMAT_RGBH: {
+        case ImageData::FORMAT_RGBH: {
             r_gl_internal_format = GL_RGB32F;
             r_gl_format = GL_RGB;
             r_gl_type = GL_HALF_FLOAT;
 
         } break;
-        case Image::FORMAT_RGBAH: {
+        case ImageData::FORMAT_RGBAH: {
             r_gl_internal_format = GL_RGBA32F;
             r_gl_format = GL_RGBA;
             r_gl_type = GL_HALF_FLOAT;
 
         } break;
-        case Image::FORMAT_RGBE9995: {
+        case ImageData::FORMAT_RGBE9995: {
             r_gl_internal_format = GL_RGB9_E5;
             r_gl_format = GL_RGB;
             r_gl_type = GL_UNSIGNED_INT_5_9_9_9_REV;
 
         } break;
-        case Image::FORMAT_DXT1: {
+        case ImageData::FORMAT_DXT1: {
 
             if (config.s3tc_supported) {
 
@@ -256,7 +256,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_DXT3: {
+        case ImageData::FORMAT_DXT3: {
 
             if (config.s3tc_supported) {
 
@@ -272,7 +272,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_DXT5: {
+        case ImageData::FORMAT_DXT5: {
 
             if (config.s3tc_supported) {
 
@@ -288,7 +288,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_RGTC_R: {
+        case ImageData::FORMAT_RGTC_R: {
 
             if (config.rgtc_supported) {
 
@@ -303,7 +303,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_RGTC_RG: {
+        case ImageData::FORMAT_RGTC_RG: {
 
             if (config.rgtc_supported) {
 
@@ -317,7 +317,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_BPTC_RGBA: {
+        case ImageData::FORMAT_BPTC_RGBA: {
 
             if (config.bptc_supported) {
 
@@ -332,7 +332,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_BPTC_RGBF: {
+        case ImageData::FORMAT_BPTC_RGBF: {
 
             if (config.bptc_supported) {
 
@@ -345,7 +345,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_BPTC_RGBFU: {
+        case ImageData::FORMAT_BPTC_RGBFU: {
             if (config.bptc_supported) {
 
                 r_gl_internal_format = _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
@@ -357,7 +357,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_PVRTC2: {
+        case ImageData::FORMAT_PVRTC2: {
 
             if (config.pvrtc_supported) {
 
@@ -372,7 +372,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_PVRTC2A: {
+        case ImageData::FORMAT_PVRTC2A: {
 
             if (config.pvrtc_supported) {
 
@@ -388,7 +388,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_PVRTC4: {
+        case ImageData::FORMAT_PVRTC4: {
 
             if (config.pvrtc_supported) {
 
@@ -404,7 +404,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_PVRTC4A: {
+        case ImageData::FORMAT_PVRTC4A: {
 
             if (config.pvrtc_supported) {
 
@@ -420,7 +420,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_ETC: {
+        case ImageData::FORMAT_ETC: {
 
             if (config.etc_supported) {
 
@@ -435,7 +435,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             }
 
         } break;
-        case Image::FORMAT_ETC2_R11: {
+        case ImageData::FORMAT_ETC2_R11: {
 
             if (config.etc2_supported) {
 
@@ -449,7 +449,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_ETC2_R11S: {
+        case ImageData::FORMAT_ETC2_R11S: {
 
             if (config.etc2_supported) {
 
@@ -463,7 +463,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_ETC2_RG11: {
+        case ImageData::FORMAT_ETC2_RG11: {
 
             if (config.etc2_supported) {
 
@@ -477,7 +477,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_ETC2_RG11S: {
+        case ImageData::FORMAT_ETC2_RG11S: {
             if (config.etc2_supported) {
 
                 r_gl_internal_format = _EXT_COMPRESSED_SIGNED_RG11_EAC;
@@ -489,7 +489,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_ETC2_RGB8: {
+        case ImageData::FORMAT_ETC2_RGB8: {
 
             if (config.etc2_supported) {
 
@@ -504,7 +504,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_ETC2_RGBA8: {
+        case ImageData::FORMAT_ETC2_RGBA8: {
 
             if (config.etc2_supported) {
 
@@ -519,7 +519,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
                 need_decompress = true;
             }
         } break;
-        case Image::FORMAT_ETC2_RGB8A1: {
+        case ImageData::FORMAT_ETC2_RGB8A1: {
 
             if (config.etc2_supported) {
 
@@ -546,14 +546,14 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
             image = dynamic_ref_cast<Image>(image->duplicate());
             image->decompress();
             ERR_FAIL_COND_V(image->is_compressed(), image);
-            image->convert(Image::FORMAT_RGBA8);
+            image->convert(ImageData::FORMAT_RGBA8);
         }
 
         r_gl_format = GL_RGBA;
         r_gl_internal_format = (config.srgb_decode_supported || (p_flags & RS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
         r_gl_type = GL_UNSIGNED_BYTE;
         r_compressed = false;
-        r_real_format = Image::FORMAT_RGBA8;
+        r_real_format = ImageData::FORMAT_RGBA8;
         r_srgb = true;
 
         return image;
@@ -716,7 +716,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
         if (texture->alloc_width == img->get_width() / 2 && texture->alloc_height == img->get_height() / 2) {
 
             img->shrink_x2();
-        } else if (img->get_format() <= Image::FORMAT_RGBA8) {
+        } else if (img->get_format() <= ImageData::FORMAT_RGBA8) {
 
             img->resize(texture->alloc_width, texture->alloc_height, Image::INTERPOLATE_BILINEAR);
         }
@@ -804,14 +804,14 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 //set swizle for older format compatibility
     switch (texture->format) {
 
-        case Image::FORMAT_L8: {
+        case ImageData::FORMAT_L8: {
             glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
             glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
             glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
             glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
 
         } break;
-        case Image::FORMAT_LA8: {
+        case ImageData::FORMAT_LA8: {
 
             glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
             glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
@@ -1051,7 +1051,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
         PoolVector<uint8_t> data;
 
         // TODO need to decide between RgbaUnorm and RgbaFloat32 for output
-        int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
+        int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, ImageData::FORMAT_RGBA8, false);
 
         data.resize(data_size * 2); // add some more memory at the end, just in case for buggy drivers
         PoolVector<uint8_t>::Write wb = data.write();
@@ -1136,7 +1136,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
         data.resize(data_size);
 
-        Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data));
+        Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, false, ImageData::FORMAT_RGBA8, data));
         if (!texture->compressed) {
             img->convert(real_format);
         }
@@ -1187,7 +1187,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
     //convert special case RGB10_A2 to RGBA8 because it's not a supported image format
     if (texture->gl_internal_format_cache == GL_RGB10_A2) {
 
-        img_format = Image::FORMAT_RGBA8;
+        img_format = ImageData::FORMAT_RGBA8;
 
         uint32_t *ptr = (uint32_t *)wb.ptr();
         uint32_t num_pixels = data_size / 4;
@@ -1304,7 +1304,7 @@ Image::Format RasterizerStorageGLES3::texture_get_format(RID p_texture) const {
 
     Texture *texture = texture_owner.get(p_texture);
 
-    ERR_FAIL_COND_V(!texture, Image::FORMAT_L8);
+    ERR_FAIL_COND_V(!texture, ImageData::FORMAT_L8);
 
     return texture->format;
 }
@@ -1570,7 +1570,7 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_
     ctex->height = p_resolution;
     ctex->alloc_width = p_resolution;
     ctex->alloc_height = p_resolution;
-    ctex->format = use_float ? Image::FORMAT_RGBAH : Image::FORMAT_RGBA8;
+    ctex->format = use_float ? ImageData::FORMAT_RGBAH : ImageData::FORMAT_RGBA8;
     ctex->target = GL_TEXTURE_CUBE_MAP;
     ctex->gl_format_cache = format;
     ctex->gl_internal_format_cache = internal_format;
@@ -6976,19 +6976,19 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
             color_internal_format = GL_RGB10_A2;
             color_format = GL_RGBA;
             color_type = GL_UNSIGNED_INT_2_10_10_10_REV;
-            image_format = Image::FORMAT_RGBA8;
+            image_format = ImageData::FORMAT_RGBA8;
         } else {
 
             color_internal_format = GL_RGBA8;
             color_format = GL_RGBA;
             color_type = GL_UNSIGNED_BYTE;
-            image_format = Image::FORMAT_RGBA8;
+            image_format = ImageData::FORMAT_RGBA8;
         }
     } else {
         color_internal_format = GL_RGBA16F;
         color_format = GL_RGBA;
         color_type = GL_HALF_FLOAT;
-        image_format = Image::FORMAT_RGBAH;
+        image_format = ImageData::FORMAT_RGBAH;
     }
 
     {
@@ -7342,7 +7342,7 @@ RID RasterizerStorageGLES3::render_target_create() {
     t->height = 0;
     t->alloc_height = 0;
     t->alloc_width = 0;
-    t->format = Image::FORMAT_R8;
+    t->format = ImageData::FORMAT_R8;
     t->target = GL_TEXTURE_2D;
     t->gl_format_cache = 0;
     t->gl_internal_format_cache = 0;
@@ -7430,7 +7430,7 @@ void RasterizerStorageGLES3::render_target_set_external_texture(RID p_render_tar
             t->height = 0;
             t->alloc_height = 0;
             t->alloc_width = 0;
-            t->format = Image::FORMAT_RGBA8;
+            t->format = ImageData::FORMAT_RGBA8;
             t->target = GL_TEXTURE_2D;
             t->gl_format_cache = 0;
             t->gl_internal_format_cache = 0;

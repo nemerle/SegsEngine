@@ -356,7 +356,7 @@ void EditorProfiler::_update_plot() {
     wr.release();
 
     Ref<Image> img(make_ref_counted<Image>());
-    img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
+    img->create(w, h, false, ImageData::FORMAT_RGBA8, graph_image);
 
     if (reset_texture) {
         if (not graph_texture) {

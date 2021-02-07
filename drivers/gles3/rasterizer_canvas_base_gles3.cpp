@@ -99,8 +99,8 @@ void RasterizerCanvasBaseGLES3::light_internal_update(RID p_rid, Light3D *p_ligh
 
     for (int i = 0; i < 4; i++) {
 
-        li->ubo_data.color[i] = p_light->color[i] * p_light->energy;
-        li->ubo_data.shadow_color[i] = p_light->shadow_color[i];
+        li->ubo_data.color[i] = p_light->color.component(i) * p_light->energy;
+        li->ubo_data.shadow_color[i] = p_light->shadow_color.component(i);
     }
 
     li->ubo_data.light_pos[0] = p_light->light_shader_pos.x;

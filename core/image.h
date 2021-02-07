@@ -44,6 +44,7 @@
  * providing some basic methods for image manipulation.
  * Images can be loaded from a file, or registered into the Render object as textures.
 */
+SE_NAMESPACE(Godot)
 
 class Image;
 class ImageCodecInterface;
@@ -62,14 +63,16 @@ enum class ImageCompressSource : int8_t {
     COMPRESS_SOURCE_SRGB,
     COMPRESS_SOURCE_NORMAL
 };
+SE_ENUM(ImageCompressSource)
+
 using SavePNGFunc = Error (*)(const UIString &, const Ref<Image> &);
 using ImageMemLoadFunc = ImageData (*)(const uint8_t *, int);
 
 using SaveEXRFunc = Error (*)(const UIString &, const Ref<Image> &, bool);
 
-class GODOT_EXPORT Image : public Resource, public ImageData {
+class GODOT_EXPORT Image : public Resource, private ImageData {
     GDCLASS(Image, Resource)
-
+    SE_CLASS()
 public:
     static Error save_png_func(StringView p_path, const Ref<Image> &p_img);
     static Error save_exr_func(StringView p_path, const Ref<Image> &p_img, bool p_grayscale);
@@ -137,6 +140,7 @@ protected:
     Error _load_from_buffer(const uint8_t *p_array,int size, const char *ext);
 
 public:
+    ImageData &img_data() { return *this; }
     int get_width() const; ///< Get image width
     int get_height() const; ///< Get image height
     Vector2 get_size() const;
@@ -310,3 +314,5 @@ public:
     ~Image() override;
 };
 Ref<Image> prepareForPngStorage(const Ref<Image> &img);
+
+SE_END()

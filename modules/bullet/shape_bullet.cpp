@@ -491,7 +491,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
         // Float is the only common format between Godot and Bullet that can be used for decent collision.
         // (Int16 would be nice too but we still don't have it)
         // We could convert here automatically but it's better to not be intrusive and let the caller do it if necessary.
-        ERR_FAIL_COND(l_image->get_format() != Image::FORMAT_RF);
+        ERR_FAIL_COND(l_image->get_format() != ImageData::FORMAT_RF);
 
         PoolByteArray im_data = l_image->get_data();
 

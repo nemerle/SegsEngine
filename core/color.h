@@ -55,29 +55,47 @@ struct GODOT_EXPORT Color {
     [[nodiscard]] float get_v() const;
     void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
 
-    _FORCE_INLINE_ float &operator[](int idx) {
-        return (&r)[idx];
-    }
-    _FORCE_INLINE_ float operator[](int idx) const {
-        return (&r)[idx];
+//    _FORCE_INLINE_ float &operator[](int idx) {
+//        return (&r)[idx];
+//    }
+//    _FORCE_INLINE_ float operator[](int idx) const {
+//        return (&r)[idx];
+//    }
+
+    [[nodiscard]] constexpr Color operator+(Color p_color) const {
+        return Color(r + p_color.r, g + p_color.g, b + p_color.b, a + p_color.a);
     }
 
-    Color operator+(const Color &p_color) const;
-    void operator+=(const Color &p_color) {
+    constexpr void operator+=(Color p_color) {
         r += p_color.r;
         g += p_color.g;
         b += p_color.b;
         a += p_color.a;
     }
 
+    constexpr Color operator-() const {
+        return Color(1.0f - r, 1.0f - g, 1.0f - b, 1.0f - a);
+    }
 
+    [[nodiscard]] constexpr Color operator-(const Color &p_color) const {
+        return Color(r - p_color.r, g - p_color.g, b - p_color.b, a - p_color.a);
+    }
 
-    Color operator-() const;
-    Color operator-(const Color &p_color) const;
-    void operator-=(const Color &p_color);
+    constexpr Color operator-=(const Color &p_color) {
+        r = r - p_color.r;
+        g = g - p_color.g;
+        b = b - p_color.b;
+        a = a - p_color.a;
+        return *this;
+    }
 
-    Color operator*(const Color &p_color) const;
-    Color operator*(const real_t &rvalue) const;
+    constexpr Color operator*(const Color &p_color) const {
+        return Color(r * p_color.r, g * p_color.g, b * p_color.b, a * p_color.a);
+    }
+    constexpr Color operator*(const real_t &rvalue) const {
+        return Color(r * rvalue, g * rvalue, b * rvalue, a * rvalue);
+    }
+
     void operator*=(const Color &p_color);
     void operator*=(const real_t &rvalue);
 
@@ -89,7 +107,7 @@ struct GODOT_EXPORT Color {
     bool is_equal_approx(Color p_color) const {
         return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
     }
-    void invert() {
+    void constexpr invert() {
 
         r = 1.0f - r;
         g = 1.0f - g;
@@ -101,7 +119,7 @@ struct GODOT_EXPORT Color {
     void contrast();
     [[nodiscard]] Color contrasted() const;
 
-    [[nodiscard]] _FORCE_INLINE_ Color linear_interpolate(const Color &p_b, float p_t) const {
+    [[nodiscard]] constexpr _FORCE_INLINE_ Color linear_interpolate(const Color &p_b, float p_t) const {
 
         Color res = *this;
 
@@ -121,7 +139,7 @@ struct GODOT_EXPORT Color {
         );
     }
 
-    [[nodiscard]] _FORCE_INLINE_ Color lightened(float p_amount) const {
+    [[nodiscard]] constexpr _FORCE_INLINE_ Color lightened(float p_amount) const {
         return Color(
             r + (1.0f - r) * p_amount,
             g + (1.0f - g) * p_amount,
@@ -131,7 +149,7 @@ struct GODOT_EXPORT Color {
 
     [[nodiscard]] uint32_t to_rgbe9995() const;
 
-    [[nodiscard]] _FORCE_INLINE_ Color blend(const Color &p_over) const {
+    [[nodiscard]] constexpr _FORCE_INLINE_ Color blend(const Color &p_over) const {
 
         Color res;
         float sa = 1.0f - p_over.a;
@@ -173,7 +191,9 @@ struct GODOT_EXPORT Color {
 
     _FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
     operator String() const;
-    float *components() { return &r; }
+    float &component(uint8_t idx) { return (&r)[idx]; }
+    float component(uint8_t idx) const { return (&r)[idx]; }
+
     /**
      * No construct parameters, r=0, g=0, b=0. a=255
      */

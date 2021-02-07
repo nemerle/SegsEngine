@@ -57,8 +57,8 @@ IMPL_GDCLASS(EditorFontPreviewPlugin)
 
 void post_process_preview(const Ref<Image> &p_image) {
 
-    if (p_image->get_format() != Image::FORMAT_RGBA8) {
-        p_image->convert(Image::FORMAT_RGBA8);
+    if (p_image->get_format() != ImageData::FORMAT_RGBA8) {
+        p_image->convert(ImageData::FORMAT_RGBA8);
     }
 
     p_image->lock();
@@ -136,8 +136,8 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2
         if (img->decompress() != OK) {
             return Ref<Texture>();
         }
-    } else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
-        img->convert(Image::FORMAT_RGBA8);
+    } else if (img->get_format() != ImageData::FORMAT_RGB8 && img->get_format() != ImageData::FORMAT_RGBA8) {
+        img->convert(ImageData::FORMAT_RGBA8);
     }
 
     Vector2 new_size = img->get_size();
@@ -180,8 +180,8 @@ Ref<Texture> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &
     if (img->is_compressed()) {
         if (img->decompress() != OK)
             return Ref<Texture>();
-    } else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
-        img->convert(Image::FORMAT_RGBA8);
+    } else if (img->get_format() != ImageData::FORMAT_RGB8 && img->get_format() != ImageData::FORMAT_RGBA8) {
+        img->convert(ImageData::FORMAT_RGBA8);
     }
 
     Vector2 new_size = img->get_size();
@@ -241,13 +241,13 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size2 
     }
 
     Ref<Image> img(make_ref_counted<Image>());
-    img->create(bm->get_size().width, bm->get_size().height, false, Image::FORMAT_L8, data);
+    img->create(bm->get_size().width, bm->get_size().height, false, ImageData::FORMAT_L8, data);
 
     if (img->is_compressed()) {
         if (img->decompress() != OK)
             return Ref<Texture>();
-    } else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
-        img->convert(Image::FORMAT_RGBA8);
+    } else if (img->get_format() != ImageData::FORMAT_RGB8 && img->get_format() != ImageData::FORMAT_RGBA8) {
+        img->convert(ImageData::FORMAT_RGBA8);
     }
 
     Vector2 new_size = img->get_size();
@@ -355,7 +355,7 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Size
 
         ERR_FAIL_COND_V(not img, Ref<ImageTexture>());
 
-        img->convert(Image::FORMAT_RGBA8);
+        img->convert(ImageData::FORMAT_RGBA8);
         int thumbnail_size = M_MAX(p_size.x, p_size.y);
         img->resize(thumbnail_size, thumbnail_size, Image::INTERPOLATE_CUBIC);
         post_process_preview(img);
@@ -519,7 +519,7 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 
     int col = 0;
     Ref<Image> img(make_ref_counted<Image>());
     int thumbnail_size = M_MAX(p_size.x, p_size.y);
-    img->create(thumbnail_size, thumbnail_size, false, Image::FORMAT_RGBA8);
+    img->create(thumbnail_size, thumbnail_size, false, ImageData::FORMAT_RGBA8);
 
     Color bg_color = EditorSettings::get_singleton()->getT<Color>("text_editor/highlighting/background_color");
     Color keyword_color = EditorSettings::get_singleton()->getT<Color>("text_editor/highlighting/keyword_color");
@@ -689,7 +689,7 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const S
 
     Ref<ImageTexture> ptex(make_ref_counted<ImageTexture>());
     Ref<Image> image(make_ref_counted<Image>());
-    image->create(w, h, false, Image::FORMAT_RGB8, img);
+    image->create(w, h, false, ImageData::FORMAT_RGB8, img);
     ptex->create_from_image(image, 0);
     return ptex;
 }
@@ -748,7 +748,7 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 
     RenderingServer::get_singleton()->instance_set_base(mesh_instance, RID());
 
-    img->convert(Image::FORMAT_RGBA8);
+    img->convert(ImageData::FORMAT_RGBA8);
 
     Vector2 new_size = img->get_size();
     if (new_size.x > p_size.x) {
@@ -871,7 +871,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(StringView p_path, cons
     Ref<Image> img = RenderingServer::get_singleton()->texture_get_data(viewport_texture);
     ERR_FAIL_COND_V(not img, Ref<ImageTexture>());
 
-    img->convert(Image::FORMAT_RGBA8);
+    img->convert(ImageData::FORMAT_RGBA8);
 
     Vector2 new_size = img->get_size();
     if (new_size.x > p_size.x) {

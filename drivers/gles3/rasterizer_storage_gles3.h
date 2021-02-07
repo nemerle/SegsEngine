@@ -252,7 +252,7 @@ public:
 
         int width=0, height=0, depth;
         int alloc_width, alloc_height, alloc_depth;
-        Image::Format format=Image::FORMAT_L8;
+        ImageData::Format format=ImageData::FORMAT_L8;
         RS::TextureType type=RS::TEXTURE_TYPE_2D;
 
         GLenum target = GL_TEXTURE_2D;

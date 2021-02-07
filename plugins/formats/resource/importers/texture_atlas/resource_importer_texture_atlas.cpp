@@ -296,7 +296,7 @@ Error ResourceImporterTextureAtlas::import_group_file(StringView p_group_file, c
     //blit the atlas
     Ref<Image> new_atlas(make_ref_counted<Image>());
 
-    new_atlas->create(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
+    new_atlas->create(atlas_width, atlas_height, false, ImageData::FORMAT_RGBA8);
 
     new_atlas->lock();
 

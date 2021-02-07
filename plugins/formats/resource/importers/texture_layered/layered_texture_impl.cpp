@@ -124,7 +124,7 @@ void LayeredTextureImpl::_save_tex(const Vector<Ref<Image>> &p_images, StringVie
         f->store_32(p_compress_mode); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
     }
 
-    if ((p_compress_mode == COMPRESS_LOSSLESS) && p_images[0]->get_format() > Image::FORMAT_RGBA8) {
+    if ((p_compress_mode == COMPRESS_LOSSLESS) && p_images[0]->get_format() > ImageData::FORMAT_RGBA8) {
         p_compress_mode = COMPRESS_UNCOMPRESSED; //these can't go as lossy
     }
 
@@ -241,8 +241,8 @@ Error LayeredTextureImpl::import(StringView p_source_file, StringView _save_path
         //if using video ram, optimize
         if (srgb) {
             //remove alpha if not needed, so compression is more efficient
-            if (image->get_format() == Image::FORMAT_RGBA8 && !image->detect_alpha()) {
-                image->convert(Image::FORMAT_RGB8);
+            if (image->get_format() == ImageData::FORMAT_RGBA8 && !image->detect_alpha()) {
+                image->convert(ImageData::FORMAT_RGB8);
             }
         } else {
             image->optimize_channels();

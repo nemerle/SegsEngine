@@ -252,7 +252,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, StringView p
     if (p_detect_normal)
         format |= StreamTexture::FORMAT_BIT_DETECT_NORMAL;
 
-    if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
+    if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > ImageData::FORMAT_RGBA8) {
         p_compress_mode = COMPRESS_UNCOMPRESSED; //these can't go as lossy
     }
 
@@ -323,8 +323,8 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, StringView p
                 image->generate_mipmaps(p_force_normal);
             }
 
-            if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
-                image->convert(Image::FORMAT_RGBE9995);
+            if (p_force_rgbe && image->get_format() >= ImageData::FORMAT_R8 && image->get_format() <= ImageData::FORMAT_RGBE9995) {
+                image->convert(ImageData::FORMAT_RGBE9995);
             } else {
                 ImageCompressSource csource = ImageCompressSource::COMPRESS_SOURCE_GENERIC;
                 if (p_force_normal) {
@@ -463,8 +463,8 @@ Error ResourceImporterTexture::import(StringView p_source_file, StringView p_sav
         //Android, GLES 2.x
 
         bool ok_on_pc = false;
-        bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
-        bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
+        bool is_hdr = (image->get_format() >= ImageData::FORMAT_RF && image->get_format() <= ImageData::FORMAT_RGBE9995);
+        bool is_ldr = (image->get_format() >= ImageData::FORMAT_L8 && image->get_format() <= ImageData::FORMAT_RGB565);
         bool can_bptc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc").as<bool>();
         bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc").as<bool>();
 
@@ -488,7 +488,7 @@ Error ResourceImporterTexture::import(StringView p_source_file, StringView p_sav
 
         if (!can_bptc && is_hdr && !force_rgbe) {
             //convert to ldr if this can't be stored hdr
-            image->convert(Image::FORMAT_RGBA8);
+            image->convert(ImageData::FORMAT_RGBA8);
         }
 
         if (can_bptc || can_s3tc) {

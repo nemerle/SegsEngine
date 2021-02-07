@@ -87,7 +87,7 @@ RES ResourceFormatPKM::load(StringView p_path, StringView p_original_path, Error
     int width = h.origWidth;
     int height = h.origHeight;
 
-    Ref<Image> img(make_ref_counted<Image>(width, height, mipmaps, Image::FORMAT_ETC, src_data));
+    Ref<Image> img(make_ref_counted<Image>(width, height, mipmaps, ImageData::FORMAT_ETC, src_data));
 
     Ref<ImageTexture> texture(make_ref_counted<ImageTexture>());
     texture->create_from_image(img);

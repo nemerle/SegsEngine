@@ -39,51 +39,51 @@
 #include "EtcFilter.h"
 
 namespace {
-static Image::Format _get_etc2_mode(ImageUsedChannels format) {
+static ImageData::Format _get_etc2_mode(ImageUsedChannels format) {
     switch (format) {
         case ImageUsedChannels::USED_CHANNELS_R:
-            return Image::FORMAT_ETC2_R11;
+            return ImageData::FORMAT_ETC2_R11;
 
         case ImageUsedChannels::USED_CHANNELS_RG:
-            return Image::FORMAT_ETC2_RG11;
+            return ImageData::FORMAT_ETC2_RG11;
 
         case ImageUsedChannels::USED_CHANNELS_RGB:
-            return Image::FORMAT_ETC2_RGB8;
+            return ImageData::FORMAT_ETC2_RGB8;
 
         case ImageUsedChannels::USED_CHANNELS_RGBA:
-            return Image::FORMAT_ETC2_RGBA8;
+            return ImageData::FORMAT_ETC2_RGBA8;
 
         // TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
         default:
             // TODO: Kept for compatibility, but should be investigated whether it's correct or if it should error out
-            return Image::FORMAT_ETC2_RGBA8;
+            return ImageData::FORMAT_ETC2_RGBA8;
     }
 }
 
 static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format) {
     switch (format) {
-    case Image::FORMAT_ETC:
+    case ImageData::FORMAT_ETC:
         return Etc::Image::Format::ETC1;
 
-    case Image::FORMAT_ETC2_R11:
+    case ImageData::FORMAT_ETC2_R11:
         return Etc::Image::Format::R11;
 
-    case Image::FORMAT_ETC2_R11S:
+    case ImageData::FORMAT_ETC2_R11S:
         return Etc::Image::Format::SIGNED_R11;
 
-    case Image::FORMAT_ETC2_RG11:
+    case ImageData::FORMAT_ETC2_RG11:
         return Etc::Image::Format::RG11;
 
-    case Image::FORMAT_ETC2_RG11S:
+    case ImageData::FORMAT_ETC2_RG11S:
         return Etc::Image::Format::SIGNED_RG11;
 
-    case Image::FORMAT_ETC2_RGB8:
+    case ImageData::FORMAT_ETC2_RGB8:
         return Etc::Image::Format::RGB8;
 
-    case Image::FORMAT_ETC2_RGBA8:
+    case ImageData::FORMAT_ETC2_RGBA8:
         return Etc::Image::Format::RGBA8;
 
-    case Image::FORMAT_ETC2_RGB8A1:
+    case ImageData::FORMAT_ETC2_RGB8A1:
         return Etc::Image::Format::RGB8A1;
 
     default:
@@ -94,11 +94,11 @@ static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format)
 static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_format, ImageUsedChannels p_channels) {
     Image::Format img_format = p_img->get_format();
 
-    if (img_format >= Image::FORMAT_DXT1) {
+    if (img_format >= ImageData::FORMAT_DXT1) {
         return; //do not compress, already compressed
     }
 
-    if (img_format > Image::FORMAT_RGBA8) {
+    if (img_format > ImageData::FORMAT_RGBA8) {
         // TODO: we should be able to handle FORMAT_RGBA4444 and FORMAT_RGBA5551 eventually
         return;
     }
@@ -108,22 +108,22 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
         // If VRAM compression is using ETC, but image has alpha, convert to RGBA4444 or LA8
         // This saves space while maintaining the alpha channel
         if (detected_channels == Image::USED_CHANNELS_RGBA) {
-            p_img->convert(Image::FORMAT_RGBA4444);
+            p_img->convert(ImageData::FORMAT_RGBA4444);
             return;
         } else if (detected_channels == Image::USE_CHANNELS_LA) {
-            p_img->convert(Image::FORMAT_LA8);
+            p_img->convert(ImageData::FORMAT_LA8);
             return;
         }
     }
     */
     uint32_t imgw = p_img->get_width(), imgh = p_img->get_height();
 
-    Image::Format etc_format = force_etc1_format ? Image::FORMAT_ETC : _get_etc2_mode(p_channels);
+    Image::Format etc_format = force_etc1_format ? ImageData::FORMAT_ETC : _get_etc2_mode(p_channels);
 
     Ref<Image> img = dynamic_ref_cast<Image>(p_img->duplicate());
 
-    if (img->get_format() != Image::FORMAT_RGBA8)
-        img->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
+    if (img->get_format() != ImageData::FORMAT_RGBA8)
+        img->convert(ImageData::FORMAT_RGBA8); //still uses RGBA to convert
 
     if (img->has_mipmaps()) {
         if (next_power_of_2(imgw) != imgw || next_power_of_2(imgh) != imgh) {
@@ -175,8 +175,8 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
     print_verbose("ETC: Begin encoding, format: " + Image::get_format_name(etc_format));
     uint64_t t = OS::get_singleton()->get_ticks_msec();
     for (int i = 0; i < mmc; i++) {
-        // convert source image to internal etc2comp format (which is equivalent to Image::FORMAT_RGBAF)
-        // NOTE: We can alternatively add a case to Image::convert to handle Image::FORMAT_RGBAF conversion.
+        // convert source image to internal etc2comp format (which is equivalent to ImageData::FORMAT_RGBAF)
+        // NOTE: We can alternatively add a case to Image::convert to handle ImageData::FORMAT_RGBAF conversion.
         int mipmap_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
         img->get_mipmap_offset_size_and_dimensions(i, mipmap_ofs, mipmap_size, mipmap_w, mipmap_h);
         const uint8_t *src = &r[mipmap_ofs];
