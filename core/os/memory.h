@@ -78,7 +78,7 @@ public:
     }
     void  deallocate(void* p, size_t /*n*/) {
         //TRACE_FREE_N(p,"wrap_alloc");
-        return Memory::free_static(p, false);
+        Memory::free_static(p, false);
     }
 
     constexpr inline bool operator==(const wrap_allocator&)

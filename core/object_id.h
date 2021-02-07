@@ -44,9 +44,9 @@ public:
     _ALWAYS_INLINE_ constexpr operator uint64_t() const { return id; }
     _ALWAYS_INLINE_ constexpr operator int64_t() const { return id; }
 
-    _ALWAYS_INLINE_ constexpr bool operator==(const ObjectID& p_id) const { return id == p_id.id; }
-    _ALWAYS_INLINE_ constexpr bool operator!=(const ObjectID& p_id) const { return id != p_id.id; }
-    _ALWAYS_INLINE_ constexpr bool operator<(const ObjectID& p_id) const { return id < p_id.id; }
+    _ALWAYS_INLINE_ constexpr bool operator==(ObjectID p_id) const { return id == p_id.id; }
+    _ALWAYS_INLINE_ constexpr bool operator!=(ObjectID p_id) const { return id != p_id.id; }
+    _ALWAYS_INLINE_ constexpr bool operator<(ObjectID p_id) const { return id < p_id.id; }
 
     //_ALWAYS_INLINE_ constexpr ObjectID & operator=(int64_t p_int64) { id = p_int64; return *this; }
     _ALWAYS_INLINE_ constexpr ObjectID & operator=(uint64_t p_uint64) { id = p_uint64; return *this; }
