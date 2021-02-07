@@ -208,6 +208,7 @@ struct MethodInterface {
 
     void fromJson(const QJsonObject &obj);
 };
+
 struct TypeInterface {
     /**
      * Identifier name for this type.

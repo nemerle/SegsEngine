@@ -635,8 +635,9 @@ static bool _populate_object_type_interfaces(ReflectionData &rd,ReflectionSource
         for (const MethodInfo& method_info : method_list) {
             size_t argc = method_info.arguments.size();
 
-            if (method_info.name.empty())
+            if (method_info.name.empty()) {
                 continue;
+            }
             auto cname = method_info.name;
 
             MethodInterface imethod { method_info.name.asCString() , {cname.asCString()} };
@@ -945,7 +946,8 @@ void _initialize_reflection_data(ReflectionData &rd, ReflectionSource src) {
     bool obj_type_ok = _populate_object_type_interfaces(rd,src);
     ERR_FAIL_COND_MSG(!obj_type_ok, "Failed to generate object type interfaces");
 
-    if(src==ReflectionSource::Core) // Only core registers the constants?
+    if(src==ReflectionSource::Core) { // Only core registers the constants?
         _populate_global_constants(rd,src);
+    }
 
 }

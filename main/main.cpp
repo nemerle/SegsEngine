@@ -751,11 +751,11 @@ Error Main::setup(bool p_second_phase) {
 
             if (N != args.end()) {
 
-                if (*N == "safe")
+                if (*N == "safe") {
                     rtm = OS::RENDER_THREAD_SAFE;
-                else if (*N == "separate")
+                } else if (*N == "separate") {
                     rtm = OS::RENDER_SEPARATE_THREAD;
-
+                }
                 ++N;
             } else {
                 os->print("Missing render thread mode argument, aborting.\n");

@@ -77,16 +77,6 @@ static Vector<_GlobalConstant> _global_constants;
 #define BIND_GLOBAL_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
     _global_constants.emplace_back(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, int(m_constant));
 
-#define BIND_GLOBAL_CONSTANT_NO_VAL(m_constant) \
-    _global_constants.push_back(_GlobalConstant(StringName(), #m_constant, m_constant, true));
-
-#define BIND_GLOBAL_ENUM_CONSTANT_NO_VAL(m_constant) \
-    _global_constants.push_back(_GlobalConstant(__constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant, true));
-
-#define BIND_GLOBAL_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
-    _global_constants.push_back(_GlobalConstant(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, m_constant, true));
-
-
 #else
 
 #define BIND_GLOBAL_CONSTANT(m_constant) \
@@ -100,17 +90,10 @@ static Vector<_GlobalConstant> _global_constants;
 
 #define BIND_STATIC_GLOBAL_ENUM_CONSTANT(m_constant); \
     _global_constants.emplace_back(#m_constant, int(m_constant));
+
 #define BIND_GLOBAL_CLASS_ENUM_CONSTANT(m_class,m_constant) \
     _global_constants.emplace_back(#m_constant, int(m_class::m_constant));
 
-#define BIND_GLOBAL_CONSTANT_NO_VAL(m_constant) \
-    _global_constants.push_back(_GlobalConstant(#m_constant, m_constant));
-
-#define BIND_GLOBAL_ENUM_CONSTANT_NO_VAL(m_constant) \
-    _global_constants.push_back(_GlobalConstant(#m_constant, m_constant));
-
-#define BIND_GLOBAL_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
-    _global_constants.push_back(_GlobalConstant(m_custom_name, m_constant));
 #endif
 
 VARIANT_ENUM_CAST(KeyList);
@@ -123,8 +106,7 @@ void register_global_constants() {
 
     // Create a dummy class where we can add global enums etc.
     ClassDB::add_namespace("@","");
-
-    //{ KEY_BACKSPACE, VK_BACK },// (0x08) // backspace
+    SE_NAMESPACE(Godot)
 
     BIND_GLOBAL_CLASS_ENUM_CONSTANT(Margin,Left)
     BIND_GLOBAL_CLASS_ENUM_CONSTANT(Margin, Top)
@@ -646,11 +628,13 @@ void register_global_constants() {
     BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("TYPE_MAX", VariantType::VARIANT_MAX);
 
     //comparison
-    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_EQUAL", Variant::OP_EQUAL)
-    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_NOT_EQUAL", Variant::OP_NOT_EQUAL)
-    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_LESS", Variant::OP_LESS)
-    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_GREATER", Variant::OP_GREATER)
-    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_MAX", Variant::OP_MAX)
+    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_EQUAL", Variant::OP_EQUAL);
+    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_NOT_EQUAL", Variant::OP_NOT_EQUAL);
+    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_LESS", Variant::OP_LESS);
+    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_GREATER", Variant::OP_GREATER);
+    BIND_GLOBAL_ENUM_CONSTANT_CUSTOM("OP_MAX", Variant::OP_MAX);
+
+    SE_END();
 }
 
 void unregister_global_constants() {

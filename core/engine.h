@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include "core/reflection_macros.h"
 #include "core/hash_map.h"
 #include "core/vector.h"
 #include "core/string_name.h"
 #include "core/dictionary.h"
 
 class GODOT_EXPORT Engine {
-
+    SE_CLASS(singleton)
 public:
     struct Singleton {
         StringName name;
@@ -126,6 +127,10 @@ public:
     String get_license_text() const;
 
     bool is_abort_on_gpu_errors_enabled() const { return abort_on_gpu_errors; }
+
+    // NON-COPYABLE
+    Engine(const Engine &) = delete;
+    Engine operator=(const Engine &) = delete;
 
     Engine();
     virtual ~Engine() = default;

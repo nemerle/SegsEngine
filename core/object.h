@@ -35,6 +35,7 @@
 #include "core/variant.h"
 #include "core/string_name.h"
 #include "core/forward_decls.h"
+#include "core/reflection_macros.h"
 
 //#include <QObject>
 
@@ -219,7 +220,6 @@ public:                                                                         
                                                                                                                        \
 private:
 
-#define INVOCABLE
 #define HAS_BINDS static void _bind_methods();
 
 

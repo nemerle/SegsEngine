@@ -323,8 +323,9 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
         if (r_valid)
             *r_valid = true;
         return;
+    }
 
-    } else if (p_name == CoreStringNames::get_singleton()->_meta) {
+    if (p_name == CoreStringNames::get_singleton()->_meta) {
         //set_meta(p_name,p_value);
         auto d = p_value.duplicate_t<Dictionary>();
         if(metadata) {
@@ -725,8 +726,9 @@ String Object::to_string() {
     if (script_instance) {
         bool valid;
         String ret = script_instance->to_string(&valid);
-        if (valid)
+        if (valid) {
             return ret;
+        }
     }
     return FormatVE("[%s:%zd]",get_class(),(uint64_t)get_instance_id());
 }
@@ -1428,6 +1430,7 @@ void Object::clear_internal_resource_paths() {
 }
 
 void Object::_bind_methods() {
+    SE_NAMESPACE(Godot);
     //    const auto &mo = Object::staticMetaObject;
     //    for(int enum_idx = 0; enum_idx < mo.enumeratorCount(); ++enum_idx) {
     //        const QMetaEnum &me(mo.enumerator(enum_idx));
@@ -1519,11 +1522,16 @@ void Object::_bind_methods() {
     BIND_CONSTANT(NOTIFICATION_PREDELETE);
 
     ClassDB::add_namespace("ObjectNS","core/object.h");
+    SE_NAMESPACE(ObjectNS);
 
     BIND_NS_ENUM_CONSTANT(ObjectNS,CONNECT_QUEUED);
     BIND_NS_ENUM_CONSTANT(ObjectNS,CONNECT_PERSIST);
     BIND_NS_ENUM_CONSTANT(ObjectNS,CONNECT_ONESHOT);
     BIND_NS_ENUM_CONSTANT(ObjectNS,CONNECT_REFERENCE_COUNTED);
+
+    SE_END();
+
+    SE_END();
 }
 
 void Object::call_deferred(const StringName &p_method, VARIANT_ARG_DECLARE) {
@@ -1573,8 +1581,9 @@ VariantType Object::get_static_property_type(const StringName &p_property, bool 
     bool valid;
     VariantType t = ClassDB::get_property_type(get_class_name(), p_property, &valid);
     if (valid) {
-        if (r_valid)
+        if (r_valid) {
             *r_valid = true;
+        }
         return t;
     }
 
@@ -1590,8 +1599,9 @@ VariantType Object::get_static_property_type(const StringName &p_property, bool 
 VariantType Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
 
     if (p_path.empty()) {
-        if (r_valid)
+        if (r_valid) {
             *r_valid = false;
+        }
 
         return VariantType::NIL;
     }
@@ -1618,14 +1628,16 @@ VariantType Object::get_static_property_type_indexed(const Vector<StringName> &p
         check = check.get_named(p_path[i], &valid);
 
         if (!valid) {
-            if (r_valid)
+            if (r_valid) {
                 *r_valid = false;
+            }
             return VariantType::NIL;
         }
     }
 
-    if (r_valid)
+    if (r_valid) {
         *r_valid = true;
+    }
 
     return check.get_type();
 }
@@ -1675,7 +1687,7 @@ void Object::set_script_instance_binding(int p_script_language_index, void *p_da
 }
 
 Object::Object() {
-    private_data = memnew_args_basic(ObjectPrivate,this);
+    private_data = memnew_args_basic(ObjectPrivate, this);
     _class_ptr = nullptr;
     _block_signals = false;
     _instance_id = ObjectDB::add_instance(this);

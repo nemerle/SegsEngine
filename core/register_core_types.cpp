@@ -95,8 +95,6 @@ static IP *ip = nullptr;
 
 static _Geometry *_geometry = nullptr;
 
-extern Mutex *_global_mutex;
-
 extern void register_global_constants();
 extern void unregister_global_constants();
 extern void register_variant_methods();
@@ -106,8 +104,6 @@ void register_core_types() {
 
     ObjectDB::setup();
     MemoryPool::setup();
-
-    _global_mutex = memnew(Mutex);
 
     StringName::setup();
     gResourceManager().initialize();
@@ -245,7 +241,7 @@ void register_core_types() {
 }
 
 void register_core_settings() {
-    // Since in register core types, globals may not e present.
+    // Since in register core types, globals may not be present.
     GLOBAL_DEF("network/limits/tcp/connect_timeout_seconds", (30));
     ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(VariantType::INT, "network/limits/tcp/connect_timeout_seconds", PropertyHint::Range, "1,1800,1"));
     GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
@@ -329,9 +325,6 @@ void unregister_core_types() {
     ResourceCache::clear();
     CoreStringNames::free();
     StringName::cleanup(OS::get_singleton()->is_stdout_verbose());
-
-    memdelete(_global_mutex);
-    _global_mutex = nullptr; //still needed at a few places
 
     MemoryPool::cleanup();
 }

@@ -2835,8 +2835,6 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type
     RAST_DEBUG_ASSERT(bdata.unit_vertices.max_size() == bdata.vertices.max_size());
     RAST_DEBUG_ASSERT(bdata.batches_temp.max_size() == bdata.batches.max_size());
 
-    Color curr_col(-1.0f, -1.0f, -1.0f, -1.0f);
-
     Batch *dest_batch = nullptr;
 
     const BatchColor *source_vertex_colors = &bdata.vertex_colors[0];

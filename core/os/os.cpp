@@ -218,31 +218,18 @@ void OS::dump_memory_to_file(const char *p_file) {
 static FileAccess *_OSPRF = nullptr;
 
 static void _OS_printres(Object *p_obj) {
-
     Resource *res = object_cast<Resource>(p_obj);
-    if (!res)
+    if (!res) {
         return;
+    }
 
-    String str = FormatVE("%zu%s:%s - %s",(uint64_t)res->get_instance_id(),res->get_class(),res->get_name().c_str(),res->get_path().c_str());
-    if (_OSPRF)
+    String str = FormatVE("%zu%s:%s - %s", (uint64_t)res->get_instance_id(), res->get_class(), res->get_name().c_str(),
+            res->get_path().c_str());
+    if (_OSPRF) {
         _OSPRF->store_line(str);
-    else
+    } else {
         print_line(str);
-}
-
-bool OS::has_virtual_keyboard() const {
-
-    return false;
-}
-
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
-}
-
-void OS::hide_virtual_keyboard() {
-}
-
-int OS::get_virtual_keyboard_height() const {
-    return 0;
+    }
 }
 
 void OS::set_cursor_shape(CursorShape p_shape) {
