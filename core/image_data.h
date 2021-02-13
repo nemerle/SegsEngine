@@ -1,9 +1,11 @@
 #pragma once
 
+#include "core/reflection_macros.h"
 #include "core/pool_vector.h"
 
 struct ImageData
 {
+    SE_CLASS()
     enum Format : uint8_t {
 
         FORMAT_L8=0, //luminance
@@ -47,6 +49,7 @@ struct ImageData
         FORMAT_DXT5_RA_AS_RG, //used to make basis universal happy
         FORMAT_MAX
     };
+    SE_ENUM(Format)
     enum {
         MAX_WIDTH = 16384, // force a limit somehow
         MAX_HEIGHT = 16384, // force a limit somehow

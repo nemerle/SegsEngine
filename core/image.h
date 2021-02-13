@@ -73,6 +73,8 @@ using SaveEXRFunc = Error (*)(const UIString &, const Ref<Image> &, bool);
 class GODOT_EXPORT Image : public Resource, private ImageData {
     GDCLASS(Image, Resource)
     SE_CLASS()
+
+    SE_PROPERTY(Dictionary data READ _set_data WRITE _get_data USAGE STORAGE)
 public:
     static Error save_png_func(StringView p_path, const Ref<Image> &p_img);
     static Error save_exr_func(StringView p_path, const Ref<Image> &p_img, bool p_grayscale);
@@ -89,6 +91,8 @@ public:
         /* INTERPOLATE_TRICUBIC, */
         /* INTERPOLATE GAUSS */
     };
+    SE_ENUM(Interpolation)
+
     //some functions provided by something else
     static Error compress_image(Image *,CompressParams p);
     static Error decompress_image(Image *,CompressParams p);

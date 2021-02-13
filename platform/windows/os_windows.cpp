@@ -2704,8 +2704,9 @@ int OS_Windows::get_process_id() const {
 
 Error OS_Windows::set_cwd(StringView p_cwd) {
 
-    if (_wchdir(qUtf16Printable(StringUtils::from_utf8(p_cwd))) != 0)
+    if (_wchdir(qUtf16Printable(StringUtils::from_utf8(p_cwd))) != 0) {
         return ERR_CANT_OPEN;
+    }
 
     return OK;
 }
@@ -2814,8 +2815,8 @@ void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 
     ERR_FAIL_COND(not p_icon);
     Ref<Image> icon = dynamic_ref_cast<Image>(p_icon->duplicate());
-    if (icon->get_format() != Image::FORMAT_RGBA8)
-        icon->convert(Image::FORMAT_RGBA8);
+    if (icon->get_format() != ImageData::FORMAT_RGBA8)
+        icon->convert(ImageData::FORMAT_RGBA8);
     int w = icon->get_width();
     int h = icon->get_height();
 

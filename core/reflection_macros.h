@@ -9,8 +9,22 @@
 #define SE_ENUM(x, ...)
 //
 #define SE_CLASS(...)
+/**
+    similar syntax to Q_PROPERTY
+    (type name
+           (READ getFunction [WRITE setFunction] |
+            MEMBER memberName [(READ getFunction | WRITE setFunction)])
+           [RESET resetFunction]
+           [NOTIFY notifySignal]
+           [USAGE STORAGE|...] // any of PropertyUsageFlags without the leading PROPERTY_USAGE_
+           [HINT "text"]
+    )
+)
+*/
 #define SE_PROPERTY(...)
 #define SE_END()
-#define SE_INVOCABLE
 
-#define INVOCABLE
+#define SE_INVOCABLE
+#define SE_SIGNAL
+//TODO: valid until next access specifier (public:/private:/protected:) or end of class.
+//#define SE_SIGNALS

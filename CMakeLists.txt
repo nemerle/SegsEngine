@@ -11,6 +11,9 @@ project(SegsEngine)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+enable_testing(true)
+
+
 if(NOT OUTPUT_DIR)
     set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
 endif()

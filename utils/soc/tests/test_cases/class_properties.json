@@ -1,0 +1,37 @@
+{
+    "api_hash":"",
+    "api_version":"",
+    "dependencies":[],
+    "module_name":"",
+    "namespaces":[
+        {
+            "contents":{
+                "subtypes":[
+                    {
+                        "contents":{
+                        "properties": [
+                            {
+                                "max_property_index": -1,
+                                "name": "label",
+                                "subfields": [
+                                    {
+                                        "getter": "get_label",
+                                        "setter": "set_label",
+                                        "type": {
+                                            "name": "String"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                        },
+                        "name":"Propertied",
+                        "required_header":"class_properties.h"
+                    }
+                ]
+            },
+            "name":"GodotCore"
+        }
+    ],
+    "version":""
+}

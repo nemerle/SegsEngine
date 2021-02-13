@@ -73,16 +73,16 @@ public:
 
     static _ResourceManager*get_singleton() { return singleton; }
 
-    INVOCABLE Error save(StringView p_path, const RES &p_resource, SaverFlags p_flags);
-    INVOCABLE PoolVector<String> get_recognized_extensions(const RES &p_resource);
+    SE_INVOCABLE Error save(StringView p_path, const RES &p_resource, SaverFlags p_flags);
+    SE_INVOCABLE PoolVector<String> get_recognized_extensions(const RES &p_resource);
 
-    INVOCABLE Ref<ResourceInteractiveLoader> load_interactive(StringView p_path, StringView p_type_hint = StringView());
-    INVOCABLE RES load(StringView p_path, StringView p_type_hint = StringView(), bool p_no_cache = false);
-    INVOCABLE PoolStringArray get_recognized_extensions_for_type(StringView p_type);
-    INVOCABLE void set_abort_on_missing_resources(bool p_abort);
-    INVOCABLE Vector<String> get_dependencies(StringView p_path);
-    INVOCABLE bool has_cached(StringView p_path);
-    INVOCABLE bool exists(StringView p_path, StringView p_type_hint = StringView());
+    SE_INVOCABLE Ref<ResourceInteractiveLoader> load_interactive(StringView p_path, StringView p_type_hint = StringView());
+    SE_INVOCABLE RES load(StringView p_path, StringView p_type_hint = StringView(), bool p_no_cache = false);
+    SE_INVOCABLE PoolStringArray get_recognized_extensions_for_type(StringView p_type);
+    SE_INVOCABLE void set_abort_on_missing_resources(bool p_abort);
+    SE_INVOCABLE Vector<String> get_dependencies(StringView p_path);
+    SE_INVOCABLE bool has_cached(StringView p_path);
+    SE_INVOCABLE bool exists(StringView p_path, StringView p_type_hint = StringView());
     _ResourceManager();
 };
 
