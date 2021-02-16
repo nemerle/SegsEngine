@@ -11,14 +11,53 @@
                         "contents":{
                         "properties": [
                             {
-                                "max_property_index": -1,
+                                "name": "val1",
+                                "subfields": [
+                                    {
+                                        "getter": "get_val1",
+                                        "type": { "name": "Vector<int>" }
+                                    }
+                                ]
+                            },
+                            {
                                 "name": "label",
                                 "subfields": [
                                     {
                                         "getter": "get_label",
                                         "setter": "set_label",
+                                        "type": { "name": "String" }
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "tester",
+                                "subfields": [
+                                    {
+                                        "getter": "get_tester",
+                                        "setter": "set_tester",
+                                        "type": { "name": "int" }
+                                    }
+                                ],
+                                "usage" : "STORAGE|EDITOR|INTERNAL|DO_NOT_SHARE_ON_DUPLICATE"
+                            },
+                            {
+                                "max_property_index": -2,
+                                "name": "clip_to",
+                                "subfields": [
+                                    {
+                                        "getter": "is_clip_to_areas_enabled",
+                                        "name": "areas",
+                                        "setter": "set_clip_to_areas",
                                         "type": {
-                                            "name": "String"
+                                            "name": "bool"
+                                        }
+                                    },
+                                    {
+                                        "getter": "is_clip_to_bodies_enabled",
+                                        "name": "bodies",
+                                        "setter": "set_clip_to_bodies",
+                                        "type": {
+                                            "name": "bool"
                                         }
                                     }
                                 ]

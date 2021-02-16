@@ -103,6 +103,23 @@ struct TS_Signal : public TS_Function {
     void accept(VisitorInterface *vi) const override { vi->visit(this); }
 };
 
+struct TS_Property : public TS_Base  {
+    struct ResolvedPropertyEntry {
+        QString subfield_name;
+        QVector<TypeReference> entry_type; // can be more than one type for some resource types.
+        QString setter;
+        QString getter;
+        int index;
+    };
+    int max_property_index=-1; // -1 for plain properties, -2 for indexed properties, >0 for arrays of multiple properties it's the maximum number.
+    QVector<ResolvedPropertyEntry> indexed_entries;
+    QStringList usage_flags;
+    explicit TS_Property(const QString &n) : TS_Base(n) {  }
+    TypeKind kind() const override { return PROPERTY; }
+    void accept(VisitorInterface *vi) const override { vi->visit(this); }
+
+};
+
 struct TS_TypeLike : public TS_Base {
 public:
     QString required_header;
@@ -126,6 +143,7 @@ public:
     virtual void add_child(TS_Enum *);
     virtual void add_child(TS_Constant *);
     virtual void add_child(TS_Function *) { assert(!"cannot add Function to this type"); }
+    virtual void add_child(TS_Property *) { assert(!"cannot add Property to this type"); }
 
     QString relative_path(const TS_TypeLike *rel_to = nullptr) const;
 
@@ -196,6 +214,10 @@ struct TS_Type : public TS_TypeLike {
     explicit TS_Type(const QString &n) : TS_TypeLike(n) {}
     void accept(VisitorInterface *vi) const override { vi->visit(this); }
     void add_child(TS_Function *m) override {
+        m->enclosing_type = this;
+        m_children.push_back(m);
+    }
+    void add_child(TS_Property *m) override {
         m->enclosing_type = this;
         m_children.push_back(m);
     }

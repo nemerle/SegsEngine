@@ -69,15 +69,15 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
         AudioEffectChorus::Voice &v = base->voice[vc];
 
         double time_to_mix = (float)p_frame_count / mix_rate;
-        double cycles_to_mix = time_to_mix * v.rate;
+        double cycles_to_mix = time_to_mix * v.rate_hz;
 
         unsigned int local_rb_pos = buffer_pos;
         AudioFrame *dst_buff = p_dst_frames;
         AudioFrame *rb_buff = audio_buffer.data();
 
-        double delay_msec = v.delay;
+        double delay_msec = v.delay_ms;
         unsigned int delay_frames = Math::fast_ftoi((delay_msec / 1000.0) * mix_rate);
-        float max_depth_frames = (v.depth / 1000.0) * mix_rate;
+        float max_depth_frames = (v.depth_ms / 1000.0) * mix_rate;
 
         uint64_t local_cycles = cycles[vc];
         uint64_t increment = llrint(cycles_to_mix / (double)p_frame_count * (double)(1 << AudioEffectChorus::CYCLES_FRAC));
@@ -199,37 +199,37 @@ void AudioEffectChorus::set_voice_delay_ms(int p_voice, float p_delay_ms) {
 
     ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
-    voice[p_voice].delay = p_delay_ms;
+    voice[p_voice].delay_ms = p_delay_ms;
 }
 float AudioEffectChorus::get_voice_delay_ms(int p_voice) const {
 
     ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
-    return voice[p_voice].delay;
+    return voice[p_voice].delay_ms;
 }
 
 void AudioEffectChorus::set_voice_rate_hz(int p_voice, float p_rate_hz) {
     ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
-    voice[p_voice].rate = p_rate_hz;
+    voice[p_voice].rate_hz = p_rate_hz;
 }
 float AudioEffectChorus::get_voice_rate_hz(int p_voice) const {
 
     ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
-    return voice[p_voice].rate;
+    return voice[p_voice].rate_hz;
 }
 
 void AudioEffectChorus::set_voice_depth_ms(int p_voice, float p_depth_ms) {
 
     ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
-    voice[p_voice].depth = p_depth_ms;
+    voice[p_voice].depth_ms = p_depth_ms;
 }
 float AudioEffectChorus::get_voice_depth_ms(int p_voice) const {
 
     ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
-    return voice[p_voice].depth;
+    return voice[p_voice].depth_ms;
 }
 
 void AudioEffectChorus::set_voice_level_db(int p_voice, float p_level_db) {
@@ -346,12 +346,12 @@ void AudioEffectChorus::_bind_methods() {
 
 AudioEffectChorus::AudioEffectChorus() {
     voice_count = 2;
-    voice[0].delay = 15;
-    voice[1].delay = 20;
-    voice[0].rate = 0.8;
-    voice[1].rate = 1.2;
-    voice[0].depth = 2;
-    voice[1].depth = 3;
+    voice[0].delay_ms = 15;
+    voice[1].delay_ms = 20;
+    voice[0].rate_hz = 0.8;
+    voice[1].rate_hz = 1.2;
+    voice[0].depth_ms = 2;
+    voice[1].depth_ms = 3;
     voice[0].cutoff = 8000;
     voice[1].cutoff = 8000;
     voice[0].pan = -0.5;

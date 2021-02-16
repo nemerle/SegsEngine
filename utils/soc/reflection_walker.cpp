@@ -18,55 +18,6 @@
 
 namespace {
 
-template <class T> T valFromJson(const QJsonValue &v);
-
-template <> QString valFromJson<QString>(const QJsonValue &v) {
-    return v.toString().toUtf8().data();
-}
-template <> bool valFromJson<bool>(const QJsonValue &v) {
-    return v.toBool();
-}
-template <> TypeRefKind valFromJson<TypeRefKind>(const QJsonValue &v) {
-    return TypeRefKind(v.toInt());
-}
-template <class T> void setJsonIfNonDefault(QJsonObject &obj, const char *field, const T &v) {
-    if (v != T()) {
-        obj[field] = v;
-    }
-}
-
-template <> void setJsonIfNonDefault<QString>(QJsonObject &obj, const char *field, const QString &v) {
-    if (!v.isEmpty()) {
-        obj[field] = v;
-    }
-}
-
-template <class T> void toJson(QJsonObject &tgt, const char *name, const QVector<T> &src) {
-    if (src.isEmpty())
-        return;
-    QJsonArray entries;
-    for (const T &c : src) {
-        QJsonObject field;
-        c.toJson(field);
-        entries.push_back(field);
-    }
-    tgt[name] = entries;
-}
-template <class T> void fromJson(const QJsonObject &src, const char *name, QVector<T> &tgt) {
-    if (!src.contains(name)) {
-        tgt.clear();
-        return;
-    }
-    assert(src[name].isArray());
-    QJsonArray arr = src[name].toArray();
-    tgt.reserve(arr.size());
-    for (int i = 0; i < arr.size(); ++i) {
-        T ci;
-        ci.fromJson(arr[i].toObject());
-        tgt.emplace_back(ci);
-    }
-}
-
 enum class BlockType {
     Class=0,
     Struct=1,
@@ -170,9 +121,6 @@ static bool verifyNesting(ParseHead &pu, const char *name,QStringView var_name) 
 
 } // end of anonymous namespace
 
-
-
-
 struct ArgumentInterface {
     enum DefaultParamMode { CONSTANT, NULLABLE_VAL, NULLABLE_REF };
 
@@ -183,19 +131,6 @@ struct ArgumentInterface {
     DefaultParamMode def_param_mode = CONSTANT;
 };
 
-struct SignalInterface {
-    QString name;
-
-    QVector<ArgumentInterface> arguments;
-
-    bool is_deprecated = false;
-    QString deprecation_message;
-
-    void add_argument(const ArgumentInterface &argument) { arguments.push_back(argument); }
-
-    void fromJson(const QJsonObject &obj);
-};
-
 struct MethodInterface {
     QString name;
     TypeReference return_type;
@@ -204,14 +139,6 @@ struct MethodInterface {
      * Determines if the method has a variable number of arguments (VarArg)
      */
     bool is_vararg = false;
-
-    /**
-     * Virtual methods ("virtual" as defined by the Godot API) are methods that by default do nothing,
-     * but can be overridden by the user to add custom functionality.
-     * e.g.: _ready, _process, etc.
-     */
-    bool is_virtual = false;
-
     /**
      * Determines if the call should fallback to Godot's object.Call(string, params) in C#.
      */
@@ -253,80 +180,6 @@ struct PropertyInterface {
     void fromJson(const QJsonObject &obj);
 };
 
-
-
-// void ArgumentInterface::toJson(QJsonObject &obj) const {
-//    QJsonObject sertype;
-//    type.toJson(sertype);
-
-//    obj["type"] = sertype;
-//    obj["name"] = name;
-//    if (!default_argument.isEmpty())
-//        obj["default_argument"] = default_argument;
-//    if (def_param_mode != CONSTANT)
-//        obj["def_param_mode"] = def_param_mode;
-//}
-
-// void SignalInterface::toJson(QJsonObject &obj) const {
-//    obj["name"] = name;
-//    ::toJson(obj, "arguments", arguments);
-//    setJsonIfNonDefault(obj, "is_deprecated", is_deprecated);
-//    setJsonIfNonDefault(obj, "deprecation_message", deprecation_message);
-//}
-
-// void MethodInterface::toJson(QJsonObject &obj) const {
-//    QJsonObject sertype;
-//    return_type.toJson(sertype);
-
-//    obj["name"] = name;
-//    obj["return_type"] = sertype;
-
-//    setJsonIfNonDefault(obj, "is_vararg", is_vararg);
-//    setJsonIfNonDefault(obj, "is_virtual", is_virtual);
-//    setJsonIfNonDefault(obj, "requires_object_call", requires_object_call);
-//    setJsonIfNonDefault(obj, "is_internal", is_internal);
-
-//    ::toJson(obj, "arguments", arguments);
-
-//    setJsonIfNonDefault(obj, "is_deprecated", is_deprecated);
-//    setJsonIfNonDefault(obj, "implements_property", implements_property);
-//    setJsonIfNonDefault(obj, "deprecation_message", deprecation_message);
-//}
-
-// void PropertyInterface::toJson(QJsonObject &obj) const {
-//    obj["name"] = cname;
-//    if (!hint_str.isEmpty())
-//        obj["hint_string"] = hint_str;
-//    obj["max_property_index"] = max_property_index;
-//    QJsonArray prop_infos;
-//    if (max_property_index != -1) {
-//        for (const auto &entry : indexed_entries) {
-//            QJsonObject entry_enc;
-//            entry_enc["name"] = entry.subfield_name;
-//            if (max_property_index == -2) // enum based properties -> BlendMode(val) ->  set((PropKind)1,val)
-//            {
-//                if (entry.index != -1)
-//                    entry_enc["index"] = entry.index;
-//            }
-//            QJsonObject enc_type;
-//            entry.entry_type.toJson(enc_type);
-//            entry_enc["type"] = enc_type;
-//            setJsonIfNonDefault(entry_enc, "setter", entry.setter);
-//            setJsonIfNonDefault(entry_enc, "getter", entry.getter);
-
-//            prop_infos.push_back(entry_enc);
-//        }
-//    } else {
-//        QJsonObject entry_enc;
-//        QJsonObject enc_type;
-//        indexed_entries.front().entry_type.toJson(enc_type);
-//        entry_enc["type"] = enc_type;
-//        setJsonIfNonDefault(entry_enc, "setter", indexed_entries.front().setter);
-//        setJsonIfNonDefault(entry_enc, "getter", indexed_entries.front().getter);
-//        prop_infos.push_back(entry_enc);
-//    }
-//    obj["subfields"] = prop_infos;
-//}
 
 
 struct ReflectionData {
@@ -651,22 +504,6 @@ static ClassDecl extractClassName(QStringView decl, QStringView options) {
     return res;
 }
 
-static QStringView getEnclosingClassDecl(ParseHead &pu)
-{
-    QStringView data(pu.slice());
-    int offset = pu.tu.open_brace_indices.back(); // previous opening bracket.
-    int class_kw_idx = data.lastIndexOf(QLatin1String("class"), offset);
-    int advance_chars = 5;
-    if (class_kw_idx == -1) {
-        class_kw_idx = data.lastIndexOf(QLatin1String("struct"), offset);
-        advance_chars = 6;
-    }
-    assert(class_kw_idx != -1);
-    class_kw_idx += advance_chars; // skip keyword
-
-    return data.mid(class_kw_idx, offset - class_kw_idx);
-}
-
 void processSEClass(ParseHead &pu, QStringView params) {
     assert(!pu.tu.nesting_stack.empty());
     if(pu.tu.name_stack.empty()) {
@@ -719,7 +556,115 @@ void processSEClass(ParseHead &pu, QStringView params) {
 
     tl->add_child(tp);
 }
+void processSEProperty(ParseHead &pu, QStringView params) {
+    assert(!pu.tu.nesting_stack.empty());
+    TS_TypeLike *tl_val = pu.tu.nesting_stack.back();
+    if(tl_val->kind()!=TS_Base::CLASS) {
+        pu.error = "Properties are currently only supported in classes";
+        return;
+    }
+    TS_Type *tl = static_cast<TS_Type *>(tl_val);
 
+    using Elem = QPair<QStringView,QStringView>;
+    int read_idx = params.indexOf(QStringLiteral(" READ"));
+    if(read_idx==-1) {
+        pu.error = "Property must have READ option";
+        return;
+    }
+    QStringView type_and_name = params.mid(0,read_idx).trimmed();
+    int last_idx=type_and_name.size()-1;
+    while(last_idx>0) { // if it reaches 0 we've failed to find type
+        QChar c = type_and_name[last_idx];
+        if(!(c.isLetterOrNumber() || c=='_')) {
+            break;
+        }
+        --last_idx;
+    }
+    QStringView type_name = type_and_name.mid(0,last_idx).trimmed();
+    QStringView property_name = type_and_name.mid(last_idx).trimmed();
+
+    params = params.mid(read_idx).trimmed();
+    auto elem_source = params.split(' ');
+    int num_elems = elem_source.size();
+    if((num_elems%2)!=0) {
+        pu.error = "SE_PROPERTY needs an even number of parameters";
+        return;
+    }
+    if(num_elems<2) {
+        pu.error = "SE_PROPERTY needs at least type,name and read function";
+        return;
+    }
+
+    QVector<Elem> options;
+    for(int idx=0; idx<num_elems; idx+=2) {
+        options.push_back({elem_source[idx],elem_source[idx+1]});
+    }
+
+    TS_Property *prop=nullptr;
+    bool should_add = true;
+    QStringView group_name;
+    for(const Elem &e:options) {
+        if(e.first==QLatin1String("GROUP")) {
+            // we have a grouped property, see if we can find it in our type.
+            group_name = e.second;
+
+            tl->visit_kind(TS_Base::PROPERTY,[&](const TS_Base *child) {
+                assert(prop==nullptr && "If this assert fails, it means there are multiple properties with the same name");
+                TS_Property *child_prop = (TS_Property *)child;
+                if(child_prop->name==group_name) {
+                    prop = child_prop;
+                }
+            });
+            if(!prop) { // not available yet.
+                prop = new TS_Property(group_name.toString());
+                prop->max_property_index = -2; // grouped
+            }
+            else {
+                should_add = false;
+            }
+        }
+    }
+
+    if(!prop) {
+        prop = new TS_Property(property_name.toString());
+    }
+
+    TS_Property::ResolvedPropertyEntry entry;
+    Elem read_def = options.takeFirst();
+    entry.entry_type.push_back({type_name.toString()});
+    entry.getter = read_def.second.toString();
+
+    // we're in a group, property names are stored in entries.
+    if(!group_name.empty()) {
+        entry.subfield_name = property_name.toString();
+    }
+
+    while(!options.empty()) {
+        Elem opt = options.takeFirst();
+        if(opt.first==QLatin1String("WRITE")) {
+            entry.setter = opt.second.toString();
+        } else if(opt.first==QLatin1String("RESET")) {
+            qDebug() << "Unhandled resetFunc";
+        } else if(opt.first==QLatin1String("NOTIFY")) {
+            qDebug() << "Unhandled notify";
+        } else if(opt.first==QLatin1String("USAGE")) {
+            for(const auto &v : opt.second.split('|')) {
+                prop->usage_flags.push_back(v.trimmed().toString());
+            }
+        } else if(opt.first==QLatin1String("META_FUNC")) {
+            qDebug() << "Unhandled metaFunc";
+        } else if(opt.first==QLatin1String("GROUP")) {
+            // handled above.
+        } else {
+            qDebug() << "Unhandled SE_PROPERTY option"<<opt.first<<opt.second;
+        }
+
+    }
+    prop->indexed_entries.push_back(entry);
+    if(should_add) {
+        tl->add_child(prop);
+    }
+}
 int isEOL(QStringView content) {
     if (content.mid(0, 2) == QLatin1String("\r\n"))
         return 2;
@@ -1136,7 +1081,7 @@ MethodDecl parseMethod(ParseHead &pu) {
     return mdecl;
 }
 
-void processParameterlessMacro(ParseHead &pu,QStringView macroname) {
+static void processParameterlessMacro(ParseHead &pu,QStringView macroname) {
     if(macroname==QLatin1String("INVOCABLE")) {
         auto mdecl = parseMethod(pu);
         if(!mdecl.name.empty()) {
@@ -1398,6 +1343,11 @@ int processBlock(ParseHead &pu) {
         if (macro_name == QLatin1String("CLASS")) {
             added_ns = ensureNS(pu);
             processSEClass(pu, macro_params);
+            continue;
+        }
+        if (macro_name == QLatin1String("PROPERTY")) {
+            added_ns = ensureNS(pu);
+            processSEProperty(pu, macro_params);
             continue;
         }
         if (macro_name == QLatin1String("END")) {

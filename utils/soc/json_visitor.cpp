@@ -169,7 +169,32 @@ public:
 
         current["contents"] = root_obj;
     }
-    void visit(const TS_Property *) override {
+    void visit(const TS_Property *ps) override {
+        commonVisit(ps);
+
+        QJsonObject &current(result.back());
+
+        QJsonArray subfields;
+        if(ps->max_property_index!=-1) {
+            current["max_property_index"]=ps->max_property_index;
+        }
+        for(const auto & vv : ps->indexed_entries) {
+            QJsonObject entry;
+            entry["getter"]=vv.getter;
+            if(!vv.setter.isEmpty())
+                entry["setter"]=vv.setter;
+            const auto &e(vv.entry_type.front());
+            result.push_back(QJsonObject());
+            visit(&e);
+            entry["type"] = result.takeLast();
+            if(!vv.subfield_name.isEmpty()){
+                entry["name"] = vv.subfield_name;
+            }
+            subfields.push_back(entry);
+        }
+        current["subfields"] = subfields;
+        if(!ps->usage_flags.empty())
+            current["usage"] = ps->usage_flags.join('|');
 
     }
     void visit(const TS_Signal *fs) override {

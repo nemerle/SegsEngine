@@ -6,6 +6,7 @@
 #include <QTest>
 #include <QBuffer>
 #include <QDirIterator>
+#include <QJsonArray>
 
 class SocTest: public QObject
 {
@@ -18,6 +19,40 @@ private:
         if(err.error!=QJsonParseError::NoError)
             qCritical() << err.errorString();
         return err.error==QJsonParseError::NoError;
+    }
+    void compareJson(const QJsonArray &a,const QJsonArray &b) {
+        int max_idx = std::min(a.size(),b.size());
+        for(int i=0; i<max_idx; ++i) {
+            QJsonValue v1 = a[i];
+            QJsonValue v2 = b[i];
+            QCOMPARE(v1.type(),v2.type());
+            if(v1.isObject()) {
+                compareJson(v1.toObject(),v2.toObject());
+            } else if(v1.isArray()) {
+                compareJson(v1.toArray(),v2.toArray());
+            } else {
+                QCOMPARE(v1,v2);
+            }
+        }
+    }
+    void compareJson(const QJsonObject &a,const QJsonObject &b) {
+        auto a_keys = a.keys();
+        auto b_keys = b.keys();
+        int max_idx = std::min(a_keys.size(),b_keys.size());
+        for(int i=0; i<max_idx; ++i) {
+            QCOMPARE(a_keys[i],b_keys[i]);
+            QJsonValue v1 = a[a_keys[i]];
+            QJsonValue v2 = b[a_keys[i]];
+            QCOMPARE(v1.type(),v2.type());
+            if(v1.isObject()) {
+                compareJson(v1.toObject(),v2.toObject());
+            } else if(v1.isArray()) {
+                compareJson(v1.toArray(),v2.toArray());
+            } else {
+                QCOMPARE(v1,v2);
+            }
+        }
+        QCOMPARE(a_keys.size(),b_keys.size());
     }
 private slots:
     void allTests_data() {
@@ -67,21 +102,11 @@ private slots:
 
         QVERIFY(!result.isEmpty());
         QVERIFY(isValidJson(result));
-        QString result_min = QJsonDocument::fromJson(result).toJson(QJsonDocument::Compact).simplified();
-        QString expected_min = QJsonDocument::fromJson(expected).toJson(QJsonDocument::Compact).simplified();
-        result_min.remove(' ');
+        QString result_min(result);
+        QString expected_min(expected);
         expected_min.remove(' ');
-        if(result_min!=expected_min) {
-            qDebug().noquote()<<result_min;
-            qDebug().noquote()<<expected_min;
-            // try to reduce to smaller diff
-            int idx=0;
-            while(idx<result_min.size() && idx<expected_min.size() && result_min[idx]==expected_min[idx])
-                ++idx;
-            result_min = result_min.mid(idx);
-            expected_min = expected_min.mid(idx);
-        }
-        QCOMPARE(result_min,expected_min);
+        result_min.remove(' ');
+        compareJson(QJsonDocument::fromJson(result_min.toLatin1()).object(),QJsonDocument::fromJson(expected_min.toLatin1()).object());
     }
 
 };

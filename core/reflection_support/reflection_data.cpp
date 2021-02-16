@@ -155,7 +155,8 @@ void PropertyInterface::toJson(QJsonObject &obj) const {
     obj["name"] = cname.c_str();
     if(!hint_str.empty())
         obj["hint_string"] = hint_str.c_str();
-    obj["max_property_index"] = max_property_index;
+    if(max_property_index!=-1)
+        obj["max_property_index"] = max_property_index;
     QJsonArray prop_infos;
     if(max_property_index!=-1) {
         for(const auto & entry: indexed_entries) {
