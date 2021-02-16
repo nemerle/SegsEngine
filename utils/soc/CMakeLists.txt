@@ -12,11 +12,13 @@ add_library(soc_lib STATIC
 )
 target_link_libraries(soc_lib PUBLIC Qt5::Core )
 target_include_directories(soc_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+set_target_properties(soc_lib PROPERTIES FOLDER utils/soc/)
 
 add_executable(reflection_walker
     soc_commandline.cpp
 )
 target_link_libraries(reflection_walker PRIVATE soc_lib)
+set_target_properties(reflection_walker PROPERTIES FOLDER utils/soc/)
 
 if(WIN32 AND NOT(CMAKE_GENERATOR MATCHES "Visual Studio"))
     #TODO: this is bonkers, we should be able to provide qt path to all code generator tools that run during build :|

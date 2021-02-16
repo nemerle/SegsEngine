@@ -44,7 +44,6 @@
  * providing some basic methods for image manipulation.
  * Images can be loaded from a file, or registered into the Render object as textures.
 */
-SE_NAMESPACE(Godot)
 
 class Image;
 class ImageCodecInterface;
@@ -318,5 +317,3 @@ public:
     ~Image() override;
 };
 Ref<Image> prepareForPngStorage(const Ref<Image> &img);
-
-SE_END()

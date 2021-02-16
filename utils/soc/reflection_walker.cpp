@@ -5,15 +5,11 @@
 #include "type_system.h"
 
 #include <QBuffer>
-#include <QCommandLineOption>
-#include <QCommandLineParser>
-#include <QCoreApplication>
 #include <QDebug>
 #include <QDirIterator>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QTextStream>
 #include <functional>
 
 namespace {
@@ -69,10 +65,10 @@ struct ParseHead {
     [[nodiscard]] const QChar *begin() const { return tu.contents.constData() + start_offset; }
     [[nodiscard]] const QChar *end() const { return tu.contents.constData() + end_offset; }
     [[nodiscard]] QStringView slice() const { return tu.contents.midRef(start_offset, end_offset - start_offset); }
-    [[nodiscard]] QChar at(int idx) const { return tu.contents.at(start_offset + idx); }
-    [[nodiscard]] QChar peek() const { return slice()[offset]; }
+
+    [[nodiscard]] QChar peek(int idx=0) const { return slice()[offset+idx]; }
     [[nodiscard]] QChar take() { return slice()[offset++]; }
-    [[nodiscard]] QStringView peek(int cnt) const { return slice().mid(offset, cnt); }
+    [[nodiscard]] QStringView peek_slice(int cnt) const { return slice().mid(offset, cnt); }
     void consume(int cnt = 1) {
         offset += cnt;
         offset = std::min(offset, end_offset - start_offset);
@@ -109,7 +105,7 @@ struct ParseHead {
     }
 };
 
-static bool verifyNesting(ParseHead &pu, const char *name,QStringView var_name) {
+bool verifyNesting(ParseHead &pu, const char *name,QStringView var_name) {
     if(pu.tu.nesting_stack.empty()) {
         pu.error = QString("Incorrect block nesting detected when adding %1 named: %2").arg(name).arg(var_name);
         qCritical() << pu.error;
@@ -118,77 +114,14 @@ static bool verifyNesting(ParseHead &pu, const char *name,QStringView var_name) 
 
     return true;
 }
-
-} // end of anonymous namespace
-
-struct ArgumentInterface {
-    enum DefaultParamMode { CONSTANT, NULLABLE_VAL, NULLABLE_REF };
-
-    TypeReference type;
-
-    QString name;
-    QString default_argument;
-    DefaultParamMode def_param_mode = CONSTANT;
-};
-
-struct MethodInterface {
-    QString name;
-    TypeReference return_type;
-
-    /**
-     * Determines if the method has a variable number of arguments (VarArg)
-     */
-    bool is_vararg = false;
-    /**
-     * Determines if the call should fallback to Godot's object.Call(string, params) in C#.
-     */
-    bool requires_object_call = false;
-
-    /**
-     * Determines if the method visibility is 'internal' (visible only to files in the same assembly).
-     * Currently, we only use this for methods that are not meant to be exposed,
-     * but are required by properties as getters or setters.
-     * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.
-     */
-    bool is_internal = false;
-
-    QVector<ArgumentInterface> arguments;
-
-    bool is_deprecated = false;
-    bool implements_property = false; // Set true on functions implementing a property.
-    QString deprecation_message;
-
-    void add_argument(const ArgumentInterface &argument) { arguments.push_back(argument); }
-
-    void fromJson(const QJsonObject &obj);
-};
-
-struct PropertyInterface {
-    QString cname;
-    QString hint_str;
-    int max_property_index; // -1 for plain properties, -2 for indexed properties, >0 for arrays of multiple properties
-                            // it's the maximum number.
-    struct TypedEntry {
-        QString subfield_name;
-        TypeReference entry_type;
-        int index;
-        QString setter;
-        QString getter;
-    };
-    QVector<TypedEntry> indexed_entries;
-
-    void fromJson(const QJsonObject &obj);
-};
-
-
-
 struct ReflectionData {
     ModuleConfig config;
-    QVector<TS_Namespace *> namespaces;
-    QHash<QString, TS_Base *> created_types;
+    QVector<TS_Namespace*> namespaces;
+    QHash<QString, TS_Base*> created_types;
 };
+ReflectionData g_rd;
 
-bool save_to_file(ReflectionData &data, QIODevice *io_device) {
+bool save_to_file(ReflectionData& data, QIODevice* io_device) {
     QJsonObject root;
     root["module_name"] = data.config.module_name;
     root["api_version"] = data.config.api_version;
@@ -196,7 +129,7 @@ bool save_to_file(ReflectionData &data, QIODevice *io_device) {
     root["version"] = data.config.version;
 
     QJsonArray dependencies;
-    for (const auto &v : data.config.imports) {
+    for (const auto& v : data.config.imports) {
         QJsonObject dependency;
         dependency["name"] = v.module_name;
         dependency["api_version"] = v.api_version;
@@ -205,8 +138,8 @@ bool save_to_file(ReflectionData &data, QIODevice *io_device) {
     root["dependencies"] = dependencies;
 
     QJsonArray j_namespaces;
-    for (const auto *v : data.namespaces) {
-        VisitorInterface *visitor = createJsonVisitor();
+    for (const auto* v : data.namespaces) {
+        VisitorInterface* visitor = createJsonVisitor();
         v->accept(visitor);
         j_namespaces.push_back(takeRootFromJsonVisitor(visitor));
         delete visitor;
@@ -218,35 +151,8 @@ bool save_to_file(ReflectionData &data, QIODevice *io_device) {
     return true;
 }
 
-struct ModuleDefinition {
-    QString name;
-    QString version;
-    QString api_version;
-    QStringList top_directories;
-};
 
-bool loadModuleDefinition(ModuleDefinition &tgt, QString srcfile) {
-    QFile src(srcfile);
-    if (!src.open(QFile::ReadOnly))
-        return false;
-    QByteArray data(src.readAll());
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isObject())
-        return false;
-    QJsonObject root(doc.object());
-    tgt.name = root["name"].toString().toUtf8();
-    tgt.version = root["version"].toString().toUtf8();
-    tgt.api_version = root["api_version"].toString().toUtf8();
-    QJsonArray dirs = root["directories"].toArray();
-    for (int i = 0, fin = dirs.size(); i < fin; ++i) {
-        tgt.top_directories.append(dirs.at(i).toString().toUtf8());
-    }
-    return true;
-}
-
-ReflectionData g_rd;
-
-QString currentTypePath(ProcessingUnit &pu, QStringView name) {
+QString currentTypePath(ProcessingUnit& pu, QStringView name) {
     QString type_path;
     if (!pu.nesting_stack.empty()) {
         type_path = pu.nesting_stack.back()->relative_path();
@@ -257,64 +163,64 @@ QString currentTypePath(ProcessingUnit &pu, QStringView name) {
 
     return type_path;
 }
-void endBlock(ParseHead &pu) {
+void endBlock(ParseHead& pu) {
     assert(!pu.tu.nesting_stack.empty());
-    int match_bracing=pu.tu.brace_nesting_stack.back();
-    assert(match_bracing==-1 || match_bracing == pu.bracket_nesting_level);
+    int match_bracing = pu.tu.brace_nesting_stack.back();
+    assert(match_bracing == -1 || match_bracing == pu.bracket_nesting_level);
     pu.tu.nesting_stack.pop_back();
     pu.tu.brace_nesting_stack.pop_back();
 }
-static QString getNestedBlockPath(ParseHead &pu) {
+QString getNestedBlockPath(ParseHead& pu) {
     QStringList parts;
-    for(auto v : pu.tu.name_stack) {
+    for (auto v : pu.tu.name_stack) {
         parts.push_back(v.name.toString());
     }
     return parts.join("::");
 }
-
-void startNamespace(ParseHead &pu, QStringView name) {
-    bool skip_verify=false;
-    bool in_ns_block = !pu.tu.name_stack.empty() && pu.tu.name_stack.back().type==BlockType::Namespace;
-    if(pu.tu.nesting_stack.empty() && !in_ns_block) {
+void startNamespace(ParseHead& pu, QStringView name) {
+    bool skip_verify = false;
+    bool in_ns_block = !pu.tu.name_stack.empty() && pu.tu.name_stack.back().type == BlockType::Namespace;
+    if (pu.tu.nesting_stack.empty() && !in_ns_block) {
         skip_verify = true;
-        pu.tu.name_stack.push_front({name,name,-1,BlockType::Namespace});
+        pu.tu.name_stack.push_front({ name,name,-1,BlockType::Namespace });
     }
-    const auto &entry(pu.tu.name_stack.back());
+    const auto& entry(pu.tu.name_stack.back());
 
     QString type_path = currentTypePath(pu.tu, name);
     QString nested_path = getNestedBlockPath(pu);
-    if(!skip_verify) {
-        if(entry.type!=BlockType::Namespace) {
+    if (!skip_verify) {
+        if (entry.type != BlockType::Namespace) {
             pu.error = QString("Macro SE_NAMESPACE was placed in non-namespace block (%1)").arg(nested_path);
-            qCritical()<<pu.error;
+            qCritical() << pu.error;
             return;
         }
-        if(entry.name!=name) {
+        if (entry.name != name) {
             pu.error = QString("Macro SE_NAMESPACE name does not match enclosing namespace block '%1'!='%2'")
-                               .arg(entry.name)
-                               .arg(name);
-            qCritical()<<pu.error;
+                .arg(entry.name)
+                .arg(name);
+            qCritical() << pu.error;
             return;
         }
-        if(type_path!=nested_path) {
+        if (type_path != nested_path) {
             pu.error = QString("Macro SE_NAMESPACE nested in unregistered namespace '%1'!='%2'")
-                               .arg(nested_path)
-                               .arg(type_path);
-            qCritical()<<pu.error;
+                .arg(nested_path)
+                .arg(type_path);
+            qCritical() << pu.error;
             return;
         }
     }
-    TS_Namespace *ns;
+    TS_Namespace* ns;
     if (!g_rd.created_types.contains(type_path)) {
         ns = new TS_Namespace(name.toString());
         g_rd.created_types[type_path] = ns;
         if (pu.tu.nesting_stack.empty()) {
             g_rd.namespaces.push_back(ns);
         }
-    } else {
-        TS_Base *entry = g_rd.created_types[type_path];
+    }
+    else {
+        TS_Base* entry = g_rd.created_types[type_path];
         assert(entry->kind() == TS_Base::NAMESPACE);
-        ns = (TS_Namespace *)entry;
+        ns = (TS_Namespace*)entry;
     }
 
     if (!pu.tu.nesting_stack.empty()) {
@@ -326,32 +232,29 @@ void startNamespace(ParseHead &pu, QStringView name) {
 
 /*
     Const processing:
-
-    constexpr (type) NAME [(= value)| {}]
-    NAME (= value)?,
+    NAME = value[,\s]
 */
-int processBlock(ParseHead &pu);
+void addConstant(ParseHead& pu, QStringView name) {
 
-void addConstant(ParseHead &pu, QStringView name) {
-
-    if(!verifyNesting(pu,"constant",name)) {
+    if (!verifyNesting(pu, "constant", name)) {
         return;
     }
 
     QString type_path = currentTypePath(pu.tu, name);
     assert(!g_rd.created_types.contains(type_path));
-    TS_TypeLike *tl = pu.tu.nesting_stack.back();
+    TS_TypeLike* tl = pu.tu.nesting_stack.back();
 
-    QString re_text(QString(R"(^\s*%1\s*=\s*([^,\r\n]+),?)").arg(name));
+    QString re_text(QString(R"(^\s*%1\s*=\s*([^,\r\n]+)[,\r\n]?)").arg(name));
     QString regexp(re_text);
     QRegularExpression constexpr_re(regexp, QRegularExpression::MultilineOption);
     auto res = constexpr_re.match(pu.slice());
     QString value = res.captured(1);
 
-    TS_Constant *cn = new TS_Constant(name.toString(), value);
+    TS_Constant* cn = new TS_Constant(name.toString(), value);
     if (tl->kind() == TS_Base::ENUM) {
         // TODO: Verify constant type ( simple int expression )
-    } else if (!value.startsWith('"')) {
+    }
+    else if (!value.startsWith('"')) {
         cn->const_type.name = "int32_t";
     }
     tl->add_child(cn);
@@ -395,11 +298,13 @@ QPair<int, int> extractDelimitedBlock(QStringView dat, QChar lbrack, QChar rbrac
         QChar c = dat[idx];
         if (c == lbrack) {
             nest_level++;
-        } else if (c == rbrack) {
+        }
+        else if (c == rbrack) {
             nest_level--;
             if (nest_level < 1)
                 break;
-        } else {
+        }
+        else {
             if (nest_level > 0 && res.first == -1 && !c.isSpace())
                 res.first = idx;
         }
@@ -408,6 +313,14 @@ QPair<int, int> extractDelimitedBlock(QStringView dat, QChar lbrack, QChar rbrac
     res.second = idx;
     return res;
 }
+
+/////////////////////////////////////////////////////
+} // end of anonymous namespace
+/////////////////////////////////////////////////////
+
+int processBlock(ParseHead &pu);
+
+
 //TODO: enum scans backward, but does not take block nesting into account
 void addEnum(ParseHead &pu, QStringView name) {
     if(!verifyNesting(pu,"enum",name)) {
@@ -839,10 +752,9 @@ static bool parseArgTypeDecl(ParseHead &pu,ArgTypeDecl &tgt) {
             tgt.is_move=true;
             // no need to rewind
             return true;
-        } else {
-            tgt.is_reference=true;
-            offset++; // keep it
         }
+        tgt.is_reference=true;
+        offset++; // keep it
     }
     pu.offset = offset;
     tgt.calc_pass_by();
@@ -869,7 +781,8 @@ static void parseArgumentDefault(ParseHead &pu,ArgTypeDecl &tgt) {
                 in_string = false;
             }
             continue;
-        } else if (c=='"') {
+        }
+        if (c=='"') {
             in_string=true;
             continue;
         }
@@ -918,60 +831,9 @@ static void parseDeclArguments(ParseHead &pu,MethodDecl &tgt) {
     }
 
 }
-//static QString dumpArgType(const ArgTypeDecl &arg) {
-//    QString fmt;
-//    switch(arg.pass_by) {
-//    case TypePassBy::Value:
-//        fmt = "%1 ";
-//        break;
-//    case TypePassBy::Reference:
-//        fmt = "%1 &";
-//        break;
-//    case TypePassBy::ConstReference:
-//        fmt = "const %1 &";
-//        break;
-//    case TypePassBy::Move:
-//        fmt = "%1 &&";
-//        break;
-//    case TypePassBy::Pointer:
-//        fmt = "%1 *";
-//        break;
-//    case TypePassBy::ConstPointer:
-//        fmt = "const %1 *";
-//        break;
-//    default:
-//        assert(false);
-//        break;
-//    }
-//    if(!arg.template_params.isEmpty()) {
-//        return fmt.arg(arg.type_name.toString()+"<"+arg.template_params.toString()+ ">");
-//    }
-//    else {
-//        return fmt.arg(arg.type_name);
-//    }
-//}
-//static QString dumpArg(const ArgTypeDecl &arg) {
-//    QString out;
-//    out += dumpArgType(arg)+arg.arg_name.toString();
-//    if(!arg.default_value.isEmpty()) {
-//        out += "=" + arg.default_value.toString();
-//    }
-//    return out;
-//}
-//static void dumpFuncDecl(const MethodDecl &tgt) {
-//    QString res = dumpArgType(tgt.return_type);
-//    res+=tgt.name;
-//    res.push_back('(');
-//    QStringList parts;
-//    for(const auto &e : tgt.args) {
-//        parts.push_back(dumpArg(e));
-//    }
-//    res+=parts.join(',');
-//    res.push_back(')');
-//    qDebug().noquote()<<res;
-//}
 
 static void parseDeclAttrib(ParseHead &pu,MethodDecl &tgt) {
+    // (/s+ [ virtual | static | constexpr | inline ] )*
     while(true) {
         int offset = pu.offset;
         QStringView tok = pu.getIdent();
@@ -1102,6 +964,106 @@ static void processParameterlessMacro(ParseHead &pu,QStringView macroname) {
 
     }
 }
+enum TokenType
+{
+    DontCare,
+    String,
+    Ident,
+    WS,
+    EOL
+};
+struct Token
+{
+    QStringView data;
+    TokenType token_type;
+
+    bool operator==(QChar c) const
+    {
+        return data.size()==1 && data.front()==c;
+    }
+    bool operator==(QStringView with) const
+    {
+        return data==with;
+    }
+};
+bool isWS(QChar c)
+{
+    return c == ' ' || c == '\t';
+}
+bool isEOL(QChar c)
+{
+    return c == '\n' || c == '\r';
+}
+
+Token nextToken(ParseHead &pu)
+{
+    QChar c = pu.peek();
+    int offset_start= pu.offset;
+    if(isWS(c))
+    {
+        int idx=1;
+        for (; pu.offset + idx < pu.end_offset; ++idx)
+        {
+            if(!isWS(pu.peek(idx)))
+            {
+                break;
+            }
+        }
+        return Token {pu.slice().mid(offset_start,idx),TokenType::WS };
+    }
+    if (isEOL(c))
+    {
+        int idx = 1;
+        for (; pu.offset + idx < pu.end_offset; ++idx)
+        {
+            if (!isEOL(pu.peek(idx)))
+            {
+                break;
+            }
+        }
+        return Token{ pu.slice().mid(offset_start,idx),TokenType::EOL };
+    }
+
+    if(c=='"') // poor man's string extractor
+    {
+        bool in_escape=false;
+        int idx = 1;
+        for( ;pu.offset + idx< pu.end_offset; ++idx)
+        {
+            QChar current = pu.peek(idx);
+            if(in_escape)
+            {
+                in_escape = false;
+                continue;
+            }
+            if (current=='\\')
+            {
+                in_escape = true;
+                continue;
+            }
+            if(current=='"')
+            {
+                ++idx;
+                break;
+            }
+        }
+        return Token{ pu.slice().mid(offset_start,idx),TokenType::String };
+    }
+    if(c.isLetter() || c=='_')
+    {
+        int idx = 1;
+        for (; pu.offset + idx < pu.end_offset; ++idx)
+        {
+            QChar current_char = pu.peek(idx);
+            if (!(current_char.isLetterOrNumber()||current_char=='_'))
+            {
+                break;
+            }
+        }
+        return Token{ pu.slice().mid(offset_start,idx),TokenType::Ident };
+    }
+    return Token{ pu.slice().mid(offset_start,1),TokenType::DontCare };
+}
 
 static void recordBlockName(ParseHead &pu) {
     QStringView substr(pu.slice().mid(0,pu.offset));
@@ -1119,7 +1081,7 @@ static void recordBlockName(ParseHead &pu) {
     const QLatin1String incorrect[]= {QLatin1String("if"),QLatin1String("enum class"),QLatin1String("enum"),QLatin1String("while")};
 
     for(const QLatin1String &s : incorrect) {
-        int prev_kw_idx = substr.lastIndexOf(s);
+        qsizetype prev_kw_idx = substr.lastIndexOf(s);
         if(prev_kw_idx!=-1) {
             QChar c;
             // check for ;|WS before and WS after the keyword
@@ -1242,49 +1204,59 @@ int processBlock(ParseHead &pu) {
         if(!pu.error.isEmpty()) {
             return -1;
         }
-
-        QChar c = pu.peek();
-        if(c=='{') {
-            startBlock(pu);
-            pu.consume();
-            continue;
-        } else if(c=='}') {
-            pu.tu.open_brace_indices.pop_back();
-            while(!pu.tu.brace_nesting_stack.isEmpty() && pu.bracket_nesting_level<=pu.tu.brace_nesting_stack.back()) {
-                endBlock(pu);
+        Token t = nextToken(pu);
+        if(t.token_type == TokenType::DontCare)
+        {
+            if (t == '{') {
+                startBlock(pu);
+                pu.consume(t.data.size());
             }
-            if(!pu.tu.name_stack.empty() && pu.tu.name_stack.back().level==pu.bracket_nesting_level) {
-                pu.tu.name_stack.pop_back();
+            if (t == '}') {
+                pu.tu.open_brace_indices.pop_back();
+                while (!pu.tu.brace_nesting_stack.isEmpty() && pu.bracket_nesting_level <= pu.tu.brace_nesting_stack.back()) {
+                    endBlock(pu);
+                }
+                if (!pu.tu.name_stack.empty() && pu.tu.name_stack.back().level == pu.bracket_nesting_level) {
+                    pu.tu.name_stack.pop_back();
+                }
+                pu.bracket_nesting_level--;
+                pu.consume(t.data.size());
             }
-            pu.bracket_nesting_level--;
-            pu.consume();
+            pu.consume(t.data.size());
+            continue;
+        }
+        if(t.token_type==TokenType::String)
+        {
+            pu.consume(t.data.size());
+            continue;
+        }
+        if (t.token_type == TokenType::WS || t.token_type == TokenType::EOL) {
+            if (t.token_type == TokenType::EOL) {
+                line_counter++;
+                valid_start = true;
+            }
+            pu.consume(t.data.size());
             continue;
         }
 
-        int eol_chars = isEOL(pu.peek(2));
-        if (eol_chars != 0 || c.isSpace()) {
-            valid_start = true;
-        }
-        int consume_chars = 0;
-        if (eol_chars != 0) {
-            line_counter++;
-            consume_chars = eol_chars;
-        } else if (c.isSpace() || !valid_start) {
-            consume_chars = 1;
-        }
 
-        if(consume_chars!=0) {
-            pu.consume(consume_chars);
-            continue;
-        }
+        if(valid_start && t.token_type==TokenType::Ident)
+        {
+            QStringView partial(t.data);
+            // we search for start of on of the macro keywords
+            if(!partial.startsWith(QLatin1String("SE_")))
+            {
+                valid_start=false;
+                pu.consume(t.data.size());
+                continue;
 
-        // we search for start of on of the macro keywords
-        QStringView partial(pu.peek(3));
-        if (partial != QLatin1String("SE_")) {
-            pu.consume();
+            }
+        } else {
             valid_start = false;
+            pu.consume(t.data.size());
             continue;
         }
+
         // contents at idx are SE_...
         pu.consume(3);
 
@@ -1295,7 +1267,7 @@ int processBlock(ParseHead &pu) {
         }
 
         bool non_parametric_token=false; // SE_INVOCABLE, SE_SIGNALS etc.
-        QStringView macro_name(pu.peek(end_macro_name - pu.offset));
+        QStringView macro_name(pu.peek_slice(end_macro_name - pu.offset));
         if(pu.slice()[end_macro_name]==' ')
             non_parametric_token = true;
         pu.consume(macro_name.size() + 1); // consume '('|' ' as well
@@ -1306,7 +1278,7 @@ int processBlock(ParseHead &pu) {
         }
 
         int end_of_macro = pu.searchForward(')');
-        QStringView macro_params = pu.peek(end_of_macro - pu.offset).trimmed();
+        QStringView macro_params = pu.peek_slice(end_of_macro - pu.offset).trimmed();
 
         pu.consume(end_of_macro - pu.offset);
 
@@ -1374,7 +1346,10 @@ bool processFile(const QString &filename, QIODevice *dev) {
     pseudoPreprocessor(pu.contents);
 
     ParseHead head(pu);
-    return processBlock(head)==0;
+    bool res = processBlock(head)==0;
+    if(!res)
+        qCritical()<<head.error;
+    return res;
 }
 
 static bool save_cpp(ReflectionData &data, QIODevice *io) {
@@ -1384,35 +1359,6 @@ static bool save_cpp(ReflectionData &data, QIODevice *io) {
     }
     produceCppOutput(visitor,io);
     delete visitor;
-    return true;
-}
-
-bool processModuleDef(QString path) {
-    ModuleDefinition mod;
-    if (!loadModuleDefinition(mod, path)) {
-        return false;
-    }
-    QString file_path = QFileInfo(path).path();
-    QDir::setCurrent(file_path);
-    auto zz = QDir::currentPath();
-    for (const QString &root : mod.top_directories) {
-        QDirIterator iter(root, QStringList({ "*.cpp", "*.h" }), QDir::NoFilter, QDirIterator::Subdirectories);
-        while (iter.hasNext()) {
-            QFile fl(iter.next());
-            if (!fl.open(QFile::ReadOnly)) {
-                qCritical() << "Failed to open file" << fl;
-                continue;
-            }
-            if(!processFile(fl.fileName(), &fl)) {
-                qCritical() << "Error while processing file" << fl.fileName();
-                return false;
-            }
-        }
-    }
-
-    g_rd.config.module_name = mod.name;
-    g_rd.config.version = mod.version;
-    g_rd.config.api_version = mod.api_version;
     return true;
 }
 

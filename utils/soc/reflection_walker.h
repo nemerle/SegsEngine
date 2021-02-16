@@ -29,7 +29,6 @@ void initContext();
 void setConfig(const ModuleConfig &mc);
 
 bool processHeader(const QString &fname, QIODevice *src);
-bool processModuleDef(QString path);
 
 bool exportJson(QIODevice *tgt);
 bool exportCpp(QIODevice *tgt);
