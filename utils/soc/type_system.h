@@ -43,7 +43,7 @@ struct TS_Base {
         PROPERTY,
         SIGNAL,
         CONSTANT,
-        TYPE_REFERENCE, // reference to enum/class/etc.
+        FIELD, // it's a name + type_reference;
     };
     const TS_TypeLike *enclosing_type = nullptr;
     QString name;
@@ -54,15 +54,23 @@ struct TS_Base {
     virtual ~TS_Base() {}
 };
 
-struct TypeReference : TS_Base {
-    TypeRefKind is_enum = TypeRefKind::Simple;
+struct TypeReference  {
+    TypeRefKind type_kind = TypeRefKind::Simple;
     TypePassBy pass_by = TypePassBy::Value;
+    QString name;
     QString template_argument;
     TS_Base *resolved = nullptr;
-    TypeKind kind() const override { return TYPE_REFERENCE; }
 
-    TypeReference(QString n, TypeRefKind en = TypeRefKind::Simple, TS_Base *b = nullptr) : TS_Base(n), is_enum(en),resolved(b) {}
-    TypeReference() : TS_Base("") {}
+    TypeReference(QString n, TypeRefKind en = TypeRefKind::Simple, TS_Base *b = nullptr) : name(n), type_kind(en),resolved(b) {}
+    TypeReference() = default;
+};
+
+struct TS_Field : TS_Base {
+    TypeReference field_type;
+    TypeKind kind() const override { return FIELD; }
+
+    TS_Field(QString n, TypeReference f = {}) : TS_Base(n),field_type(f) {}
+    TS_Field() : TS_Base("") {}
     void accept(VisitorInterface *vi) const override { vi->visit(this); }
 };
 
@@ -144,6 +152,7 @@ public:
     virtual void add_child(TS_Constant *);
     virtual void add_child(TS_Function *) { assert(!"cannot add Function to this type"); }
     virtual void add_child(TS_Property *) { assert(!"cannot add Property to this type"); }
+    virtual void add_child(TS_Field *) { assert(!"cannot add Field to this type"); }
 
     QString relative_path(const TS_TypeLike *rel_to = nullptr) const;
 
@@ -221,4 +230,9 @@ struct TS_Type : public TS_TypeLike {
         m->enclosing_type = this;
         m_children.push_back(m);
     }
+    void add_child(TS_Field *m) override {
+        m->enclosing_type = this;
+        m_children.push_back(m);
+    }
+
 };

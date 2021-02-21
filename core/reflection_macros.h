@@ -7,7 +7,8 @@
 #define SE_NAMESPACE(x)
 #define SE_CONSTANT(x, ...)
 #define SE_ENUM(x, ...)
-//
+
+// Must be placed directly after `class X {`
 #define SE_CLASS(...)
 /**
     similar syntax to Q_PROPERTY

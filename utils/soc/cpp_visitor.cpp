@@ -33,7 +33,7 @@ struct CppVisitor : public VisitorInterface {
     void visit(const TS_Signal *entry) override {}
     void visit(const TS_Function *entry) override {}
     void visit(const TS_Constant *entry) override {}
-    void visit(const TypeReference *entry) override {}
+    void visit(const TS_Field *entry) override {}
     ~CppVisitor() override = default;
 };
 

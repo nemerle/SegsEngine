@@ -68,6 +68,9 @@ struct JSonVisitor : public VisitorInterface {
             case TS_Base::PROPERTY:
                 entry_name = "properties";
                 break;
+            case TS_Base::FIELD:
+                entry_name = "fields";
+                break;
         }
         QJsonArray arr;
         tl->visit_kind(kind, [&](const TS_Base *e) {
@@ -81,34 +84,7 @@ struct JSonVisitor : public VisitorInterface {
     }
     void commonVisit(const TS_Base *self) {
         QJsonObject &current(result.back());
-
-//        const char *tgt;
-//        switch (self->kind()) {
-//            case TS_Base::NAMESPACE:
-//                tgt = "NAMESPACE";
-//                break;
-//            case TS_Base::CLASS:
-//                tgt = "CLASS";
-//                break;
-//            case TS_Base::ENUM:
-//                tgt = "ENUM";
-//                break;
-//            case TS_Base::FUNCTION:
-//                tgt = "FUNCTION";
-//                break;
-//            case TS_Base::CONSTANT:
-//                tgt = "CONSTANT";
-//                break;
-//            case TS_Base::PROPERTY:
-//                tgt = "PROPERTY";
-//                break;
-//            case TS_Base::TYPE_REFERENCE:
-//                tgt = "TYPE_REFERENCE";
-//                break;
-//        }
-
         current["name"] = self->name;
-        //current["kind"] = tgt;
     }
 
     void commonVisit(const TS_TypeLike *self) {
@@ -146,15 +122,14 @@ public:
         entryToJSON(vs, TS_Base::FUNCTION, root_obj);
         entryToJSON(vs, TS_Base::PROPERTY, root_obj);
         entryToJSON(vs, TS_Base::SIGNAL, root_obj);
+        entryToJSON(vs, TS_Base::FIELD, root_obj);
 
         current["contents"] = root_obj;
         if(!vs->base_type.name.isEmpty()) {
-
-            result.push_back(QJsonObject());
-            visit(&vs->base_type);
-            QJsonObject base_tp = result.takeLast();
-            current["base_type"] = base_tp;
+            current["base_type"] = serializeTypeRef(&vs->base_type);
         }
+        setJsonIfNonDefault(current, "is_singleton", vs->is_singleton);
+
     }
     void visit(const TS_Namespace *vs) override {
         commonVisit(vs);
@@ -184,9 +159,7 @@ public:
             if(!vv.setter.isEmpty())
                 entry["setter"]=vv.setter;
             const auto &e(vv.entry_type.front());
-            result.push_back(QJsonObject());
-            visit(&e);
-            entry["type"] = result.takeLast();
+            entry["type"] = serializeTypeRef(&e);
             if(!vv.subfield_name.isEmpty()){
                 entry["name"] = vv.subfield_name;
             }
@@ -207,9 +180,8 @@ public:
         QJsonArray array;
         for(int idx=0; idx<fs->arg_types.size(); ++idx) {
             QJsonObject arg_def;
-            result.push_back(QJsonObject());
-            visit(&fs->arg_types[idx]);
-            arg_def["type"]=result.takeLast();
+
+            arg_def["type"]=serializeTypeRef(&fs->arg_types[idx]);
             arg_def["name"]=fs->arg_values[idx];
             auto iter=fs->arg_defaults.find(idx);
             if(iter!=fs->arg_defaults.end()) {
@@ -226,10 +198,7 @@ public:
         QJsonObject &current(result.back());
 
         QJsonObject return_type;
-        result.push_back(return_type);
-        visit(&fs->return_type);
-
-        current["return_type"] = result.takeLast();
+        current["return_type"] = serializeTypeRef(&fs->return_type);
 
         if(fs->m_virtual) {
             current["is_virtual"] = fs->m_virtual;
@@ -244,9 +213,7 @@ public:
         QJsonArray array;
         for(int idx=0; idx<fs->arg_types.size(); ++idx) {
             QJsonObject arg_def;
-            result.push_back(QJsonObject());
-            visit(&fs->arg_types[idx]);
-            arg_def["type"]=result.takeLast();
+            arg_def["type"]=serializeTypeRef(&fs->arg_types[idx]);
             arg_def["name"]=fs->arg_values[idx];
             auto iter=fs->arg_defaults.find(idx);
             if(iter!=fs->arg_defaults.end()) {
@@ -262,18 +229,24 @@ public:
         current["value"] = cn->value;
         if (cn->enclosing_type->kind() != TS_Base::ENUM) {
             // only write out non-redundant info
-            result.push_back(QJsonObject());
-            cn->const_type.accept(this);
-            current["type"] = result.takeLast();
+            current["type"] = serializeTypeRef(&cn->const_type);
         }
     }
-    void visit(const TypeReference *tr) override {
+    void visit(const TS_Field *f) override {
         QJsonObject &current(result.back());
-        current["name"] = tr->name;
-        setJsonIfNonDefault(current, "is_enum", (int8_t)tr->is_enum);
-        if (tr->pass_by != TypePassBy::Value)
-            current["pass_by"] = (int8_t)tr->pass_by;
+        current["name"] = f->name;
+        current["type"] = serializeTypeRef(&f->field_type);
     }
+    QJsonObject serializeTypeRef(const TypeReference *tr) {
+        QJsonObject res;
+        res["name"] = tr->name;
+        setJsonIfNonDefault(res, "template_arg", tr->template_argument);
+        setJsonIfNonDefault(res, "is_enum", (int8_t)tr->type_kind);
+        if (tr->pass_by != TypePassBy::Value)
+            res["pass_by"] = (int8_t)tr->pass_by;
+        return res;
+    }
+
 };
 }
 

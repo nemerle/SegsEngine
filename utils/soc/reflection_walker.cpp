@@ -20,10 +20,11 @@ enum class BlockType {
     Namespace=2
 };
 
-struct ProcessingUnit {
+struct TranslationUnit {
     QString filename;
     QString contents;
     QVector<TS_TypeLike *> nesting_stack;
+    QMap<int,TS_Type *> field_collectors;
     QVector<int> brace_nesting_stack;
     QVector<int> open_brace_indices;
     // namespace/class/struct nesting, used to verify proper nesting of registered types
@@ -38,14 +39,14 @@ struct ProcessingUnit {
 };
 
 struct ParseHead {
-    ProcessingUnit &tu;
+    TranslationUnit &tu;
     int start_offset;
     int end_offset;
     int offset;
     int bracket_nesting_level = -1;
     bool collecting_signals=false;
     QString error;
-    explicit ParseHead(ProcessingUnit &p, int start = -1, int end = -1) : tu(p) {
+    explicit ParseHead(TranslationUnit &p, int start = -1, int end = -1) : tu(p) {
         start = std::max(0, start);
         start = std::min(tu.contents.size(), start);
         if(end==-1)
@@ -68,6 +69,9 @@ struct ParseHead {
 
     [[nodiscard]] QChar peek(int idx=0) const { return slice()[offset+idx]; }
     [[nodiscard]] QChar take() { return slice()[offset++]; }
+    [[nodiscard]] bool valid_offset(int idx=0) const {
+        return start_offset+offset+idx < end_offset;
+    }
     [[nodiscard]] QStringView peek_slice(int cnt) const { return slice().mid(offset, cnt); }
     void consume(int cnt = 1) {
         offset += cnt;
@@ -121,7 +125,7 @@ struct ReflectionData {
 };
 ReflectionData g_rd;
 
-bool save_to_file(ReflectionData& data, QIODevice* io_device) {
+bool save_to_file(const ReflectionData& data, QIODevice* io_device) {
     QJsonObject root;
     root["module_name"] = data.config.module_name;
     root["api_version"] = data.config.api_version;
@@ -152,25 +156,29 @@ bool save_to_file(ReflectionData& data, QIODevice* io_device) {
 }
 
 
-QString currentTypePath(ProcessingUnit& pu, QStringView name) {
+QString currentTypePath(const TranslationUnit& pu, QStringView name) {
     QString type_path;
     if (!pu.nesting_stack.empty()) {
         type_path = pu.nesting_stack.back()->relative_path();
         type_path += "::";
     }
-    if (!name.isEmpty())
+    if (!name.isEmpty()) {
         type_path += name;
+    }
 
     return type_path;
 }
 void endBlock(ParseHead& pu) {
     assert(!pu.tu.nesting_stack.empty());
+    if(pu.tu.field_collectors.contains(pu.bracket_nesting_level)) {
+        pu.tu.field_collectors.remove(pu.bracket_nesting_level);
+    }
     int match_bracing = pu.tu.brace_nesting_stack.back();
     assert(match_bracing == -1 || match_bracing == pu.bracket_nesting_level);
     pu.tu.nesting_stack.pop_back();
     pu.tu.brace_nesting_stack.pop_back();
 }
-QString getNestedBlockPath(ParseHead& pu) {
+QString getNestedBlockPath(const ParseHead& pu) {
     QStringList parts;
     for (auto v : pu.tu.name_stack) {
         parts.push_back(v.name.toString());
@@ -265,6 +273,7 @@ QByteArray removeComments(QByteArray dat) {
     bool in_block_comment = false;
     int idx = 0;
     QByteArray res;
+
     while (idx < dat.size()) {
         if (dat.mid(idx, 2) == "/*") {
             int next_eol = dat.indexOf("*/", idx + 2);
@@ -286,6 +295,29 @@ QByteArray removeComments(QByteArray dat) {
         idx++;
     }
     return res.trimmed();
+}
+QByteArray joinLineContinuations(QByteArray src) {
+    int idx = 0;
+    QByteArray res;
+    // normalize line endings;
+    src.replace("\r\n","\n");
+    src.replace("\r","\n");
+    res.reserve(src.size());
+    while (idx < src.size()) {
+        char c = src[idx++];
+        if(c=='\\') {
+            if(idx<src.size()) {
+                char next_c = src[idx];
+                if(next_c=='\n') {
+                    idx++; // skip \\\n thus joining with next line.
+                    continue;
+                }
+            }
+        }
+        res.push_back(c);
+
+    }
+    return res;
 }
 
 QPair<int, int> extractDelimitedBlock(QStringView dat, QChar lbrack, QChar rbrack) {
@@ -311,6 +343,226 @@ QPair<int, int> extractDelimitedBlock(QStringView dat, QChar lbrack, QChar rbrac
         idx++;
     }
     res.second = idx;
+    return res;
+}
+
+enum TokenType
+{
+    DontCare,
+    String,
+    Ident,
+    WS,
+    EOL,
+    END
+};
+struct Token
+{
+    QStringView data;
+    TokenType token_type;
+
+    bool operator==(QChar c) const
+    {
+        return data.size()==1 && data.front()==c;
+    }
+
+    bool operator!=(QChar c) const
+    {
+        return data.size()!=1 || data.front()!=c;
+    }
+    bool operator==(QStringView with) const
+    {
+        return data==with;
+    }
+    bool operator==(QLatin1String with) const
+    {
+        return data==with;
+    }
+};
+bool isWS(QChar c)
+{
+    return c == ' ' || c == '\t';
+}
+bool isEOL(QChar c)
+{
+    return c == '\n' || c == '\r';
+}
+static QVector<Token> token_cache;
+Token nextTokenInternal(ParseHead &pu)
+{
+    if(!token_cache.empty()) {
+        return token_cache.takeFirst();
+    }
+    if(pu.atEnd()) {
+        return Token {QStringView(),TokenType::END };
+    }
+    QChar c = pu.peek();
+    int offset_start= pu.offset;
+    if(isWS(c))
+    {
+        int idx=1;
+        for (; pu.valid_offset(idx); ++idx)
+        {
+            if(!isWS(pu.peek(idx)))
+            {
+                break;
+            }
+        }
+        pu.consume(idx);
+        return Token {pu.slice().mid(offset_start,idx),TokenType::WS };
+    }
+    if (isEOL(c))
+    {
+        int idx = 1;
+        for (; pu.valid_offset(idx); ++idx)
+        {
+            if (!isEOL(pu.peek(idx)))
+            {
+                break;
+            }
+        }
+        pu.consume(idx);
+        return Token{ pu.slice().mid(offset_start,idx),TokenType::EOL };
+    }
+
+    if(c=='"') // poor man's string extractor
+    {
+        bool in_escape=false;
+        int idx = 1;
+        for( ;pu.valid_offset(idx); ++idx)
+        {
+            QChar current = pu.peek(idx);
+            if(in_escape)
+            {
+                in_escape = false;
+                continue;
+            }
+            if (current=='\\')
+            {
+                in_escape = true;
+                continue;
+            }
+            if(current=='"')
+            {
+                ++idx;
+                break;
+            }
+        }
+        pu.consume(idx);
+        return Token{ pu.slice().mid(offset_start,idx),TokenType::String };
+    }
+    if(c.isLetter() || c=='_')
+    {
+        int idx = 1;
+        for (; pu.valid_offset(idx); ++idx)
+        {
+            QChar current_char = pu.peek(idx);
+            if (!(current_char.isLetterOrNumber()||current_char=='_'))
+            {
+                break;
+            }
+        }
+        pu.consume(idx);
+        return Token{ pu.slice().mid(offset_start,idx),TokenType::Ident };
+    }
+
+    pu.consume(1);
+    return Token{ pu.slice().mid(offset_start,1),TokenType::DontCare };
+}
+Token nextToken(ParseHead &pu) {
+    Token t = nextTokenInternal(pu);
+   // qDebug() << t.token_type << t.data;
+    return t;
+}
+Token nextNonWsNonEol(ParseHead &pu) {
+    Token res = nextToken(pu);
+    while(res.token_type==TokenType::WS || res.token_type==TokenType::EOL) {
+        res = nextToken(pu);
+    }
+    return res;
+}
+void ungetToken(ParseHead &pu,Token t) {
+    token_cache.push_back(t);
+}
+
+struct ArgTypeMod {
+    bool is_const=false;
+    bool is_volatile=false;
+    bool is_restrict=false;
+    bool is_signed=false;
+    bool is_unsigned=false;
+};
+struct ArgTypeDecl {
+    QStringView arg_name;
+    QStringView type_name;
+    QStringView template_params; // if template
+
+    ArgTypeMod mod;
+    bool is_pointer = false;
+    bool is_reference = false;
+    bool is_move = false;
+    QStringView default_value;
+    TypePassBy pass_by;
+    void calc_pass_by() {
+        /*
+            Value = 0, // T
+            Reference, // T &
+            ConstReference, // const T &
+            RefValue, // Ref<T>
+            ConstRefReference, // const Ref<T> &
+            Move, // T &&
+            Pointer,
+        */
+        if(is_pointer) {
+            pass_by=TypePassBy::Pointer;
+            if(mod.is_const) {
+                pass_by = TypePassBy::ConstPointer;
+            }
+            if(mod.is_volatile||mod.is_restrict) {
+                qDebug() << "Values passed by pointers do not carry their modifiers.";
+            }
+            return;
+        }
+        if(is_reference) {
+            if(mod.is_const) {
+                pass_by = TypePassBy::ConstReference;
+            }
+            else {
+                pass_by = TypePassBy::Reference;
+            }
+            return;
+        }
+        if(is_move) {
+            pass_by = TypePassBy::Move;
+            return;
+        }
+        pass_by = TypePassBy::Value;
+    }
+};
+
+struct FieldDecl {
+
+    QVector<QStringView> storage_specifiers;
+    bool is_static=false;
+    bool is_constexpr=false;
+    ArgTypeDecl type;
+    QVector<int> array_dims;
+};
+
+struct MethodDecl {
+    QVector<QStringView> storage_specifiers;
+    QStringView name;
+    bool is_virtual=false;
+    bool is_static=false;
+    bool is_constexpr=false;
+    ArgTypeDecl return_type;
+    QVector<ArgTypeDecl> args;
+};
+
+TypeReference convertToTref(const ArgTypeDecl &from) {
+    TypeReference res(from.type_name.toString());
+    res.pass_by = from.pass_by;
+    res.name = from.type_name.toString();
+    res.template_argument = from.template_params.toString();
     return res;
 }
 
@@ -400,10 +652,9 @@ void addEnum(ParseHead &pu, QStringView name) {
 struct ClassDecl {
     QString name;
     QString base;
-    bool is_singleton;
 };
 
-static ClassDecl extractClassName(QStringView decl, QStringView options) {
+static ClassDecl extractClassName(QStringView decl) {
     ClassDecl res;
     decl = decl.trimmed();
 
@@ -432,10 +683,20 @@ void processSEClass(ParseHead &pu, QStringView params) {
 
 
     QStringView class_decl = namestack_entry.full_def.trimmed();
-    QString decl1 = class_decl.toString();
 
     // Step 2. parse the decl.
-    ClassDecl parsed_decl = extractClassName(class_decl, params);
+    ClassDecl parsed_decl = extractClassName(class_decl);
+
+    auto opts=params.split(',');
+    bool is_singleton=false;
+    bool is_struct=false;
+    if(opts.contains(QString("singleton"))) {
+        is_singleton = true;
+    }
+    if(opts.contains(QString("struct"))) {
+        is_struct=true;
+    }
+
     // TODO: find actual base-class based on parsed bases
     if (!parsed_decl.base.isEmpty()) {
         QStringList bases=parsed_decl.base.split(',');
@@ -460,8 +721,12 @@ void processSEClass(ParseHead &pu, QStringView params) {
 
     TS_Type *tp = new TS_Type(parsed_decl.name);
     tp->required_header = QString(pu.tu.filename).replace(".cpp", ".h");
+    tp->is_singleton = is_singleton;
     if (!parsed_decl.base.isEmpty()) {
         tp->base_type = { parsed_decl.base };
+    }
+    if(is_struct) {
+        pu.tu.field_collectors[pu.bracket_nesting_level] = tp;
     }
 
     pu.tu.nesting_stack.push_back(tp);
@@ -578,13 +843,7 @@ void processSEProperty(ParseHead &pu, QStringView params) {
         tl->add_child(prop);
     }
 }
-int isEOL(QStringView content) {
-    if (content.mid(0, 2) == QLatin1String("\r\n"))
-        return 2;
-    if (content.front() == '\n')
-        return 1;
-    return 0;
-}
+
 static bool ensureNS(ParseHead &pu) {
     // TODO: this needs a global setting on the commandline ??
     if (pu.tu.nesting_stack.empty()) {
@@ -602,79 +861,20 @@ static bool ensureNS(ParseHead &pu) {
 
     return false;
 }
-struct ArgTypeMod {
-    bool is_const=false;
-    bool is_volatile=false;
-    bool is_restrict=false;
-    bool is_signed=false;
-    bool is_unsigned=false;
-};
-struct ArgTypeDecl {
-    QStringView arg_name;
-    QStringView type_name;
-    QStringView template_params; // if template
 
-    ArgTypeMod mod;
-    bool is_pointer = false;
-    bool is_reference = false;
-    bool is_move = false;
-    QStringView default_value;
-    TypePassBy pass_by;
-    void calc_pass_by() {
-        /*
-            Value = 0, // T
-            Reference, // T &
-            ConstReference, // const T &
-            RefValue, // Ref<T>
-            ConstRefReference, // const Ref<T> &
-            Move, // T &&
-            Pointer,
-        */
-        if(is_pointer) {
-            pass_by=TypePassBy::Pointer;
-            if(mod.is_const) {
-                pass_by = TypePassBy::ConstPointer;
-            }
-            if(mod.is_volatile||mod.is_restrict) {
-                qDebug() << "Values passed by pointers do not carry their modifiers.";
-            }
-            return;
-        }
-        if(is_reference) {
-            if(mod.is_const) {
-                pass_by = TypePassBy::ConstReference;
-            }
-            else {
-                pass_by = TypePassBy::Reference;
-            }
-            return;
-        }
-        if(is_move) {
-            pass_by = TypePassBy::Move;
-            return;
-        }
-        pass_by = TypePassBy::Value;
-    }
-};
-struct MethodDecl {
-    QVector<QStringView> storage_specifiers;
-    QStringView name;
-    bool is_virtual=false;
-    bool is_static=false;
-    bool is_constexpr=false;
-    ArgTypeDecl return_type;
-    QVector<ArgTypeDecl> args;
-};
-
-static void parseArgTypeMod(ParseHead &pu,ArgTypeMod &tgt) {
+static bool parseArgTypeMod(ParseHead &pu,ArgTypeMod &tgt) {
     // const,volatile,restrict,signed,unsigned  [ long double unhandled ]
 
     // mods* type_spec mods*
+    Token t = nextNonWsNonEol(pu);
+
     bool mod_found=true;
-    while(mod_found) {
-        pu.skipWS();
-        int offset=pu.offset;
-        QStringView ident=pu.getIdent().trimmed();
+    if(t.token_type!=TokenType::Ident) {
+        return false;
+    }
+
+    while(mod_found && t.token_type==TokenType::Ident) {
+        QStringView ident=t.data;
         if(ident==QLatin1String("const")) {
             tgt.is_const=true;
         }
@@ -691,21 +891,30 @@ static void parseArgTypeMod(ParseHead &pu,ArgTypeMod &tgt) {
             tgt.is_unsigned=true;
         } else {
             mod_found = false;
-            pu.offset = offset;
-            continue;
+            ungetToken(pu,t);
+            break;
         }
+
+        t = nextNonWsNonEol(pu);
     }
+    return true;
 }
+
 // Handles only very simple types : TypeName | TemplateName<TypeName>
-static void parseTypeSpec(ParseHead &pu,ArgTypeDecl &tgt) {
+static bool parseTypeSpec(ParseHead &pu,ArgTypeDecl &tgt) {
     // get typename
-    pu.skipWS();
-    tgt.type_name = pu.getIdent();
+    Token t = nextNonWsNonEol(pu);
+    if(t.token_type!=TokenType::Ident) {
+        return false;
+    }
+
+    tgt.type_name = t.data;
+
     assert(tgt.type_name.size()>1);
-    pu.skipWS();
+    t = nextNonWsNonEol(pu);
+
     // Find internal text of <.....>
-    if(!pu.atEnd() && pu.peek()=='<') {
-        pu.consume();
+    if(t.token_type==TokenType::DontCare && t=='<') {
         int start_ab = pu.offset;
         int nesting_depth=1;
         while(!pu.atEnd()) {
@@ -721,23 +930,36 @@ static void parseTypeSpec(ParseHead &pu,ArgTypeDecl &tgt) {
             }
         }
         tgt.template_params = pu.slice().mid(start_ab,pu.offset-start_ab-1);
+    } else {
+        ungetToken(pu,t);
     }
+    return true;
 }
 //NOTE: this only handles west-const style definitions.
 static bool parseArgTypeDecl(ParseHead &pu,ArgTypeDecl &tgt) {
-    // mods* type_spec [*|&]?
-    parseArgTypeMod(pu,tgt.mod);
-    parseTypeSpec(pu,tgt);
-    pu.skipWS();
 
-    if(pu.atEnd()) {
+    // mods* type_spec [*|&]?
+    if(!parseArgTypeMod(pu,tgt.mod)) {
+        return false;
+    }
+    if(!parseTypeSpec(pu,tgt)) {
+        return false;
+    }
+
+    Token t = nextNonWsNonEol(pu);
+    if(t.token_type==END) {
         tgt.calc_pass_by();
         return true;
     }
-    int offset=pu.offset;
-    QChar m = pu.take();
-    pu.skipWS();
-    QChar following = pu.atEnd() ? QChar(0) : pu.peek();
+    if(t.token_type!=DontCare) {
+        // what follows is not a '*'/'&' etc., bail
+        tgt.calc_pass_by();
+        ungetToken(pu,t);
+        return true;
+    }
+
+    QChar m = t.data.front();
+    Token following = nextNonWsNonEol(pu);
     // disallow ** *& &*
     if( (m=='*' && following=='*') || (m=='*' && following=='&') || (m=='&' && following=='*') ) {
         qCritical() << "Unhandled function return/argment type";
@@ -745,18 +967,20 @@ static bool parseArgTypeDecl(ParseHead &pu,ArgTypeDecl &tgt) {
     }
     if(m=='*' ) {
         tgt.is_pointer=true;
-        offset++; // keep it
+        ungetToken(pu,following);
     }
-    if(m=='&') {
+    else if(m=='&') {
         if(following=='&') {
+
             tgt.is_move=true;
-            // no need to rewind
             return true;
         }
+        ungetToken(pu,following);
         tgt.is_reference=true;
-        offset++; // keep it
+    } else {
+        ungetToken(pu,t);
+        ungetToken(pu,following);
     }
-    pu.offset = offset;
     tgt.calc_pass_by();
     return true;
 }
@@ -764,45 +988,32 @@ static void parseArgumentDefault(ParseHead &pu,ArgTypeDecl &tgt) {
     static QString braced_default("{}");
     int bracket_nest_level=0;
     int paren_nest_level=0;
-
     pu.skipWS();
-
     int start_offset=pu.offset;
-    bool in_string=false;
-    while(!pu.atEnd()) {
-        pu.skipWS();
-        QChar c = pu.take();
-        if(in_string) { // we search for ending '"'
-            QChar next= pu.atEnd() ? '\0' : pu.peek();
-            if(c=='\\' && next=='"') {
-                // skip escaped
-                pu.consume();
-            } else if (c=='"') {
-                in_string = false;
-            }
-            continue;
-        }
-        if (c=='"') {
-            in_string=true;
-            continue;
-        }
-        if(bracket_nest_level==0 && paren_nest_level==0 && c==',') {
+    Token t = nextNonWsNonEol(pu);
+
+    while(t.token_type!=END) {
+
+        if(bracket_nest_level==0 && paren_nest_level==0 && (t==',' || t==')')) {
             // don't collect ','
-            pu.offset-=1;
+            // can't use unget token, since we extract things using offsets
+            pu.offset--;
             break;
         }
-        if(c=='{') {
+        if(t=='{') {
             bracket_nest_level++;
-        } else if (c=='}') {
+        } else if (t=='}') {
             bracket_nest_level--;
         }
-        if(c=='(') {
+        if(t=='(') {
             paren_nest_level++;
-        } else if (c==')') {
+        } else if (t==')') {
             paren_nest_level--;
         }
+        t = nextNonWsNonEol(pu);
     }
     tgt.default_value = pu.slice().mid(start_offset,pu.offset-start_offset);
+    QString df=tgt.default_value.toString();
     if(tgt.default_value.startsWith(tgt.type_name)) {
         if(tgt.default_value.mid(tgt.type_name.size())==QLatin1String("()")) {
             qDebug() << "Replacing explicit constructor call with {}";
@@ -812,59 +1023,134 @@ static void parseArgumentDefault(ParseHead &pu,ArgTypeDecl &tgt) {
             qWarning() << "Invocable function with default argument that uses type constructor directly, will likely not work";
     }
 }
-static void parseDeclArguments(ParseHead &pu,MethodDecl &tgt) {
+static bool parseDeclArguments(ParseHead &pu,MethodDecl &tgt) {
     while(!pu.atEnd()) {
-        pu.skipWS();
         ArgTypeDecl arg;
-        parseArgTypeDecl(pu,arg);
-        pu.skipWS();
-        arg.arg_name = pu.getIdent();
-        pu.skipWS();
-        if(!pu.atEnd() && pu.peek()=='=') {
-            pu.consume();
-            parseArgumentDefault(pu,arg);
+        if(!parseArgTypeDecl(pu,arg)) {
+            return false;
         }
-        if(!pu.atEnd() && pu.peek()==',') {
-            pu.consume();
+        Token t = nextNonWsNonEol(pu);
+        if(t.token_type!=Ident) {
+            return false;
+        }
+        arg.arg_name = t.data;
+        t = nextNonWsNonEol(pu);
+        if(t=='=') {
+            parseArgumentDefault(pu,arg);
+            t = nextNonWsNonEol(pu); // take the optional ','
+        }
+        if(t!=',') {
+            ungetToken(pu,t);
         }
         tgt.args.push_back(arg);
     }
+    return true;
+}
+static bool parseField(ParseHead &pu,FieldDecl &tgt) {
+
+    int offset = pu.offset;
+    if(!parseArgTypeDecl(pu,tgt.type)) {
+        return false;
+    }
+    Token  t = nextNonWsNonEol(pu);
+    if(t=='(') { // not a field, but a method/constructor def
+        pu.offset = offset; // rewind to allow function parsing to work.
+        return false;
+    }
+    if(t.token_type!=Ident) {
+        return false;
+    }
+    tgt.type.arg_name = t.data;
+    t = nextNonWsNonEol(pu);
+    if(t=='=' || t=='{') {
+        if(t=='{') {
+            // allow proper '{' '}' nesting to work.
+            ungetToken(pu,t);
+        }
+        parseArgumentDefault(pu,tgt.type);
+    }
+    if(t=='[') {
+        int square_bracket_nesting=1;
+        int start_offset = pu.offset;
+        while(t!=';' && t!=END) {
+            t = nextNonWsNonEol(pu);
+            if(t.token_type==DontCare) {
+                if(t=='[') {
+                    square_bracket_nesting++;
+                } else if(t==']') {
+                    square_bracket_nesting--;
+                }
+            }
+        }
+        // -2 to skip closing ']' and ';'
+        QStringView bracket_arg = pu.slice().mid(start_offset,pu.offset-start_offset-2);
+        QString in_brackets=bracket_arg.toString();
+        const QString lat("][");
+        auto parts = bracket_arg.split(lat);
+        for(const auto part : parts) {
+            // multidimensional arrays are supported
+            bool parsed=false;
+            int dim = part.toInt(&parsed);
+            if(!parsed) {
+                pu.error = "soc only supports array sizes of numeric value";
+                return false;
+            }
+            tgt.array_dims.push_back(dim);
+        }
+    }
+    if(t==';') {
+        return true;
+    }
+    return false;
+}
+static bool extractField(ParseHead &pu,TS_Type *target) {
+
+    FieldDecl decl;
+    if(!parseField(pu,decl)) {
+        return false;
+    }
+    TS_Field *fld = new TS_Field(decl.type.arg_name.toString());
+    fld->field_type = convertToTref(decl.type);
+    if(!decl.array_dims.empty()) {
+        // augment type with array info.
+        fld->field_type.type_kind = TypeRefKind::Array;
+        QString array_bounds;
+        QStringList dims;
+        for(int d : decl.array_dims) {
+            dims.push_back(QString::number(d));
+        }
+        array_bounds = "[" + dims.join("][") + "]";
+        fld->field_type.name += array_bounds;
+
+    }
+    target->add_child(fld);
+
+    return true;
 
 }
 
 static void parseDeclAttrib(ParseHead &pu,MethodDecl &tgt) {
     // (/s+ [ virtual | static | constexpr | inline ] )*
-    while(true) {
-        int offset = pu.offset;
-        QStringView tok = pu.getIdent();
-        if(tok.isEmpty())
-            return;
+    Token tok = nextNonWsNonEol(pu);
+    while(tok.token_type==Ident) {
         if(tok==QLatin1String("virtual")) {
             tgt.is_virtual=true;
-            continue;
         }
-        if(tok==QLatin1String("static")) {
+        else if(tok==QLatin1String("static")) {
             tgt.is_static=true;
-            continue;
         }
-        if(tok==QLatin1String("constexpr")) {
+        else if(tok==QLatin1String("constexpr")) {
             tgt.is_constexpr=true;
-            continue;
         }
-        if(tok==QLatin1String("inline")) {
-            continue;
+        else if(tok==QLatin1String("inline")) {
         }
-        // Not recognized as a decl attribute, rewind and return
-        pu.offset = offset;
-        break;
+        else {
+            // Not recognized as a decl attribute, rewind and return
+            ungetToken(pu,tok);
+            break;
+        }
+        tok = nextNonWsNonEol(pu);
     }
-}
-TypeReference convertToTref(const ArgTypeDecl &from) {
-    TypeReference res(from.type_name.toString());
-    res.pass_by = from.pass_by;
-    res.name = from.type_name.toString();
-    res.template_argument = from.template_params.toString();
-    return res;
 }
 
 void addMethod(const ParseHead &pu,const MethodDecl &mdecl)
@@ -916,24 +1202,29 @@ MethodDecl parseMethod(ParseHead &pu) {
     parseDeclAttrib(pu,mdecl);
 
     if(!parseArgTypeDecl(pu,mdecl.return_type) ) {
-        mdecl.name = {};
-        return mdecl;
+        return mdecl; // returning empty mdecl ->means error
     }
-    mdecl.name = pu.getIdent();
+    Token name_token = nextNonWsNonEol(pu);
+    if(name_token.token_type!=Ident) {
+        pu.error = "Failed to parse invocable method declaration";
+        return mdecl; // returning empty mdecl ->means error
+    }
+    mdecl.name = name_token.data;
 
-    pu.skipWS();
+    Token next_token = nextNonWsNonEol(pu);
     // Arguments
-    assert(pu.peek()=='(');
-    pu.consume();
+    assert(next_token=='(');
+
     int start_args=pu.offset;
     int nesting_depth=1;
-    while(!pu.atEnd() && nesting_depth!=0) {
-        QChar c = pu.take();
-        if(c=='(') {
+    Token fin_token = nextNonWsNonEol(pu);
+    while(fin_token!=END && nesting_depth!=0) {
+        if(fin_token=='(') {
             nesting_depth++;
-        } else if(c==')') {
+        } else if(fin_token==')') {
             nesting_depth--;
         }
+        fin_token = nextNonWsNonEol(pu);
     }
     ParseHead arg_block(pu,start_args,pu.offset-start_args-1); // -1 to account for the closing ')'
     parseDeclArguments(arg_block,mdecl);
@@ -964,109 +1255,9 @@ static void processParameterlessMacro(ParseHead &pu,QStringView macroname) {
 
     }
 }
-enum TokenType
-{
-    DontCare,
-    String,
-    Ident,
-    WS,
-    EOL
-};
-struct Token
-{
-    QStringView data;
-    TokenType token_type;
-
-    bool operator==(QChar c) const
-    {
-        return data.size()==1 && data.front()==c;
-    }
-    bool operator==(QStringView with) const
-    {
-        return data==with;
-    }
-};
-bool isWS(QChar c)
-{
-    return c == ' ' || c == '\t';
-}
-bool isEOL(QChar c)
-{
-    return c == '\n' || c == '\r';
-}
-
-Token nextToken(ParseHead &pu)
-{
-    QChar c = pu.peek();
-    int offset_start= pu.offset;
-    if(isWS(c))
-    {
-        int idx=1;
-        for (; pu.offset + idx < pu.end_offset; ++idx)
-        {
-            if(!isWS(pu.peek(idx)))
-            {
-                break;
-            }
-        }
-        return Token {pu.slice().mid(offset_start,idx),TokenType::WS };
-    }
-    if (isEOL(c))
-    {
-        int idx = 1;
-        for (; pu.offset + idx < pu.end_offset; ++idx)
-        {
-            if (!isEOL(pu.peek(idx)))
-            {
-                break;
-            }
-        }
-        return Token{ pu.slice().mid(offset_start,idx),TokenType::EOL };
-    }
-
-    if(c=='"') // poor man's string extractor
-    {
-        bool in_escape=false;
-        int idx = 1;
-        for( ;pu.offset + idx< pu.end_offset; ++idx)
-        {
-            QChar current = pu.peek(idx);
-            if(in_escape)
-            {
-                in_escape = false;
-                continue;
-            }
-            if (current=='\\')
-            {
-                in_escape = true;
-                continue;
-            }
-            if(current=='"')
-            {
-                ++idx;
-                break;
-            }
-        }
-        return Token{ pu.slice().mid(offset_start,idx),TokenType::String };
-    }
-    if(c.isLetter() || c=='_')
-    {
-        int idx = 1;
-        for (; pu.offset + idx < pu.end_offset; ++idx)
-        {
-            QChar current_char = pu.peek(idx);
-            if (!(current_char.isLetterOrNumber()||current_char=='_'))
-            {
-                break;
-            }
-        }
-        return Token{ pu.slice().mid(offset_start,idx),TokenType::Ident };
-    }
-    return Token{ pu.slice().mid(offset_start,1),TokenType::DontCare };
-}
 
 static void recordBlockName(ParseHead &pu) {
-    QStringView substr(pu.slice().mid(0,pu.offset));
+    QStringView substr(pu.slice().mid(0,pu.tu.open_brace_indices.back()));
     // search backwards for things that are 100% not a part of class/struct/namespace definition.
     //NOTE: This does not take into account some crazy things like class Foo : public Wow<";\"">
     QChar fin_chars[] = { ';','"','\'','{','}'};
@@ -1077,7 +1268,7 @@ static void recordBlockName(ParseHead &pu) {
             substr=substr.mid(prev_endchar_idx+1);
         }
     }
-    QString zxx1=substr.toString();
+
     const QLatin1String incorrect[]= {QLatin1String("if"),QLatin1String("enum class"),QLatin1String("enum"),QLatin1String("while")};
 
     for(const QLatin1String &s : incorrect) {
@@ -1128,7 +1319,6 @@ static void recordBlockName(ParseHead &pu) {
         return;
     }
     substr=substr.trimmed();
-    QString full_dezf = substr.toString();
     QStringView full_def=substr;
     if(kw_idx==0 || kw_idx==1) {
         // processing class_name : base_class
@@ -1169,8 +1359,9 @@ static void recordBlockName(ParseHead &pu) {
         pu.tu.name_stack.push_back({substr,full_def,pu.bracket_nesting_level,(BlockType)kw_idx});
     }
 }
-static void startBlock(ParseHead &pu) {
-    pu.tu.open_brace_indices.push_back(pu.offset);
+static void startBlock(ParseHead &pu,const Token &t) {
+    assert(t.data.data()>=pu.tu.contents.data() && t.data.data()<pu.tu.contents.data()+pu.tu.contents.size());
+    pu.tu.open_brace_indices.push_back(t.data.data()-pu.tu.contents.data());
     pu.bracket_nesting_level++;
     recordBlockName(pu);
 }
@@ -1205,13 +1396,13 @@ int processBlock(ParseHead &pu) {
             return -1;
         }
         Token t = nextToken(pu);
+        TS_Type *collector = pu.tu.field_collectors.value(pu.bracket_nesting_level,nullptr);
         if(t.token_type == TokenType::DontCare)
         {
             if (t == '{') {
-                startBlock(pu);
-                pu.consume(t.data.size());
+                startBlock(pu,t);
             }
-            if (t == '}') {
+            else if (t == '}') {
                 pu.tu.open_brace_indices.pop_back();
                 while (!pu.tu.brace_nesting_stack.isEmpty() && pu.bracket_nesting_level <= pu.tu.brace_nesting_stack.back()) {
                     endBlock(pu);
@@ -1220,14 +1411,11 @@ int processBlock(ParseHead &pu) {
                     pu.tu.name_stack.pop_back();
                 }
                 pu.bracket_nesting_level--;
-                pu.consume(t.data.size());
             }
-            pu.consume(t.data.size());
             continue;
         }
         if(t.token_type==TokenType::String)
         {
-            pu.consume(t.data.size());
             continue;
         }
         if (t.token_type == TokenType::WS || t.token_type == TokenType::EOL) {
@@ -1235,42 +1423,44 @@ int processBlock(ParseHead &pu) {
                 line_counter++;
                 valid_start = true;
             }
-            pu.consume(t.data.size());
             continue;
         }
-
 
         if(valid_start && t.token_type==TokenType::Ident)
         {
             QStringView partial(t.data);
+            QString pp(partial.toString());
             // we search for start of on of the macro keywords
             if(!partial.startsWith(QLatin1String("SE_")))
             {
+                if(collector) {
+                    ungetToken(pu,t);
+                    if(!extractField(pu,collector)) {
+                        // extract field rewinds to pu.offset, but the 't' token was taken off the unget stack.
+                            ungetToken(pu,t);
+                    }
+                }
                 valid_start=false;
-                pu.consume(t.data.size());
                 continue;
 
             }
         } else {
             valid_start = false;
-            pu.consume(t.data.size());
             continue;
         }
 
         // contents at idx are SE_...
-        pu.consume(3);
-
-        int end_macro_name = pu.searchForward(QVector<QChar>{'(',' ','\t','\n'});
-        if (end_macro_name == -1) { // something strange going on, bail
-            qDebug() << "Failed to parse macro name.";
-            break;
+        QStringView macro_name=t.data.mid(3);
+        QString mc=t.data.toString();
+        t = nextNonWsNonEol(pu);
+        QString tc=t.data.toString();
+        bool non_parametric_token=true; // SE_INVOCABLE, SE_SIGNALS etc.
+        if(t.token_type==TokenType::DontCare) {
+            non_parametric_token = t != '(';
         }
-
-        bool non_parametric_token=false; // SE_INVOCABLE, SE_SIGNALS etc.
-        QStringView macro_name(pu.peek_slice(end_macro_name - pu.offset));
-        if(pu.slice()[end_macro_name]==' ')
-            non_parametric_token = true;
-        pu.consume(macro_name.size() + 1); // consume '('|' ' as well
+        else {
+            ungetToken(pu,t); // can be IDENT for a function name etc.
+        }
 
         if(non_parametric_token) {
             processParameterlessMacro(pu,macro_name);
@@ -1340,19 +1530,20 @@ void pseudoPreprocessor(QString &source) {
     source.replace(z," ");
 }
 bool processFile(const QString &filename, QIODevice *dev) {
-    ProcessingUnit pu;
+    TranslationUnit pu;
     pu.filename = filename;
-    pu.contents = QString::fromUtf8(removeComments(dev->readAll()));
+    pu.contents = QString::fromUtf8(joinLineContinuations(removeComments(dev->readAll())));
     pseudoPreprocessor(pu.contents);
 
     ParseHead head(pu);
     bool res = processBlock(head)==0;
+    assert(pu.field_collectors.empty());
     if(!res)
         qCritical()<<head.error;
     return res;
 }
 
-static bool save_cpp(ReflectionData &data, QIODevice *io) {
+static bool save_cpp(const ReflectionData &data, QIODevice *io) {
     VisitorInterface *visitor = createCppVisitor();
     for (const auto *v : data.namespaces) {
         v->accept(visitor);

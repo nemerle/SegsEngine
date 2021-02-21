@@ -10,6 +10,7 @@ struct TS_Property;
 struct TS_Signal;
 struct TS_Function;
 struct TS_Constant;
+struct TS_Field;
 struct TypeReference;
 
 class VisitorInterface {
@@ -21,7 +22,7 @@ public:
     virtual void visit(const TS_Signal *) = 0;
     virtual void visit(const TS_Function *) = 0;
     virtual void visit(const TS_Constant *) = 0;
-    virtual void visit(const TypeReference *) = 0;
+    virtual void visit(const TS_Field *) = 0;
 
     virtual ~VisitorInterface() {}
 };

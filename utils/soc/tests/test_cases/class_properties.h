@@ -17,6 +17,7 @@ struct Frame {
 };
 
 class Propertied {
+    SE_CLASS()
     enum {
         MAX_BLEND_POINTS = 64
     };
@@ -29,7 +30,6 @@ class Propertied {
     };
 
     BlendPoint blend_points[MAX_BLEND_POINTS];
-    SE_CLASS()
     // read only property
     SE_PROPERTY(Vector<int> val1 READ get_val1)
     // read/write property
